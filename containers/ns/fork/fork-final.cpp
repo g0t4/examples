@@ -7,9 +7,9 @@ int main()
 {
     printf("\n");
 
-    printf("getpid(): %d\n", getpid());
+    printf("getpid(): %d\n\n", getpid());
 
-    //unshare(CLONE_NEWPID); // ignore failures to keep code readabl-er
+    // unshare(CLONE_NEWPID); // ignore failures to keep code readabl-er
     pid_t fork_pid = fork();
     // move unshare here (after fork) to show difference in PIDs for child
 
@@ -17,15 +17,15 @@ int main()
     {
 
         wait(NULL);
-        printf("... wait finished\n\n");
+        printf("\n  ... FINISHED waiting\n\n");
 
-        printf("[PARENT] fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
-        system("ps faux");
+        printf("[PARENT] fork_pid: %d, getpid(): %d\n\n", fork_pid, getpid());
+        system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
     }
     else if (fork_pid == 0)
     {
-        printf("[CHILD] fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
-        system("ps faux");
+        printf("[CHILD] fork_pid: %d, getpid(): %d\n\n", fork_pid, getpid());
+        system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
         exit(0);
     }
 
