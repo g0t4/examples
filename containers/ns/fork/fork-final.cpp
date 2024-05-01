@@ -9,20 +9,23 @@ int main()
 
     printf("getpid(): %d\n", getpid());
 
-    unshare(CLONE_NEWPID); // ignore failures to keep code readabl-er
+    //unshare(CLONE_NEWPID); // ignore failures to keep code readabl-er
     pid_t fork_pid = fork();
     // move unshare here (after fork) to show difference in PIDs for child
 
     if (fork_pid > 0)
     {
-        printf("fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
 
         wait(NULL);
-        printf("... wait finished");
+        printf("... wait finished\n\n");
+
+        printf("[PARENT] fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
+        system("ps faux");
     }
     else if (fork_pid == 0)
     {
-        printf("fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
+        printf("[CHILD] fork_pid: %d, getpid(): %d\n", fork_pid, getpid());
+        system("ps faux");
         exit(0);
     }
 
