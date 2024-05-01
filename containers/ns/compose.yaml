@@ -1,0 +1,11 @@
+services:
+  linux:
+    build:
+      context: .
+    privileged: true
+    volumes:
+      - .:/src
+    working_dir: /src
+
+# compose is for simple linux env:
+#   docker compose run --rm --build linux
