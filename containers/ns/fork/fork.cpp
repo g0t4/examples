@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <sched.h>
 
+using namespace std;
+
 int main()
 {
     printf("\n");
