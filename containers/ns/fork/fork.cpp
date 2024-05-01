@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -7,7 +9,7 @@ int main()
 {
     printf("\n");
 
-    printf("getpid() = %d\n\n", getpid());
+    cout << "getpid() = " << getpid() << endl;
 
     printf("\n\n");
     return 0;
