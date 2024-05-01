@@ -3,6 +3,7 @@ services:
     build:
       context: .
     privileged: true
+    hostname: linux
     volumes:
       - .:/src
     working_dir: /src
