@@ -6,4 +6,5 @@ RUN apt-get update && apt-get install -y \
     iputils-ping net-tools iproute2 \
     iperf3 iperf \
     curl wget \
-    git
+    git fish \
+    bat grc
