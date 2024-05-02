@@ -20,12 +20,14 @@ int main()
         printf("\n  ... FINISHED waiting\n\n");
 
         printf("[PARENT] fork_pid: %d, getpid(): %d\n\n", fork_pid, getpid());
-        system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
+        // system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
     }
     else if (fork_pid == 0)
     {
         printf("[CHILD] fork_pid: %d, getpid(): %d\n\n", fork_pid, getpid());
-        system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
+        // FYI to use after unshare would require a mount NS too and remount /proc
+        //   that is a demo better done w/ unshare --mount-proc IMO
+        // system("ps faux | awk '{print \"  \" $0}'"); // indent 2 spaces, f=process tree
         exit(0);
     }
 
