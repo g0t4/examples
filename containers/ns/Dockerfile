@@ -7,4 +7,6 @@ RUN apt-get update && apt-get install -y \
     iperf3 iperf \
     curl wget \
     git fish \
-    bat grc
+    bat grc \
+    git sudo \
+    icdiff tree uidmap silversearcher-ag
