@@ -24,3 +24,15 @@ unshare --mount-proc
 # PID+mount ns + remount /proc:
 unshare --fork -pm --mount-proc bash
 
+
+
+# FYI kernel syscalls:
+#
+#   unshare()
+#     ag -i "syscall_define.*unshare" torvalds/linux
+#     https://github.com/torvalds/linux/blob/18daea77cca626f590fb140fc11e3a43c5d41354/kernel/fork.c#L3392-L3395
+#     => ksys_unshare: https://github.com/torvalds/linux/blob/18daea77cca626f590fb140fc11e3a43c5d41354/kernel/fork.c#L3273-L3274
+#
+#   fork()
+#      ag -i "syscall_define.*fork" torvalds/linux
+#      https://github.com/torvalds/linux/blob/18daea77cca626f590fb140fc11e3a43c5d41354/kernel/fork.c#L2879-L2880
