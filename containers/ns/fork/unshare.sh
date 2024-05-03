@@ -17,3 +17,10 @@ unshare --fork --pid
 unshare -f -p
 
 
+unshare --mount-proc
+#   mount -t proc proc /proc
+#   https://github.com/util-linux/util-linux/blob/e3192bfd1dd129c70f5416e1464135d8cd22c956/sys-utils/unshare.c#L1164-L1180
+
+# PID+mount ns + remount /proc:
+unshare --fork -pm --mount-proc bash
+
