@@ -44,8 +44,8 @@ var kernel = builder.Build();
 // init chat
 var chat = kernel.GetRequiredService<IChatCompletionService>();
 var history = new ChatHistory();
-history.AddSystemMessage("You are a useful assistant that replies using a funny style and emojis. Your name is Goku.");
-history.AddUserMessage("hi, who are you?");
+history.AddSystemMessage("You are a command line expert that can suggest commands to run, respond ONLY with a single command only, no explanations, no markdown.");
+history.AddUserMessage("tell me how to run nginx w/ docker ");
 
 // print response
 var result = await chat.GetChatMessageContentsAsync(history);
