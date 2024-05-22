@@ -42,8 +42,12 @@ var kernel = Kernel.CreateBuilder()
 // init chat
 var chat = kernel.GetRequiredService<IChatCompletionService>();
 var history = new ChatHistory();
-history.AddSystemMessage("You are a command line expert that can suggest commands to run, respond ONLY with a single command only, no explanations, no markdown.");
-history.AddUserMessage("tell me how to run nginx w/ docker ");
+//history.AddSystemMessage("You are a command line expert that can suggest commands to run, respond ONLY with a single command only, no explanations, no markdown.");
+//history.AddUserMessage("tell me how to run nginx w/ docker ");
+
+history.AddSystemMessage("you have control of my smart home, please perform requested actions for me.");
+history.AddUserMessage("set the light to red");
+history.AddMessage(AuthorRole.Assistant, "Setting color to red");
 
 string? userInput;
 while ((userInput = Console.ReadLine()) != null)
