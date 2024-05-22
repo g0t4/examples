@@ -1,4 +1,5 @@
 ﻿// based on: https://techcommunity.microsoft.com/t5/educator-developer-blog/semantickernel-chat-service-demo-running-llama2-llm-locally-in/ba-p/4062601
+//   full ex: https://dev.to/azure/semantickernel-chat-service-demo-running-phi-2-llm-locally-with-lmstudio-4fbb?WT.mc_id=academic-120377-brunocapuano
 
 //    Copyright (c) 2024
 //    Author      : Bruno Capuano
