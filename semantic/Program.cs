@@ -1,4 +1,6 @@
-﻿//    Copyright (c) 2024
+﻿// based on: https://techcommunity.microsoft.com/t5/educator-developer-blog/semantickernel-chat-service-demo-running-llama2-llm-locally-in/ba-p/4062601
+
+//    Copyright (c) 2024
 //    Author      : Bruno Capuano
 //    Change Log  :
 //    - Sample console application to use Phi-2 in LM Studio with Semantic Kernel
