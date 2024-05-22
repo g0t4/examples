@@ -33,14 +33,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var openai_ccs = Kernel.CreateBuilder()
-  .AddOpenAIChatCompletion(modelId: "foo", apiKey: "lm-studio:", endpoint: new Uri("http://localhost:1234/v1/chat/completions");
+var kernel = Kernel.CreateBuilder()
+  .AddOpenAIChatCompletion(modelId: "foo", apiKey: "lm-studio:", endpoint: new Uri("http://localhost:1234/v1/chat/completions"))
+  .Build();
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-// semantic kernel builder
-var builder = Kernel.CreateBuilder();
-builder.Services.AddKeyedSingleton<IChatCompletionService>("phi2Chat", openai_ccs);
-var kernel = builder.Build();
 
 // init chat
 var chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -48,6 +44,25 @@ var history = new ChatHistory();
 history.AddSystemMessage("You are a command line expert that can suggest commands to run, respond ONLY with a single command only, no explanations, no markdown.");
 history.AddUserMessage("tell me how to run nginx w/ docker ");
 
-// print response
-var result = await chat.GetChatMessageContentsAsync(history);
-Console.WriteLine(result[^1].Content);
+string? userInput;
+while ((userInput = Console.ReadLine()) != null)
+{
+  history.AddUserMessage(userInput);
+
+  OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+  {
+    ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+  };
+
+  var result = await chat.GetChatMessageContentAsync(
+      history,
+      executionSettings: openAIPromptExecutionSettings,
+      kernel: kernel);
+
+  Console.WriteLine("Assistant> " + result);
+
+  history.AddMessage(result.Role, result.Content ?? string.Empty);
+
+  Console.Write("User> ");
+}
+
