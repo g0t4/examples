@@ -26,6 +26,7 @@
 //    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //    THE SOFTWARE.
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -66,3 +67,23 @@ while ((userInput = Console.ReadLine()) != null)
   Console.Write("User> ");
 }
 
+public class LightColor
+{
+  [KernelFunction]
+  [Description("set color of the light")]
+  public void SetColor(string color)
+  {
+    System.Console.WriteLine($"Setting color to {color}");
+    _color = color;
+  }
+
+  private string _color = "red";
+  [KernelFunction]
+  [Description("get light color")]
+  public string GetColor()
+  {
+    return _color;
+  }
+
+
+}
