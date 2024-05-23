@@ -33,9 +33,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var kernel = Kernel.CreateBuilder()
-  .AddOpenAIChatCompletion(modelId: "foo", apiKey: "lm-studio:", endpoint: new Uri("http://localhost:1234/v1/chat/completions"))
-  .Build();
+var builder = Kernel.CreateBuilder()
+  .AddOpenAIChatCompletion(modelId: "gpt-4o", apiKey: "foo");
+// IIUC 
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 // builder.Plugins.AddFromType<LightColor>("living room light");
 builder.Plugins.AddFromObject(new LightPlugin("living_room"), "living_room");
