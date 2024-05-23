@@ -27,7 +27,6 @@
 //    THE SOFTWARE.
 
 using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -38,17 +37,24 @@ var kernel = Kernel.CreateBuilder()
   .AddOpenAIChatCompletion(modelId: "foo", apiKey: "lm-studio:", endpoint: new Uri("http://localhost:1234/v1/chat/completions"))
   .Build();
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+// builder.Plugins.AddFromType<LightColor>("living room light");
+builder.Plugins.AddFromObject(new LightPlugin("living_room"), "living_room");
+builder.Plugins.AddFromObject(new LightPlugin("office"), "office");
+builder.Plugins.AddFromObject(new LightPlugin("kitchen"), "kitchen");
+
+var kernel = builder.Build();
+
 
 // init chat
 var chat = kernel.GetRequiredService<IChatCompletionService>();
 var history = new ChatHistory();
 //history.AddSystemMessage("You are a command line expert that can suggest commands to run, respond ONLY with a single command only, no explanations, no markdown.");
 //history.AddUserMessage("tell me how to run nginx w/ docker ");
+// history.AddSystemMessage("you have control of my smart home, please perform requested actions for me.");
+// history.AddUserMessage("set the light to red");
+// history.AddMessage(AuthorRole.Assistant, "Setting color to red");
 
-history.AddSystemMessage("you have control of my smart home, please perform requested actions for me.");
-history.AddUserMessage("set the light to red");
-history.AddMessage(AuthorRole.Assistant, "Setting color to red");
-
+Console.Write("User> ");
 string? userInput;
 while ((userInput = Console.ReadLine()) != null)
 {
