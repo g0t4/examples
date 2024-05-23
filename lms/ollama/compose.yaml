@@ -2,7 +2,6 @@ services:
   ollama:
     image: ollama/ollama
     ports:
-      # super slow
       - "11434:11434" # appears to only be ipv6 per netstat 
     volumes:
       - ollama:/root/.ollama
@@ -16,4 +15,4 @@ volumes:
 
 # docker compose exec ollama bash
 #   ollama pull llama3
-#   
+#   TODO llama3 model was super slow, TODO try others...
