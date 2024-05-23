@@ -35,6 +35,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var builder = Kernel.CreateBuilder()
   .AddOpenAIChatCompletion(modelId: "gpt-4o", apiKey: "foo");
+// .AddOpenAIChatCompletion(modelId: "llama3", endpoint: new Uri("http://localhost:11434"), apiKey: "foo"); // ollama + llama3 model, does not support tools (yet? https://github.com/ollama/ollama/issues/4386)
 // IIUC 
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 // builder.Plugins.AddFromType<LightColor>("living room light");
