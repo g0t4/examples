@@ -16,3 +16,5 @@ volumes:
 # docker compose exec ollama bash
 #   ollama pull llama3
 #   TODO llama3 model was super slow, TODO try others...
+
+# RUNS AWESOME on my mac, forget using docker for now
