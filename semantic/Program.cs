@@ -71,23 +71,34 @@ while ((userInput = Console.ReadLine()) != null)
   Console.Write("User> ");
 }
 
-public class LightColor
+public class LightPlugin
 {
+
+  public LightPlugin(string name)
+  {
+    _name = name;
+  }
+
+  [KernelFunction]
+  [Description("get light name")]
+  public string GetName() => _name;
+
   [KernelFunction]
   [Description("set color of the light")]
   public void SetColor(string color)
   {
-    System.Console.WriteLine($"Setting color to {color}");
+    System.Console.WriteLine($"  [ Setting {_name} to {color} ]");
     _color = color;
   }
 
   private string _color = "red";
+  private string _name = "";
+
   [KernelFunction]
   [Description("get light color")]
   public string GetColor()
   {
+    System.Console.WriteLine($"  [ Getting {_name} => {_color} ]");
     return _color;
   }
-
-
 }
