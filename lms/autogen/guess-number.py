@@ -2,10 +2,17 @@ from autogen import ConversableAgent
 
 number_to_guess = "254"
 
+# llm_config = {
+#     "config_list": [{
+#         "model": "gpt-4o",
+#         "base_url": "https://api.openai.com/v1",
+#     }]
+# }
 llm_config = {
     "config_list": [{
-        "model": "gpt-4o",
-        "base_url": "https://api.openai.com/v1",
+        "model": "llama3",
+        "base_url": "http://localhost:11434/v1",
+        "api_key": "ollama",
     }]
 }
 
