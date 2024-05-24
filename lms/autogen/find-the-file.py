@@ -14,7 +14,7 @@ llm_config={"config_list": config_list}
 
 assistant = AssistantAgent(
     "assistant",
-    system_message="You are tasked with finding a file that I lost, in the current working directory. I only recall that it has the word 'foo' inside of it. You must devise a series of commands that I will run for you and provide the response or output to you. ",
+    system_message="You are tasked with finding a file that I lost, in the current working directory. I only recall that it has the word 'foo' inside of it. You must devise code to find the file, writtin in python",
     llm_config=llm_config,
     is_termination_msg=lambda msg: "test.txt" in msg["content"]
 )
