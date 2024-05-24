@@ -21,7 +21,7 @@ assistant = AssistantAgent(
 
 human = UserProxyAgent(
     "human",
-    code_execution_config={"work_dir": ".", "use_docker": False}
+    code_execution_config={"work_dir": "files", "use_docker": False}
 )
 
 result = human.initiate_chat(
