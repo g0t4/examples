@@ -1,23 +1,31 @@
-import os
-import keyring
-import openai
 import requests
+import keyring
 from bs4 import BeautifulSoup
+from openai import OpenAI
 
-openai.api_key = keyring.get_password("openai", "ask")
+client = OpenAI(api_key=keyring.get_password("openai", "ask"))
 
 
 def fetch_latest_news(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    articles = soup.find_all('h2')#, class_='card-headline')
-    return [article.get_text() for article in articles[:5]]  # Get the first 5 articles
+    articles = soup.find_all('h2')  #, class_='card-headline')
+    return [article.get_text() for article in articles[:5]]
 
 
 def summarize_article(article_text):
-    response = openai.Completion.create(model="text-davinci-003", prompt=f"Summarize the following article in one paragraph:\n\n{article_text}", max_tokens=100)
-    summary = response.choices[0].text.strip()
-    return summary
+    response = client.chat.completions.create(model="gpt-4o",
+                                              messages=[{
+                                                  "role": "system",
+                                                  "content": "Summarize the following article in one paragraph:"
+                                              }, {
+                                                  "role": "user",
+                                                  "content": article_text
+                                              }],
+                                              max_tokens=100,
+                                              n=1)
+
+    return response.choices[0].message.content
 
 
 def main():
