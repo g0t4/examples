@@ -1,1 +1,6 @@
 openai
+beautifulsoup4
+requests
+
+keyring
+keyrings.cryptfile
