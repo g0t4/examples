@@ -4,3 +4,5 @@ requests
 
 keyring
 keyrings.cryptfile
+
+pylint
