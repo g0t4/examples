@@ -80,26 +80,24 @@ async def run(model: str):
     # Add the model's response to the conversation history
     messages.append(response['message'])
 
-    # Check if the model decided to use the provided function
     if not response['message'].get('tool_calls'):
         print("The model didn't use the function. Its response was:")
         print(response['message']['content'])
         return
 
     # Process function calls made by the model
-    if response['message'].get('tool_calls'):
-        available_functions = {
-            'get_flight_times': get_flight_times,
-        }
-        for tool in response['message']['tool_calls']:
-            print("tool call: ", tool)
-            function_to_call = available_functions[tool['function']['name']]
-            function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
-            # Add function response to the conversation
-            messages.append({
-                'role': 'tool',
-                'content': function_response,
-            })
+    available_functions = {
+        'get_flight_times': get_flight_times,
+    }
+    for tool in response['message']['tool_calls']:
+        print("tool call: ", tool)
+        function_to_call = available_functions[tool['function']['name']]
+        function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
+        # Add function response to the conversation
+        messages.append({
+            'role': 'tool',
+            'content': function_response,
+        })
 
     # Second API call: Get final response from the model
     final_response = await client.chat(model=model, messages=messages)
