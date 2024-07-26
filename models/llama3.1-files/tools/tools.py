@@ -56,13 +56,10 @@ async def run(model: str):
     client = ollama.AsyncClient()
     # initial request
     messages = []
-    system_message = {
-        'role': 'system',
-        'content': 'You area an expert flight tracker. If you need to lookup flight times, you can ask for up to three different rounds of tool use.'
-    }
+    system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     messages.append(system_message)
     print_message(system_message)
-    user_request = {'role': 'user', 'content': 'What is the flight time from New York to Los Angeles?'}
+    user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)?'}
     messages.append(user_request)
     print_message(user_request)
 
@@ -118,13 +115,13 @@ async def run(model: str):
         }
         messages.append(tool_response)
         print_message(tool_response)
-    # todo give the model a way to ask for another tool?
 
     final_response = await client.chat(model=model, tools=tools, messages=messages)
     print_message(final_response['message'])
 
 
 # Run the async function
-model = 'llama3.1:8b'
+model = "mistral"
+# model = 'llama3.1:8b' # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
 # model = 'llama3-groq-tool-use'
 asyncio.run(run(model))
