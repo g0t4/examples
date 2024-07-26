@@ -73,14 +73,14 @@ async def run(model: str):
     # initial request
     messages = []
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
-    system_message = {'role': 'system', 'content': 'You are my smart home controller.'}
+    system_message = {'role': 'system', 'content': 'You are my smart home controller. You can ask for multiple rounds of tool calls.'}
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
     # user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
     user_request = {
         'role': 'user',
-        'content': 'Tell me what color the office light is and then change it to red and then double check the color after its changed.'
+        'content': 'Tell me what color the office light is AND then change it to red.'
     }  # interesting, it sequenced tool calls and appropriately parsed three tool responses! perhaps tool response should include initial args? or only one tool at a time?
     messages.append(user_request)
     print_message(user_request)
@@ -191,5 +191,5 @@ async def run(model: str):
 # Run the async function
 model = "mistral"
 # model = 'llama3.1:8b' # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-# model = 'llama3-groq-tool-use'
+model = 'llama3-groq-tool-use'
 asyncio.run(run(model))
