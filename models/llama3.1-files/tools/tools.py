@@ -9,13 +9,13 @@ def get_flight_times(departure: str, arrival: str) -> str:
     flights = {
         'NYC-LAX': {
             'departure': '08:00 AM',
-            'arrival': '11:30 AM',
-            'duration': '5h 30m'
+            'arrival': '11:35 AM',
+            'duration': '5h 35m'
         },
         'LAX-NYC': {
             'departure': '02:00 PM',
-            'arrival': '10:30 PM',
-            'duration': '5h 30m'
+            'arrival': '08:50 PM',
+            'duration': '4h 50m'
         },
         'LHR-JFK': {
             'departure': '10:00 AM',
@@ -59,7 +59,7 @@ async def run(model: str):
     system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     messages.append(system_message)
     print_message(system_message)
-    user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)?'}
+    user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
     messages.append(user_request)
     print_message(user_request)
 
