@@ -94,7 +94,12 @@ async def run(model: str):
         tools=tools,
     )
 
-    # Add the model's response to the conversation history
+    return await process_response(model, client, messages, tools, response)
+
+
+async def process_response(model, client, messages, tools, response):
+
+    # show model's response (with optional tool calls)
     messages.append(response['message'])
     print_message(response['message'])
 
@@ -116,8 +121,8 @@ async def run(model: str):
         messages.append(tool_response)
         print_message(tool_response)
 
-    final_response = await client.chat(model=model, tools=tools, messages=messages)
-    print_message(final_response['message'])
+    post_tool_response = await client.chat(model=model, tools=tools, messages=messages)
+    return await process_response(model, client, messages, tools, post_tool_response)
 
 
 # Run the async function
