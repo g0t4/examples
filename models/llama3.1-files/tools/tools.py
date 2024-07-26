@@ -55,36 +55,46 @@ def print_message(message):
 async def run(model: str):
     client = ollama.AsyncClient()
     # initial request
-    messages = [{'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)?'}]
-    print_message(messages[0])
+    messages = []
+    system_message = {
+        'role': 'system',
+        'content': 'You area an expert flight tracker. If you need to lookup flight times, you can ask for up to three different rounds of tool use.'
+    }
+    messages.append(system_message)
+    print_message(system_message)
+    user_request = {'role': 'user', 'content': 'What is the flight time from New York to Los Angeles?'}
+    messages.append(user_request)
+    print_message(user_request)
 
     # First API call: Send the query and function description to the model
+    tools = [
+        {
+            'type': 'function',
+            'function': {
+                'name': 'get_flight_times',
+                'description': 'Get the flight times between two cities',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'departure': {
+                            'type': 'string',
+                            'description': 'The departure city (airport code)',
+                        },
+                        'arrival': {
+                            'type': 'string',
+                            'description': 'The arrival city (airport code)',
+                        },
+                    },
+                    'required': ['departure', 'arrival'],
+                },
+            },
+        },
+    ]
+
     response = await client.chat(
         model=model,
         messages=messages,
-        tools=[
-            {
-                'type': 'function',
-                'function': {
-                    'name': 'get_flight_times',
-                    'description': 'Get the flight times between two cities',
-                    'parameters': {
-                        'type': 'object',
-                        'properties': {
-                            'departure': {
-                                'type': 'string',
-                                'description': 'The departure city (airport code)',
-                            },
-                            'arrival': {
-                                'type': 'string',
-                                'description': 'The arrival city (airport code)',
-                            },
-                        },
-                        'required': ['departure', 'arrival'],
-                    },
-                },
-            },
-        ],
+        tools=tools,
     )
 
     # Add the model's response to the conversation history
@@ -94,7 +104,7 @@ async def run(model: str):
     if not response['message'].get('tool_calls'):
         return
 
-    # Process function calls made by the model
+    # run tools
     available_functions = {
         'get_flight_times': get_flight_times,
     }
@@ -108,13 +118,13 @@ async def run(model: str):
         }
         messages.append(tool_response)
         print_message(tool_response)
+    # todo give the model a way to ask for another tool?
 
-    # Second API call: Get final response from the model
-    final_response = await client.chat(model=model, messages=messages)
+    final_response = await client.chat(model=model, tools=tools, messages=messages)
     print_message(final_response['message'])
 
 
 # Run the async function
-# model = 'llama3.1:8b'
-model = 'llama3-groq-tool-use'
+model = 'llama3.1:8b'
+# model = 'llama3-groq-tool-use'
 asyncio.run(run(model))
