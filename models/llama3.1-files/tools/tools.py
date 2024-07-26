@@ -115,4 +115,6 @@ async def run(model: str):
 
 
 # Run the async function
-asyncio.run(run('llama3.1:8b'))
+# model = 'llama3.1:8b'
+model = 'llama3-groq-tool-use'
+asyncio.run(run(model))
