@@ -43,6 +43,22 @@ def get_flight_times(departure: str, arrival: str) -> str:
     return json.dumps(flights.get(key, {'error': 'Flight not found'}))
 
 
+lights = {
+    'office': 'green',
+    'bedroom': 'red',
+    'kitchen': 'white',
+}
+
+
+def get_light_color(light_name: str) -> str:
+    return json.dumps(lights.get(light_name, {'error': 'Light not found'}))
+
+
+def set_light_color(light_name: str, color: str) -> str:
+    lights[light_name] = color
+    return json.dumps({'success': True})
+
+
 def print_message(message):
     print(f"{message['role']}:")
     if (message.get('tool_calls')):
@@ -56,16 +72,56 @@ async def run(model: str):
     client = ollama.AsyncClient()
     # initial request
     messages = []
-    system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
+    # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
+    system_message = {'role': 'system', 'content': 'You are my smart home controller.'}
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
-    user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
+    # user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
+    user_request = {'role': 'user', 'content': 'Tell me what color the office light is and then change it to red and then double check the color after its changed.'}  # interesting, it sequenced tool calls and appropriately parsed three tool responses! perhaps tool response should include initial args? or only one tool at a time?
     messages.append(user_request)
     print_message(user_request)
 
     # First API call: Send the query and function description to the model
     tools = [
+        {
+            'type': 'function',
+            'function': {
+                'name': 'get_light_color',
+                'description': 'Get the color of a light',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'light_name': {
+                            'type': 'string',
+                            'description': 'The name of the light',
+                        },
+                    },
+                    'required': ['light_name'],
+                },
+            },
+        },
+        {
+            'type': 'function',
+            'function': {
+                'name': 'set_light_color',
+                'description': 'Set the color of a light',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'light_name': {
+                            'type': 'string',
+                            'description': 'The name of the light',
+                        },
+                        'color': {
+                            'type': 'string',
+                            'description': 'The color to set the light to',
+                        },
+                    },
+                    'required': ['light_name', 'color'],
+                },
+            }
+        },
         {
             'type': 'function',
             'function': {
@@ -103,12 +159,17 @@ async def run(model: str):
         if not response['message'].get('tool_calls'):
             return
 
-        available_functions = {
-            'get_flight_times': get_flight_times,
-        }
         for tool in response['message']['tool_calls']:
-            function_to_call = available_functions[tool['function']['name']]
-            function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
+            if tool['function']['name'] == 'get_light_color':
+                function_response = get_light_color(light_name=tool['function']['arguments']['light_name'])
+            elif tool['function']['name'] == 'set_light_color':
+                function_response = set_light_color(
+                    light_name=tool['function']['arguments']['light_name'], color=tool['function']['arguments']['color'])
+            elif tool['function']['name'] == 'get_flight_times':
+                function_response = get_flight_times(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
+            else:
+                # response with invalid tool to model
+                function_response = json.dumps({'error': 'Invalid tool'})
 
             tool_response = {
                 'role': 'tool',
