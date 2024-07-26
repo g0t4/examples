@@ -163,13 +163,14 @@ async def run(model: str):
             return
 
         for tool in response['message']['tool_calls']:
-            if tool['function']['name'] == 'get_light_color':
-                function_response = get_light_color(light_name=tool['function']['arguments']['light_name'])
+            name = tool['function']['name']
+            args = tool['function']['arguments']
+            if name == 'get_light_color':
+                function_response = get_light_color(light_name=args['light_name'])
             elif tool['function']['name'] == 'set_light_color':
-                function_response = set_light_color(
-                    light_name=tool['function']['arguments']['light_name'], color=tool['function']['arguments']['color'])
+                function_response = set_light_color(light_name=args['light_name'], color=args['color'])
             elif tool['function']['name'] == 'get_flight_times':
-                function_response = get_flight_times(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
+                function_response = get_flight_times(args['departure'], args['arrival'])
             else:
                 # response with invalid tool to model
                 function_response = json.dumps({'error': 'Invalid tool'})
