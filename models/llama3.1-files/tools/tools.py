@@ -92,6 +92,7 @@ async def run(model: str):
             'get_flight_times': get_flight_times,
         }
         for tool in response['message']['tool_calls']:
+            print("tool call: ", tool)
             function_to_call = available_functions[tool['function']['name']]
             function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
             # Add function response to the conversation
