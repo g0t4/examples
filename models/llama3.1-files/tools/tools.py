@@ -43,10 +43,20 @@ def get_flight_times(departure: str, arrival: str) -> str:
     return json.dumps(flights.get(key, {'error': 'Flight not found'}))
 
 
+def print_message(message):
+    print(f"{message['role']}:")
+    if (message.get('tool_calls')):
+        for tool in message['tool_calls']:
+            print(f"  {tool['function']['name']}({tool['function']['arguments']})")
+    if (message.get('content')):
+        print(f"  {message['content']}")
+
+
 async def run(model: str):
     client = ollama.AsyncClient()
-    # Initialize conversation with a user query
-    messages = [{'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)?'}]
+    # initial request
+    messages = [{'role': 'user', 'content': 'What is the flight time from New York to Los Angeles?'}]
+    print_message(messages[0])
 
     # First API call: Send the query and function description to the model
     response = await client.chat(
@@ -79,10 +89,9 @@ async def run(model: str):
 
     # Add the model's response to the conversation history
     messages.append(response['message'])
+    print_message(response['message'])
 
     if not response['message'].get('tool_calls'):
-        print("The model didn't use the function. Its response was:")
-        print(response['message']['content'])
         return
 
     # Process function calls made by the model
@@ -90,7 +99,6 @@ async def run(model: str):
         'get_flight_times': get_flight_times,
     }
     for tool in response['message']['tool_calls']:
-        print("tool call: ", tool)
         function_to_call = available_functions[tool['function']['name']]
         function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
         # Add function response to the conversation
@@ -101,7 +109,7 @@ async def run(model: str):
 
     # Second API call: Get final response from the model
     final_response = await client.chat(model=model, messages=messages)
-    print(final_response['message']['content'])
+    print_message(final_response['message'])
 
 
 # Run the async function
