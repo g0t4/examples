@@ -78,7 +78,10 @@ async def run(model: str):
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
     # user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
-    user_request = {'role': 'user', 'content': 'Tell me what color the office light is and then change it to red and then double check the color after its changed.'}  # interesting, it sequenced tool calls and appropriately parsed three tool responses! perhaps tool response should include initial args? or only one tool at a time?
+    user_request = {
+        'role': 'user',
+        'content': 'Tell me what color the office light is and then change it to red and then double check the color after its changed.'
+    }  # interesting, it sequenced tool calls and appropriately parsed three tool responses! perhaps tool response should include initial args? or only one tool at a time?
     messages.append(user_request)
     print_message(user_request)
 
