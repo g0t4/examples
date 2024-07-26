@@ -105,4 +105,4 @@ async def run(model: str):
 
 
 # Run the async function
-asyncio.run(run('mistral'))
+asyncio.run(run('llama3.1:8b'))
