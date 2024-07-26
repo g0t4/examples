@@ -94,35 +94,32 @@ async def run(model: str):
         tools=tools,
     )
 
-    return await process_response(model, client, messages, tools, response)
+    async def process_response(response):
 
+        messages.append(response['message'])
+        print_message(response['message'])
 
-async def process_response(model, client, messages, tools, response):
+        if not response['message'].get('tool_calls'):
+            return
 
-    # show model's response (with optional tool calls)
-    messages.append(response['message'])
-    print_message(response['message'])
-
-    if not response['message'].get('tool_calls'):
-        return
-
-    # run tools
-    available_functions = {
-        'get_flight_times': get_flight_times,
-    }
-    for tool in response['message']['tool_calls']:
-        function_to_call = available_functions[tool['function']['name']]
-        function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
-        # Add function response to the conversation
-        tool_response = {
-            'role': 'tool',
-            'content': function_response,
+        available_functions = {
+            'get_flight_times': get_flight_times,
         }
-        messages.append(tool_response)
-        print_message(tool_response)
+        for tool in response['message']['tool_calls']:
+            function_to_call = available_functions[tool['function']['name']]
+            function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
 
-    post_tool_response = await client.chat(model=model, tools=tools, messages=messages)
-    return await process_response(model, client, messages, tools, post_tool_response)
+            tool_response = {
+                'role': 'tool',
+                'content': function_response,
+            }
+            messages.append(tool_response)
+            print_message(tool_response)
+
+        post_tool_response = await client.chat(model=model, tools=tools, messages=messages)
+        return await process_response(post_tool_response)
+
+    return await process_response(response)
 
 
 # Run the async function
