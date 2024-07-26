@@ -55,7 +55,7 @@ def print_message(message):
 async def run(model: str):
     client = ollama.AsyncClient()
     # initial request
-    messages = [{'role': 'user', 'content': 'What is the flight time from New York to Los Angeles?'}]
+    messages = [{'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)?'}]
     print_message(messages[0])
 
     # First API call: Send the query and function description to the model
