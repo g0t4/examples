@@ -102,10 +102,12 @@ async def run(model: str):
         function_to_call = available_functions[tool['function']['name']]
         function_response = function_to_call(tool['function']['arguments']['departure'], tool['function']['arguments']['arrival'])
         # Add function response to the conversation
-        messages.append({
+        tool_response = {
             'role': 'tool',
             'content': function_response,
-        })
+        }
+        messages.append(tool_response)
+        print_message(tool_response)
 
     # Second API call: Get final response from the model
     final_response = await client.chat(model=model, messages=messages)
