@@ -190,6 +190,6 @@ async def run(model: str):
 
 # Run the async function
 model = "mistral"
-# model = 'llama3.1:8b' # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-model = 'llama3-groq-tool-use'
+model = 'llama3.1:8b' # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
+# model = 'llama3-groq-tool-use'
 asyncio.run(run(model))
