@@ -59,7 +59,8 @@ async def run(model: str):
     system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     messages.append(system_message)
     print_message(system_message)
-    user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
+    # user_request = {'role': 'user', 'content': 'What is the flight time from New York (NYC) to Los Angeles (LAX)? Also what is the return flight time?'}
+    user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
     messages.append(user_request)
     print_message(user_request)
 
