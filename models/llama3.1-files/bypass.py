@@ -1,23 +1,14 @@
 import requests
 import json
 
-# model = "llama3"
-# model = "mistral-nemo" # handles 1to7.md like llama3.1
-num_ctx = 8192
+num_ctx = 48128 # half of char count is plenty 
 model = "llama3.1:8b"
-#num_ctx = 10240 # 10k tokens
-#model = "llama3.1:70b"
-#num_ctx = 131072
 
-# read 1to4.md into a propmt string:
-use_file = "1to4.md" # 4.5k tokens
-# use_file = "5to9.md" # 4.5k tokens
-# use_file = "all.md" # just over 9k tokens
-# use_file = "1to7.md" # just under 8k tokens
+use_file="bypass.html"
 with open(use_file, "r") as f:
-    markdown = f.read()
+    html = f.read()
 
-prompt = "list the top level sections (line starts with ## Section) from this markdown file, do not elaborate: " + markdown
+prompt = "please generate JS to bypass the paywall on a webpage with this html: " + html
 
 url = "http://localhost:11434/api/generate"
 payload = {
