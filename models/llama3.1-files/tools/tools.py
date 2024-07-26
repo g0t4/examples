@@ -80,8 +80,8 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'Which flight is longer, from NYC to LAX, or from LAX to NYC?'}
     user_request = {
         'role': 'user',
-        'content': 'Tell me what color the office light is AND then change it to red.'
-    }  # interesting, it sequenced tool calls and appropriately parsed three tool responses! perhaps tool response should include initial args? or only one tool at a time?
+        'content': 'Tell me what color the office light is AND then change it to red.'  #  worked with groq-tool-use, but not llama3.1:8b
+    }  # llama asked for multiple tools all at once
     messages.append(user_request)
     print_message(user_request)
 
