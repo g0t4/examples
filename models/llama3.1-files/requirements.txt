@@ -2,3 +2,5 @@
 ollama
 
 requests
+
+pyperclip

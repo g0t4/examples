@@ -1,12 +1,15 @@
 import json
 import ollama
 import asyncio
+import pyperclip
 
 
 def run_javascript(code):
     # for now I will manually copy/paste JS/response
     print(f"Running JavaScript code:\n{code}\n")
-    console_output = input("Please paste in the console output:")
+    console_output = input("Please copy output to clipboard, then press return to proceed and I will send the clipboard back to the model.")
+    # read output from clipboard
+    console_output = pyperclip.paste()
     return json.dumps({'output': console_output})
 
 
@@ -32,7 +35,8 @@ async def run(model: str):
     }
     messages.append(system_message)
     print_message(system_message)
-    user_request = {'role': 'user', 'content': 'Delete everything on the page'}
+    # user_request = {'role': 'user', 'content': 'Delete everything on the page'}
+    user_request = {'role': 'user', 'content': 'what is the default font?'}
     messages.append(user_request)
     print_message(user_request)
 
