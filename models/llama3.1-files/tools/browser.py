@@ -84,7 +84,8 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'What website am I on?'}
     # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'} # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
     # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
-    user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
+    # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
+    user_request = {'role': 'user', 'content': 'are there any failures loading this page?'}
     messages.append(user_request)
     print_message(user_request)
 
