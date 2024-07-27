@@ -94,7 +94,7 @@ async def run(model: str):
             'type': 'function',
             'function': {
                 'name': 'run_javascript',
-                'description': 'Run a script in the browser, and if you use a return statement, the output will be returned.',
+                'description': 'Run a script in the browser. If you add a return statment at the end of the script, the output will be returned.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
