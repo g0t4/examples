@@ -18,6 +18,7 @@ chromedriver_path = '/opt/homebrew/bin/chromedriver'
 driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 driver.get("https://www.google.com")
+# *** have this connect to my current browser (frontmost window, current tab) instead of opening a new one
 
 
 def run_javascript_selenium(code):
