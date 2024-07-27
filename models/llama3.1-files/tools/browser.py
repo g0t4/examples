@@ -93,7 +93,8 @@ async def run(model: str):
         {
             'type': 'function',
             'function': {
-                'name': 'run_javascript',
+                'name': 'eval_javascript',
+                # PRN should I add a method specific to eval_javascript that makes it clear it can be used to look up information?
                 'description': 'Run a script in the browser. If you add a return statment at the end of the script, the output will be returned.',
                 'parameters': {
                     'type': 'object',
@@ -138,7 +139,7 @@ async def run(model: str):
         for tool in response['message']['tool_calls']:
             name = tool['function']['name']
             args = tool['function']['arguments']
-            if name == 'run_javascript':
+            if name == 'eval_javascript':
                 function_response = run_javascript_selenium(args['code'])
             elif name == 'get_browser_logs':
                 function_response = get_browser_logs()
