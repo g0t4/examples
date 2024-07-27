@@ -36,7 +36,7 @@ async def run(model: str):
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'Delete everything on the page'}
-    user_request = {'role': 'user', 'content': 'what is the default font?'}
+    user_request = {'role': 'user', 'content': 'Who owns this website?'} # tries multiple things to answer, of course fails.. but still tries multiple tool rounds!
     messages.append(user_request)
     print_message(user_request)
 
