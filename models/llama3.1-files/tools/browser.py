@@ -28,13 +28,15 @@ def run_javascript_selenium(code):
     return json.dumps({'output': output})
 
 
-response = run_javascript_selenium("return 'hello world'")
-print(response)
-response = run_javascript_selenium("console.log('testing 1 2 3...')")
-logs = driver.get_log('browser')
-print(logs)
-input("when done, press return")
-exit(0)
+def test_selenium_without_llm():
+    response = run_javascript_selenium("return 'hello world'")
+    print(response)
+    response = run_javascript_selenium("console.log('testing 1 2 3...')")
+    logs = driver.get_log('browser')
+    print(logs)
+    input("when done, press return")
+    exit(0)
+# test_selenium_without_llm()
 
 
 def get_browser_logs():
@@ -156,4 +158,5 @@ async def run(model: str):
 model = "mistral"
 model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
 # model = 'llama3-groq-tool-use'
-# asyncio.run(run(model))
+asyncio.run(run(model))
+input("Press return to quit, will terminate the browser too..")
