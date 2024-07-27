@@ -19,7 +19,7 @@ driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 driver.get("https://www.google.com")
 # *** have this connect to my current browser (frontmost window, current tab) instead of opening a new one
-
+# TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
 
 def run_javascript_selenium(code):
     try:
