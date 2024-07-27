@@ -17,7 +17,7 @@ options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you 
 chromedriver_path = '/opt/homebrew/bin/chromedriver'
 driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
-driver.get("https://www.theepochtimes.com/us/supreme-court-rejects-alabama-death-row-prisoners-request-for-resentencing-5667040")
+driver.get("https://www.google.com")
 
 
 def run_javascript_selenium(code):
