@@ -4,7 +4,7 @@ import asyncio
 import pyperclip
 
 
-def run_javascript(code):
+def run_javascript_manually(code):
     # for now I will manually copy/paste JS/response
     print(f"Running JavaScript code:\n{code}\n")
     console_output = input("Please copy output to clipboard, then press return to proceed and I will send the clipboard back to the model.")
@@ -79,7 +79,7 @@ async def run(model: str):
             name = tool['function']['name']
             args = tool['function']['arguments']
             if name == 'run_javascript':
-                function_response = run_javascript(args['code'])
+                function_response = run_javascript_manually(args['code'])
             else:
                 # response with invalid tool to model
                 function_response = json.dumps({'error': 'Invalid tool'})
