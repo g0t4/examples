@@ -29,9 +29,11 @@ def run_javascript_selenium(code):
 
 
 def test_selenium_without_llm():
-    response = run_javascript_selenium("return 'hello world'")
-    print(response)
+    # response = run_javascript_selenium("return 'hello world'")
+    response = run_javascript_selenium("return document.location.href")
+    print(f"response: {response}")
     response = run_javascript_selenium("console.log('testing 1 2 3...')")
+    print(f"response: {response}")
     logs = driver.get_log('browser')
     print(logs)
     input("when done, press return")
@@ -89,7 +91,7 @@ async def run(model: str):
             'type': 'function',
             'function': {
                 'name': 'run_javascript',
-                'description': 'Run a script in the browser, returns the last expression value',
+                'description': 'Run a script in the browser, and if you use a return statement, the output will be returned.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
