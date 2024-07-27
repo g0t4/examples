@@ -17,7 +17,7 @@ options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you 
 chromedriver_path = '/opt/homebrew/bin/chromedriver'
 driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
-driver.get("https://www.google.com")
+driver.get("https://www.theepochtimes.com/us/supreme-court-rejects-alabama-death-row-prisoners-request-for-resentencing-5667040")
 
 
 def run_javascript_selenium(code):
@@ -80,8 +80,11 @@ async def run(model: str):
     }
     messages.append(system_message)
     print_message(system_message)
-    user_request = {'role': 'user', 'content': 'Delete everything on the page'}
+    # user_request = {'role': 'user', 'content': 'Delete everything on the page'} # works llama3
     # user_request = {'role': 'user', 'content': 'What website am I on?'}
+    # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'} # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
+    # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
+    user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     messages.append(user_request)
     print_message(user_request)
 
