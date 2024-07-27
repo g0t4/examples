@@ -2,6 +2,45 @@ import json
 import ollama
 import asyncio
 import pyperclip
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+
+# FYI # brew install chromedriver
+
+brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
+
+options = webdriver.ChromeOptions()
+options.binary_location = brave_path
+# options.add_argument("--start-maximized")
+options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
+
+chromedriver_path = '/opt/homebrew/bin/chromedriver'
+driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+
+driver.get("https://www.google.com")
+
+
+def run_javascript_selenium(code):
+    try:
+        output = driver.execute_script(code)
+    except Exception as e:
+        output = str(e)
+    return json.dumps({'output': output})
+
+
+response = run_javascript_selenium("return 'hello world'")
+print(response)
+response = run_javascript_selenium("console.log('testing 1 2 3...')")
+logs = driver.get_log('browser')
+print(logs)
+input("when done, press return")
+exit(0)
+
+
+def get_browser_logs():
+    # make a new tool to ask when needed
+    logs = driver.get_log('browser')
+    return json.dumps({'logs': logs})
 
 
 def run_javascript_manually(code):
@@ -36,7 +75,10 @@ async def run(model: str):
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'Delete everything on the page'}
-    user_request = {'role': 'user', 'content': 'Who owns this website?'} # tries multiple things to answer, of course fails.. but still tries multiple tool rounds!
+    user_request = {
+        'role': 'user',
+        'content': 'What website am I on?'
+    }  # tries multiple things to answer, of course fails.. but still tries multiple tool rounds!
     messages.append(user_request)
     print_message(user_request)
 
@@ -45,8 +87,7 @@ async def run(model: str):
             'type': 'function',
             'function': {
                 'name': 'run_javascript',
-                'description': 'Run a JavaScript function in the browser and return console output',
-                # TODO setup run_javascript and run_javascript_expression (latter returns value of last expression, or add a parameter for deciding what the output is?)
+                'description': 'Run a script in the browser, returns the last expression value',
                 'parameters': {
                     'type': 'object',
                     'properties': {
@@ -59,6 +100,18 @@ async def run(model: str):
                 },
             },
         },
+        {
+            'type': 'function',
+            'function': {
+                'name': 'get_browser_logs',
+                # TODO can I flush the logs after getting them each time so future calls dont get all of them again too...
+                'description': 'Get the browser logs from the current page.',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {},
+                },
+            },
+        }
     ]
 
     response = await client.chat(
@@ -79,7 +132,9 @@ async def run(model: str):
             name = tool['function']['name']
             args = tool['function']['arguments']
             if name == 'run_javascript':
-                function_response = run_javascript_manually(args['code'])
+                function_response = run_javascript_selenium(args['code'])
+            elif name == 'get_browser_logs':
+                function_response = get_browser_logs()
             else:
                 # response with invalid tool to model
                 function_response = json.dumps({'error': 'Invalid tool'})
@@ -101,4 +156,4 @@ async def run(model: str):
 model = "mistral"
 model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
 # model = 'llama3-groq-tool-use'
-asyncio.run(run(model))
+# asyncio.run(run(model))
