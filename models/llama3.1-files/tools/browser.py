@@ -47,6 +47,7 @@ def test_selenium_without_llm():
 def get_browser_logs():
     # make a new tool to ask when needed
     logs = driver.get_log('browser')
+    # PRN get logs since last time this was called... do not always get all logs, can just cache previous logs and remove in new batch... OR there appears to be a timestamp parameter to get_log that is undocumented? https://stackoverflow.com/questions/44991009/clear-chrome-browser-logs-in-selenium-python
     return json.dumps({'logs': logs})
 
 
