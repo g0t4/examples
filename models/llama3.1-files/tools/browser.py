@@ -38,6 +38,8 @@ def test_selenium_without_llm():
     print(logs)
     input("when done, press return")
     exit(0)
+
+
 # test_selenium_without_llm()
 
 
@@ -78,11 +80,8 @@ async def run(model: str):
     }
     messages.append(system_message)
     print_message(system_message)
-    # user_request = {'role': 'user', 'content': 'Delete everything on the page'}
-    user_request = {
-        'role': 'user',
-        'content': 'What website am I on?'
-    }  # tries multiple things to answer, of course fails.. but still tries multiple tool rounds!
+    user_request = {'role': 'user', 'content': 'Delete everything on the page'}
+    # user_request = {'role': 'user', 'content': 'What website am I on?'}
     messages.append(user_request)
     print_message(user_request)
 
