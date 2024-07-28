@@ -10,15 +10,20 @@ from selenium.webdriver.chrome.service import Service
 started_new_browser = False
 
 
-def use_new_browser_instance() -> webdriver.Chrome:
-    global started_new_browser
-    started_new_browser = True
+def get_common_chrome_options() -> webdriver.ChromeOptions:
     brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
 
     options = webdriver.ChromeOptions()
     options.binary_location = brave_path
-    # options.add_argument("--start-maximized")
     options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
+
+    return options
+
+
+def use_new_browser_instance() -> webdriver.Chrome:
+    global started_new_browser
+
+    options = get_common_chrome_options()
 
     chromedriver_path = '/opt/homebrew/bin/chromedriver'
     driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
@@ -30,11 +35,7 @@ def use_new_browser_instance() -> webdriver.Chrome:
 
 
 def use_existing_browser_instance() -> webdriver.Chrome:
-    brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
-
-    options = webdriver.ChromeOptions()
-    options.binary_location = brave_path
-    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
+    options = get_common_chrome_options()
 
     chromedriver_path = '/opt/homebrew/bin/chromedriver'
 
