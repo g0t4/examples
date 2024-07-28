@@ -107,7 +107,7 @@ def print_message(message):
         print(f"  [{color}]{message.content}")
 
 
-async def run():
+async def run(user_request: str):
 
     # *** ollama:
     api_key = "ollama"
@@ -134,12 +134,7 @@ async def run():
     }
     messages.append(system_message)
     print_message(system_message)
-    # user_request = {'role': 'user', 'content': 'Delete everything on the page'} # works llama3
-    # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'}
-    user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
-    # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
-    # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
-    # user_request = {'role': 'user', 'content': 'what is this website?'}  # *** GREAT INTRO TO what I am doing here
+    user_request = {'role': 'user', 'content': user_request}
     messages.append(user_request)
     print_message(user_request)
 
@@ -230,7 +225,15 @@ def test_selenium_without_llm():
 
 
 def test_llm():
-    asyncio.run(run())
+
+    # user_request = 'Delete everything on the page'  # llama3 works
+    # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
+    user_request = 'write a random string to console and then read the value from the console'  # kinda llama3.1, gpt did write string but wasn't random (it interpreted as "random string" lol)
+    # user_request = 'remove the paywall on this page'
+    # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
+    # user_request = 'what is this website?' # *** GREAT INTRO TO what I am doing here
+
+    asyncio.run(run(user_request))
 
 
 def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
