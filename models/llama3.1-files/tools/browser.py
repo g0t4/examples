@@ -54,10 +54,12 @@ def run_javascript_selenium(code: str):
     return json.dumps({'output': output})
 
 
-def get_browser_logs():
+def get_browser_logs(level='ALL'):
     # PRN filter out nuissance logs, i.e. 'Permissions policy violation: unload is not allowed in this document.'?
-    # make a new tool to ask when needed
+    # PRN filter >= level severity (not == level)
     logs = driver.get_log('browser')
+    if level != 'ALL':
+        logs = [log for log in logs if log['level'] == level]
     # PRN get logs since last time this was called... do not always get all logs, can just cache previous logs and remove in new batch... OR there appears to be a timestamp parameter to get_log that is undocumented? https://stackoverflow.com/questions/44991009/clear-chrome-browser-logs-in-selenium-python
     return json.dumps({'logs': logs})
 
@@ -165,7 +167,13 @@ async def run(user_request: str, use_ollama_local=True):
                 'description': 'Get the browser logs from the current page.',
                 'parameters': {
                     'type': 'object',
-                    'properties': {},
+                    'properties': {
+                        'level': {
+                            'type': 'string',
+                            'description': 'The log level to filter on. Default is ALL.',
+                            'enum': ['ALL', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
+                        },
+                    },
                 },
             },
         }
@@ -193,7 +201,7 @@ async def run(user_request: str, use_ollama_local=True):
             if name == 'run_javascript_with_return':
                 function_response = run_javascript_selenium(args['return_statement'])
             elif name == 'get_browser_logs':
-                function_response = get_browser_logs()
+                function_response = get_browser_logs(args.get('level', 'ALL'))
             else:
                 # response with invalid tool to model
                 function_response = json.dumps({'error': 'Invalid tool'})
@@ -221,18 +229,19 @@ def test_selenium_without_llm():
     print("test multi line w/o return: ", run_javascript_selenium("document.title\ndocument.location.href"))
 
     # print("test hello world: ", run_javascript_selenium("return 'hello world'"))
-    # logs = driver.get_log('browser')
-    # print("logs\n", logs)
+
+    logs = get_browser_logs('DEBUG')
+    print("logs\n", logs)
 
 
 def test_llm():
 
+    user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
     # user_request = 'Delete everything on the page'  # llama3 works
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
-    user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now (uses sequential tool calls), llama3.1 generates and writes but fails to read logs (hallucinates random string)
+    # user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now (uses sequential tool calls), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
-    # user_request = 'what is this website?' # *** GREAT INTRO TO what I am doing here
 
     asyncio.run(run(user_request, use_ollama_local=True))
 
@@ -253,8 +262,8 @@ driver = use_existing_browser_instance()
 
 ensure_browser_and_selenium_on_same_tab(driver)
 
-# test_selenium_without_llm()
-# exit()
+test_selenium_without_llm()
+exit()
 
 test_llm()
 
