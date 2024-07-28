@@ -237,7 +237,7 @@ def test_llm():
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
-    run(user_request, use_ollama=False)
+    run(user_request, use_ollama=True)
 
 
 # driver = use_new_browser_instance()
