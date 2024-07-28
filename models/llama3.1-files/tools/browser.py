@@ -100,10 +100,10 @@ def print_message(message):
         print(f"  [{color}]{message.content}")
 
 
-async def run(user_request: str, use_ollama_local=True):
+async def run(user_request: str, use_ollama=True):
 
     # *** ollama:
-    if use_ollama_local:
+    if use_ollama:
         api_key = "ollama"
         base_url = "http://localhost:11434/v1"
         # Run the async function
@@ -234,7 +234,7 @@ def test_llm():
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
-    asyncio.run(run(user_request, use_ollama_local=False))
+    asyncio.run(run(user_request, use_ollama=False))
 
 
 def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
