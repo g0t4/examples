@@ -105,7 +105,6 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
     user_request = {'role': 'user', 'content': 'what is this website?'} # *** GREAT INTRO TO what I am doing here
-    # user_request = {'role': 'user', 'content': 'find and remove the modal covering the content of the current loaded page, it has "ELECTION SALE" in it, do not ask me for help'}
     messages.append(user_request)
     print_message(user_request)
 
@@ -196,7 +195,7 @@ def test_llm():
     # Run the async function
     model = "mistral"
     model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-    model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
+    # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
     asyncio.run(run(model))
 
 
