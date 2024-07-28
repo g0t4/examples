@@ -25,6 +25,11 @@ def get_common_chrome_options() -> webdriver.ChromeOptions:
     return options
 
 
+def create_driver(options):
+    chromedriver_path = '/opt/homebrew/bin/chromedriver'
+    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
+
+
 def use_new_browser_instance() -> webdriver.Chrome:
     global started_new_browser
 
@@ -33,11 +38,6 @@ def use_new_browser_instance() -> webdriver.Chrome:
 
     driver.get("https://www.google.com")
     return driver
-
-
-def create_driver(options):
-    chromedriver_path = '/opt/homebrew/bin/chromedriver'
-    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 
 def use_existing_browser_instance() -> webdriver.Chrome:
