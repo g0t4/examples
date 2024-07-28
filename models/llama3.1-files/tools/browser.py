@@ -30,12 +30,17 @@ def use_new_browser_instance() -> webdriver.Chrome:
 
 
 def use_existing_browser_instance() -> webdriver.Chrome:
-    # remote debug port is 9222
-    # https://stackoverflow.com/questions/38081076/how-to-connect-to-existing-chrome-browser-using-selenium
+    brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
+
     options = webdriver.ChromeOptions()
+    options.binary_location = brave_path
+    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
+
+    chromedriver_path = '/opt/homebrew/bin/chromedriver'
+
     # how do I know what tab to use?
     options.add_experimental_option("debuggerAddress", "localhost:9222")
-    return webdriver.Chrome(options=options)
+    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 
 def run_javascript_selenium(code: str):
