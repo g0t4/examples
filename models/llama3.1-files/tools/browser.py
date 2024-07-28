@@ -8,6 +8,7 @@ from selenium.common.exceptions import JavascriptException
 from selenium.webdriver.chrome.service import Service
 import openai
 from openai.types.completion_choice import CompletionChoice
+from rich import print
 
 # FYI # brew install chromedriver
 
@@ -70,25 +71,40 @@ def run_javascript_manually(code):
     return json.dumps({'output': console_output})
 
 
+def get_color_for_role(role):
+    if (role == 'user'):
+        return "yellow"
+    if (role == 'tool'):
+        return "red"
+    if (role == 'system'):
+        return "blue"
+    if (role == 'assistant'):
+        return "green"
+    return "white"
+
+
 def print_message(message):
+
     if (isinstance(message, dict)):
         # hand rolled dict messages
-        print(f"{message['role']}:")
+        color = get_color_for_role(message['role'])
+        print(f"[{color}]{message['role']}:")
         if (message.get('tool_calls')):
             for tool in message['tool_calls']:
-                print(f"  {tool['function']['name']}({tool['function']['arguments']})")
+                print(f"  [{color}]{tool['function']['name']}({tool['function']['arguments']})")
         if (message.get('content')):
-            print(f"  {message['content']}")
+            print(f"  [{color}]{message['content']}")
+
         return
 
     # chat completion type from openai
-    if (hasattr(message, 'role')):
-        print(f"{message.role}:")
+    color = get_color_for_role(message.role)
+    print(f"[{color}]{message.role}:")
     if (hasattr(message, 'tool_calls') and message.tool_calls):
         for tool in message.tool_calls:
-            print(f"  {tool.function.name}({tool.function.arguments})")
+            print(f"  [{color}]{tool.function.name}({tool.function.arguments})")
     if (hasattr(message, 'content') and message.content):
-        print(f"  {message.content}")
+        print(f"  [{color}]{message.content}")
 
 
 async def run():
@@ -113,7 +129,7 @@ async def run():
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     system_message = {
         'role': 'system',
-        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
+        'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
         # ! WOW when I added return warning to the system message, llama3.1:8b pays attention and always includes it!!!! AND when I tried to remove the same caution in the tool descriptions, it stopped adding return, so leave it in both spots for now. AND openai gpt-4o started including return consistently too!!! (it wasn't the first time I tried it prior to update system message here)
     }
     messages.append(system_message)
