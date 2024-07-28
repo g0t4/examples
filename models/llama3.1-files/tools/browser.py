@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 
 # FYI # brew install chromedriver
 
+
 def use_new_browser_instance():
     brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
 
@@ -23,6 +24,7 @@ def use_new_browser_instance():
     # TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
     return driver
 
+
 def use_existing_browser_instance():
     # remote debug port is 9222
     # https://stackoverflow.com/questions/38081076/how-to-connect-to-existing-chrome-browser-using-selenium
@@ -31,27 +33,40 @@ def use_existing_browser_instance():
     options.add_experimental_option("debuggerAddress", "localhost:9222")
     return webdriver.Chrome(options=options)
 
-def run_javascript_selenium(code):
+
+def run_javascript_selenium(code: str):
     try:
-        output = driver.execute_script(code)
+        if code.startswith("return "):
+            output = driver.execute_script(code)
+        else:
+            # I shouldn't need this hack but llama doesn't listen... to the tool description... maybe I need the system prompt to be more specific?
+            lines_before_last = code.splitlines()[:-1]
+            last_line = code.splitlines()[-1]
+            last_line_with_return = f"return {last_line}"
+            code_with_return = "\n".join(lines_before_last + [last_line_with_return])
+            print(f"Running modified JavaScript code:\n{code_with_return}\n")
+            output = driver.execute_script(code_with_return)
+
     except Exception as e:
         output = str(e)
     return json.dumps({'output': output})
 
 
 def test_selenium_without_llm():
-    # response = run_javascript_selenium("return 'hello world'")
-    response = run_javascript_selenium("return document.location.href")
-    print(f"response: {response}")
-    response = run_javascript_selenium("console.log('testing 1 2 3...')")
-    print(f"response: {response}")
+
+    # test (temporary) for injecting return when LLM assumes it's not needed
+    print("test single line w/o return: ", run_javascript_selenium("document.title"))
+    print("test multi line w/o return: ", run_javascript_selenium("document.title\ndocument.location.href"))
+
+    # print("test hello world: ", run_javascript_selenium("return 'hello world'"))
     logs = driver.get_log('browser')
-    print(logs)
+    print("logs\n", logs)
     input("when done, press return")
     exit(0)
 
 
-# test_selenium_without_llm()
+test_selenium_without_llm()
+exit()
 
 
 def get_browser_logs():
@@ -98,7 +113,8 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'} # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
     # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
-    user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
+    # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
+    user_request = {'role': 'user', 'content': 'what is this website?'}
     messages.append(user_request)
     print_message(user_request)
 
@@ -108,7 +124,7 @@ async def run(model: str):
             'function': {
                 'name': 'eval_javascript',
                 # PRN should I add a method specific to eval_javascript that makes it clear it can be used to look up information?
-                'description': 'Run a script in the browser. If you add a return statment at the end of the script, the output will be returned.',
+                'description': 'Run a script in the browser. The last return statment is returned to you.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
@@ -147,6 +163,7 @@ async def run(model: str):
         print_message(response['message'])
 
         if not response['message'].get('tool_calls'):
+            # PRN add some way to ask if it fulfilled the request or not, did it give up? if so try again, if not just repeat response
             return
 
         for tool in response['message']['tool_calls']:
