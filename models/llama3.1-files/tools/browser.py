@@ -157,23 +157,6 @@ async def run():
         {
             'type': 'function',
             'function': {
-                'name': 'run_javascript',
-                'description': 'Run a script in the browser.',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'code': {
-                            'type': 'string',
-                            'description': 'The JavaScript code to run.',
-                        }
-                    },
-                    'required': ['code'],
-                },
-            },
-        },
-        {
-            'type': 'function',
-            'function': {
                 'name': 'get_browser_logs',
                 # TODO can I flush the logs after getting them each time so future calls dont get all of them again too...
                 'description': 'Get the browser logs from the current page.',
@@ -203,15 +186,9 @@ async def run():
 
         for tool in response_tool_calls:
             name = tool.function.name
-            id = tool.id
-            arguments = tool.function.arguments
-            print("use_tool: ", name, arguments)
-            args = json.loads(arguments)  # args as json, need to load it
-            print(args)
-            if name == 'run_javascript':
-                function_response = run_javascript_selenium(args['code'])
-            elif name == 'run_javascript_with_return':
-                # FML... llama is still using this tool w/o a return randomly... but more often (at least 50% of time) its add a return now! but it never uses the other JS function now?! am I misconfiguring tools?
+            args = json.loads(tool.function.arguments)
+
+            if name == 'run_javascript_with_return':
                 function_response = run_javascript_selenium(args['return_statement'])
             elif name == 'get_browser_logs':
                 function_response = get_browser_logs()
@@ -221,7 +198,7 @@ async def run():
 
             # based on https://platform.openai.com/docs/guides/function-calling
             tool_response = {
-                "tool_call_id": id,
+                "tool_call_id": tool.id,
                 "role": "tool",
                 "name": name,
                 "content": function_response,
