@@ -107,23 +107,24 @@ def print_message(message):
         print(f"  [{color}]{message.content}")
 
 
-async def run(user_request: str):
+async def run(user_request: str, use_ollama_local=True):
 
     # *** ollama:
-    api_key = "ollama"
-    base_url = "http://localhost:11434/v1"
-    # Run the async function
-    # model = "mistral"
-    model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-    # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
+    if use_ollama_local:
+        api_key = "ollama"
+        base_url = "http://localhost:11434/v1"
+        # Run the async function
+        # model = "mistral"
+        model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
+        # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
+    else:
+        api_key = keyring.get_password("openai", "ask")
+        base_url = None
+        model = 'gpt-4o'
 
-    # FML openai is TOTALLY ignoring the `return` in tool description... JEEZ AIs, get it together and read what I wrote!
-    # *** openai:
-    # api_key = keyring.get_password("openai", "ask")
-    # base_url = None
-    # model = 'gpt-4o'
-
+    print(f"Using model: {model}")
     client = openai.Client(api_key=api_key, base_url=base_url)
+
     # initial request
     messages = []
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
@@ -228,12 +229,12 @@ def test_llm():
 
     # user_request = 'Delete everything on the page'  # llama3 works
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
-    user_request = 'write a random string to console and then read the value from the console'  # kinda llama3.1, gpt did write string but wasn't random (it interpreted as "random string" lol)
+    user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now!
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
     # user_request = 'what is this website?' # *** GREAT INTRO TO what I am doing here
 
-    asyncio.run(run(user_request))
+    asyncio.run(run(user_request, use_ollama_local=False))
 
 
 def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
