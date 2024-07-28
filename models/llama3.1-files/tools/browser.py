@@ -7,19 +7,23 @@ from selenium.webdriver.chrome.service import Service
 
 # FYI # brew install chromedriver
 
-brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
+def use_new_browser_instance():
+    brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
 
-options = webdriver.ChromeOptions()
-options.binary_location = brave_path
-# options.add_argument("--start-maximized")
-options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
+    options = webdriver.ChromeOptions()
+    options.binary_location = brave_path
+    # options.add_argument("--start-maximized")
+    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})  # w/o this you can get logs, but not from driver.execute_script(code)
 
-chromedriver_path = '/opt/homebrew/bin/chromedriver'
-driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+    chromedriver_path = '/opt/homebrew/bin/chromedriver'
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
-driver.get("https://www.google.com")
-# *** have this connect to my current browser (frontmost window, current tab) instead of opening a new one
-# TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
+    driver.get("https://www.google.com")
+    # *** have this connect to my current browser (frontmost window, current tab) instead of opening a new one
+    # TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
+    return driver
+
+driver = use_new_browser_instance()
 
 def run_javascript_selenium(code):
     try:
