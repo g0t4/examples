@@ -46,6 +46,17 @@ def use_existing_browser_instance() -> webdriver.Chrome:
     return create_driver(options)
 
 
+def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
+    # ensure we are on the tab we are working with (FYI we could check document.hidden before doing this, but meh)
+    driver.switch_to.window(driver.current_window_handle)
+    #print(f"window_handles: {driver.window_handles}")
+
+    # FYI localhost:9222/json remote debug has info that might help
+    #   ID == window_handle
+    #   type: "background_page", "service_worker", "page" are marked on each window/tab
+    #   just missing active tab indicator
+
+
 def run_javascript_selenium(code: str):
     try:
         output = driver.execute_script(code)
@@ -231,17 +242,6 @@ def test_llm():
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
     asyncio.run(run(user_request, use_ollama=False))
-
-
-def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
-    # ensure we are on the tab we are working with (FYI we could check document.hidden before doing this, but meh)
-    driver.switch_to.window(driver.current_window_handle)
-    #print(f"window_handles: {driver.window_handles}")
-
-    # FYI localhost:9222/json remote debug has info that might help
-    #   ID == window_handle
-    #   type: "background_page", "service_worker", "page" are marked on each window/tab
-    #   just missing active tab indicator
 
 
 # driver = use_new_browser_instance()
