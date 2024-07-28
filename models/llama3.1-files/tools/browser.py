@@ -23,7 +23,13 @@ def use_new_browser_instance():
     # TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
     return driver
 
-driver = use_new_browser_instance()
+def use_existing_browser_instance():
+    # remote debug port is 9222
+    # https://stackoverflow.com/questions/38081076/how-to-connect-to-existing-chrome-browser-using-selenium
+    options = webdriver.ChromeOptions()
+    # how do I know what tab to use?
+    options.add_experimental_option("debuggerAddress", "localhost:9222")
+    return webdriver.Chrome(options=options)
 
 def run_javascript_selenium(code):
     try:
@@ -165,6 +171,9 @@ async def run(model: str):
 
     return await process_response(response)
 
+
+# driver = use_new_browser_instance()
+driver = use_existing_browser_instance()
 
 # Run the async function
 model = "mistral"
