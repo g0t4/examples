@@ -195,12 +195,12 @@ def test_llm():
     asyncio.run(run(model))
 
 
-driver = use_new_browser_instance()
-# driver = use_existing_browser_instance()
+# driver = use_new_browser_instance()
+driver = use_existing_browser_instance()
 
-test_selenium_without_llm()
+# test_selenium_without_llm()
 
-# test_llm()
+test_llm()
 
 if started_new_browser:
     input("Press return to quit, leaving browser open to inspect...")
