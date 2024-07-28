@@ -118,9 +118,7 @@ async def run(user_request: str, use_ollama=True):
     print(f"Using model: {model}")
     client = openai.Client(api_key=api_key, base_url=base_url)
 
-    # initial request
     messages = []
-    # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     system_message = {
         'role': 'system',
         'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
