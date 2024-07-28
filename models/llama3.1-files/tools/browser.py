@@ -199,6 +199,8 @@ def test_llm():
 
 
 def ensure_browser_and_selenium_on_same_tab(driver):
+    # !! TLDR for now I am leaving it connected to whatever it first connects to... and the user will have to find that tab (seems to be oldest tab)
+
     #print(f"window_handles: {driver.window_handles}")
     # TODO need to find a way to get current tab and set driver to use it
     # can change tabs the driver uses (also changes tab in browser if not current/focused... interesting, at least this way I know which is being used until I find a way to determine and switch the driver to the current/frontmost tab if that is possible)... FYI w/o this it seems to connect to oldest opened tab (first opened)
