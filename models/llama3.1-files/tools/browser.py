@@ -123,7 +123,7 @@ async def run():
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     system_message = {
         'role': 'system',
-        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. I am providing tools for you to run JavaScript code and get back a response. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you find and change whatever the user asks for. If you use eval_javascript, you must add a return statement to get information back.'
+        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
     }
     messages.append(system_message)
     print_message(system_message)
