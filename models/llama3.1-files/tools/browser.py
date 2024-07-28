@@ -1,8 +1,5 @@
 import json
 import keyring
-import ollama
-import asyncio
-import pyperclip
 from selenium import webdriver
 from selenium.common.exceptions import JavascriptException
 from selenium.webdriver.chrome.service import Service
@@ -111,13 +108,12 @@ def print_message(message):
         print(f"  [{color}]{message.content}")
 
 
-async def run(user_request: str, use_ollama=True):
+def run(user_request: str, use_ollama=True):
 
     # *** ollama:
     if use_ollama:
         api_key = "ollama"
         base_url = "http://localhost:11434/v1"
-        # Run the async function
         # model = "mistral"
         model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
         # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
@@ -179,7 +175,7 @@ async def run(user_request: str, use_ollama=True):
 
     response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
 
-    async def process_response(response):
+    def process_response(response):
 
         response_message = response.message
         response_tool_calls = response_message.tool_calls
@@ -215,9 +211,9 @@ async def run(user_request: str, use_ollama=True):
             print_message(tool_response)
 
         post_tool_response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
-        return await process_response(post_tool_response)
+        return process_response(post_tool_response)
 
-    return await process_response(response)
+    return process_response(response)
 
 
 def test_selenium_without_llm():
@@ -241,7 +237,7 @@ def test_llm():
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
-    asyncio.run(run(user_request, use_ollama=False))
+    run(user_request, use_ollama=False)
 
 
 # driver = use_new_browser_instance()
