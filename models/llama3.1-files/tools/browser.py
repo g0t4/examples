@@ -177,7 +177,7 @@ async def run():
         response_tool_calls = response_message.tool_calls  # array?
 
         # always append response message (either final or tool_call, which is needed for context of later giving a tool response)
-        messages.append(response_message)  # FYI it appears ok to mix and match my message dicts and the class from openai here (message type)
+        messages.append(response_message)
         print_message(response_message)
 
         if not response_tool_calls:
