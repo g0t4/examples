@@ -229,12 +229,12 @@ def test_llm():
 
     # user_request = 'Delete everything on the page'  # llama3 works
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
-    user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now!
+    user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now (uses sequential tool calls), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
     # user_request = 'what is this website?' # *** GREAT INTRO TO what I am doing here
 
-    asyncio.run(run(user_request, use_ollama_local=False))
+    asyncio.run(run(user_request, use_ollama_local=True))
 
 
 def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
