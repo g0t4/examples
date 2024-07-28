@@ -1,4 +1,5 @@
 import json
+import keyring
 import ollama
 import asyncio
 import pyperclip
@@ -88,10 +89,22 @@ def print_message(message):
         print(f"  {message['content']}")
 
 
-async def run(model: str):
-    print(f"Running with model: {model}\n")
+async def run():
 
-    client = openai.Client(api_key="ollama", base_url="http://localhost:11434/v1")
+    # *** ollama:
+    # api_key = "ollama"
+    # base_url = "http://localhost:11434/v1"
+    # Run the async function
+    # model = "mistral"
+    model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
+    # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
+
+    # *** openai:
+    api_key = keyring.get_password("openai", "ask")
+    base_url = None
+    model = 'gpt-4o'
+
+    client = openai.Client(api_key=api_key, base_url=base_url)
     # initial request
     messages = []
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
@@ -222,11 +235,7 @@ def test_selenium_without_llm():
 
 
 def test_llm():
-    # Run the async function
-    model = "mistral"
-    model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-    # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
-    asyncio.run(run(model))
+    asyncio.run(run())
 
 
 def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
