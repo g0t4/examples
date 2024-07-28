@@ -119,6 +119,7 @@ async def run(user_request: str, use_ollama=True):
     client = openai.Client(api_key=api_key, base_url=base_url)
 
     messages = []
+
     system_message = {
         'role': 'system',
         'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
@@ -126,47 +127,44 @@ async def run(user_request: str, use_ollama=True):
     }
     messages.append(system_message)
     print_message(system_message)
+
     user_request = {'role': 'user', 'content': user_request}
     messages.append(user_request)
     print_message(user_request)
 
-    tools = [
-        {
-            'type': 'function',
-            'function': {
-                'name': 'run_javascript_with_return',
-                'description': 'Run a return statement (in the browser) and get the response back.',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'return_statement': {
-                            'type': 'string',
-                            'description': 'The JavaScript code to run. MUST include a return statement i.e. `return 1+1` or `return document.hidden`',
-                        }
+    tools = [{
+        'type': 'function',
+        'function': {
+            'name': 'run_javascript_with_return',
+            'description': 'Run a return statement (in the browser) and get the response back.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'return_statement': {
+                        'type': 'string',
+                        'description': 'The JavaScript code to run. MUST include a return statement i.e. `return 1+1` or `return document.hidden`',
+                    }
+                },
+                'required': ['return_statement'],
+            },
+        },
+    }, {
+        'type': 'function',
+        'function': {
+            'name': 'get_browser_logs',
+            'description': 'Get the browser logs from the current page.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'level': {
+                        'type': 'string',
+                        'description': 'The log level to filter on. Default is ALL.',
+                        'enum': ['ALL', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
                     },
-                    'required': ['return_statement'],
                 },
             },
         },
-        {
-            'type': 'function',
-            'function': {
-                'name': 'get_browser_logs',
-                # TODO can I flush the logs after getting them each time so future calls dont get all of them again too...
-                'description': 'Get the browser logs from the current page.',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'level': {
-                            'type': 'string',
-                            'description': 'The log level to filter on. Default is ALL.',
-                            'enum': ['ALL', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST'],
-                        },
-                    },
-                },
-            },
-        }
-    ]
+    }]
 
     response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
 
