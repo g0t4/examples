@@ -93,6 +93,8 @@ def print_message(message):
         if (message.get('tool_calls')):
             for tool in message['tool_calls']:
                 print(f"  [{color}]{tool['function']['name']}({tool['function']['arguments']})")
+        if (message.get('tool_call_id')):
+            print(f"  [{color}]tool_call_id: {message['tool_call_id']}")
         if (message.get('content')):
             print(f"  [{color}]{message['content']}")
 
@@ -233,11 +235,15 @@ def test_llm():
     # user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
     # user_request = 'Delete everything on the page'  # llama3 works
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
-    user_request = 'generate and write a random string to console and then read the value from the console'  # gpt4o works now (uses sequential tool calls), llama3.1 generates and writes but fails to read logs (hallucinates random string)
+    user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
     run(user_request, use_ollama=True)
+
+    # conclusions:
+    #  llama3.1 doesn't do so well with sequential tool use (back and forth), could likely mitigate this by prompting it when it doesn't ask for tool_calls to consider if it achieved its objective yet? or if it wanna use another tool?
+    #  gpt4o and llama both can generate parallel tool calls, gpt4o does much better with handling the results of that, perhaps b/c it has tool call ids? does ollama support tool_call_id?
 
 
 # driver = use_new_browser_instance()
