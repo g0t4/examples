@@ -124,6 +124,7 @@ async def run():
     system_message = {
         'role': 'system',
         'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
+        # ! WOW when I added return warning to the system message, llama3.1:8b pays attention and always includes it!!!! AND when I tried to remove the same caution in the tool descriptions, it stopped adding return, so leave it in both spots for now.
     }
     messages.append(system_message)
     print_message(system_message)
