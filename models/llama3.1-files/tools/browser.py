@@ -81,28 +81,41 @@ def run_javascript_manually(code):
 
 
 def print_message(message):
-    print(f"{message['role']}:")
-    if (message.get('tool_calls')):
-        for tool in message['tool_calls']:
-            print(f"  {tool['function']['name']}({tool['function']['arguments']})")
-    if (message.get('content')):
-        print(f"  {message['content']}")
+    if (isinstance(message, dict)):
+        # hand rolled dict messages
+        print(f"{message['role']}:")
+        if (message.get('tool_calls')):
+            for tool in message['tool_calls']:
+                print(f"  {tool['function']['name']}({tool['function']['arguments']})")
+        if (message.get('content')):
+            print(f"  {message['content']}")
+        return
+
+    # chat completion type from openai
+    if (hasattr(message, 'role')):
+        print(f"{message.role}:")
+    if (hasattr(message, 'tool_calls') and message.tool_calls):
+        for tool in message.tool_calls:
+            print(f"  {tool.function.name}({tool.function.arguments})")
+    if (hasattr(message, 'content') and message.content):
+        print(f"  {message.content}")
 
 
 async def run():
 
     # *** ollama:
-    # api_key = "ollama"
-    # base_url = "http://localhost:11434/v1"
+    api_key = "ollama"
+    base_url = "http://localhost:11434/v1"
     # Run the async function
     # model = "mistral"
     model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
     # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
 
+    # FML openai is TOTALLY ignoring the `return` in tool description... JEEZ AIs, get it together and read what I wrote!
     # *** openai:
-    api_key = keyring.get_password("openai", "ask")
-    base_url = None
-    model = 'gpt-4o'
+    # api_key = keyring.get_password("openai", "ask")
+    # base_url = None
+    # model = 'gpt-4o'
 
     client = openai.Client(api_key=api_key, base_url=base_url)
     # initial request
@@ -180,8 +193,9 @@ async def run():
         response_tool_calls = response_message.tool_calls  # array?
 
         # always append response message (either final or tool_call, which is needed for context of later giving a tool response)
-        messages.append(response_message) # FYI it appears ok to mix and match my message dicts and the class from openai here (message type)
-        # print_message(response_message) # TODO add printing this so I can see tool call w/o needing to print use_tool below... but I need to standardize on the message interface first as I use a dict sometimmes and then openai message is a class... not sure I can new it up but my print needs to handle both? 
+        messages.append(response_message)  # FYI it appears ok to mix and match my message dicts and the class from openai here (message type)
+        print_message(
+            response_message)  # TODO add printing this so I can see tool call w/o needing to print use_tool below... but I need to standardize on the message interface first as I use a dict sometimmes and then openai message is a class... not sure I can new it up but my print needs to handle both?
 
         if not response_tool_calls:
             # PRN add some way to ask if it fulfilled the request or not, did it give up? if so try again, if not just repeat response
