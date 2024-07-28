@@ -53,6 +53,7 @@ def run_javascript_selenium(code: str):
             code_with_return = "\n".join(lines_before_last + [last_line_with_return])
             print(f"Running modified JavaScript code:\n{code_with_return}\n")
             output = driver.execute_script(code_with_return)
+            # FML... "Message: javascript error: Cannot read properties of null (reading 'remove')\n when return on a null
 
     except Exception as e:
         output = str(e)
@@ -99,12 +100,12 @@ async def run(model: str):
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'Delete everything on the page'} # works llama3
-    # user_request = {'role': 'user', 'content': 'What website am I on?'}
     # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'} # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
     # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
-    user_request = {'role': 'user', 'content': 'what is this website?'}
+    # user_request = {'role': 'user', 'content': 'what is this website?'} # *** GREAT INTRO TO what I am doing here
+    user_request = {'role': 'user', 'content': 'bypass the paywall'}
     messages.append(user_request)
     print_message(user_request)
 
