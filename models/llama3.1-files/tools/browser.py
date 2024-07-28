@@ -198,7 +198,13 @@ def test_llm():
 # driver = use_new_browser_instance()
 driver = use_existing_browser_instance()
 
-# test_selenium_without_llm()
+print(f"window_handles: {driver.window_handles}")
+# TODO need to find a way to get current tab and set driver to use it
+# can change tabs the driver uses (also changes tab in browser if not current/focused... interesting, at least this way I know which is being used until I find a way to determine and switch the driver to the current/frontmost tab if that is possible)... FYI w/o this it seems to connect to oldest opened tab (first opened)
+driver.switch_to.window(driver.window_handles[-1])
+
+test_selenium_without_llm()
+exit()
 
 test_llm()
 
