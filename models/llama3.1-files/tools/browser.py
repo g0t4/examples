@@ -4,6 +4,8 @@ import asyncio
 import pyperclip
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+import openai
+from openai.types.completion_choice import CompletionChoice
 
 # FYI # brew install chromedriver
 
@@ -89,7 +91,7 @@ def print_message(message):
 async def run(model: str):
     print(f"Running with model: {model}\n")
 
-    client = ollama.AsyncClient()
+    client = openai.Client(api_key="ollama", base_url="http://localhost:11434/v1")
     # initial request
     messages = []
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
@@ -157,24 +159,30 @@ async def run(model: str):
         }
     ]
 
-    response = await client.chat(
-        model=model,
-        messages=messages,
-        tools=tools,
-    )
+    response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
 
     async def process_response(response):
 
-        messages.append(response['message'])
-        print_message(response['message'])
+        response_message = response.message
+        response_tool_calls = response_message.tool_calls  # array?
 
-        if not response['message'].get('tool_calls'):
+        if response.message.content:
+            # s/b empty if tool_calls included, but just in case...
+            ass_message = {'role': 'assistant', 'content': response.message.content}
+            messages.append(ass_message)  # todo does it return role?
+            print_message(ass_message)
+
+        if not response_tool_calls:
             # PRN add some way to ask if it fulfilled the request or not, did it give up? if so try again, if not just repeat response
             return
 
-        for tool in response['message']['tool_calls']:
-            name = tool['function']['name']
-            args = tool['function']['arguments']
+        for tool in response_tool_calls:
+            name = tool.function.name
+            id = tool.id
+            arguments = tool.function.arguments
+            print("use_tool: ", name, arguments)
+            args = json.loads(arguments)  # args as json, need to load it
+            print(args)
             if name == 'run_javascript':
                 function_response = run_javascript_selenium(args['code'])
             elif name == 'run_javascript_with_return':
@@ -186,14 +194,17 @@ async def run(model: str):
                 # response with invalid tool to model
                 function_response = json.dumps({'error': 'Invalid tool'})
 
+            # based on https://platform.openai.com/docs/guides/function-calling
             tool_response = {
-                'role': 'tool',
-                'content': function_response,
+                "tool_call_id": id,
+                "role": "tool",
+                "name": name,
+                "content": function_response,
             }
             messages.append(tool_response)
             print_message(tool_response)
 
-        post_tool_response = await client.chat(model=model, tools=tools, messages=messages)
+        post_tool_response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
         return await process_response(post_tool_response)
 
     return await process_response(response)

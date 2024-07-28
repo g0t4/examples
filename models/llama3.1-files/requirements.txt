@@ -6,3 +6,5 @@ requests
 selenium
 
 pyperclip
+
+openai
