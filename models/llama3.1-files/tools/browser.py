@@ -4,6 +4,7 @@ import ollama
 import asyncio
 import pyperclip
 from selenium import webdriver
+from selenium.common.exceptions import JavascriptException
 from selenium.webdriver.chrome.service import Service
 import openai
 from openai.types.completion_choice import CompletionChoice
@@ -57,9 +58,8 @@ def run_javascript_selenium(code: str):
         #     print(f"Running modified JavaScript code:\n{code_with_return}\n")
         #     output = driver.execute_script(code_with_return)
         #     # FML... "Message: javascript error: Cannot read properties of null (reading 'remove')\n when return on a null
-
-    except Exception as e:
-        output = str(e)
+    except JavascriptException as e:
+        output = e.msg
     return json.dumps({'output': output})
 
 
@@ -129,7 +129,10 @@ async def run():
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'Delete everything on the page'} # works llama3
-    user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'} # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
+    user_request = {
+        'role': 'user',
+        'content': 'Find which search engine is loaded and use it to search for bananas.'
+    }  # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
     # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
