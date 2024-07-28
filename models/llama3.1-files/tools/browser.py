@@ -7,8 +7,12 @@ from selenium.webdriver.chrome.service import Service
 
 # FYI # brew install chromedriver
 
+started_new_browser = False
+
 
 def use_new_browser_instance() -> webdriver.Chrome:
+    global started_new_browser
+    started_new_browser = True
     brave_path = '/Applications/Brave Browser Beta.app/Contents/MacOS/Brave Browser Beta'
 
     options = webdriver.ChromeOptions()
@@ -174,34 +178,29 @@ async def run(model: str):
 
 
 def test_selenium_without_llm():
-    global driver
-    driver = use_existing_browser_instance()
-
     # test (temporary) for injecting return when LLM assumes it's not needed
     print("test single line w/o return: ", run_javascript_selenium("document.title"))
     print("test multi line w/o return: ", run_javascript_selenium("document.title\ndocument.location.href"))
 
     # print("test hello world: ", run_javascript_selenium("return 'hello world'"))
-    logs = driver.get_log('browser')
-    print("logs\n", logs)
-    input("when done, press return")
-
-
-test_selenium_without_llm()
-exit()
+    # logs = driver.get_log('browser')
+    # print("logs\n", logs)
 
 
 def test_llm():
-    global driver
-    # driver = use_new_browser_instance()
-    driver = use_existing_browser_instance()
-
     # Run the async function
     model = "mistral"
     model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
     # model = 'llama3-groq-tool-use'
     asyncio.run(run(model))
-    input("Press return to quit, will terminate the browser too..")
 
 
-test_llm()
+driver = use_new_browser_instance()
+# driver = use_existing_browser_instance()
+
+test_selenium_without_llm()
+
+# test_llm()
+
+if started_new_browser:
+    input("Press return to quit, leaving browser open to inspect...")
