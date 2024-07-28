@@ -47,17 +47,7 @@ def use_existing_browser_instance() -> webdriver.Chrome:
 
 def run_javascript_selenium(code: str):
     try:
-        # if code.startswith("return "):
         output = driver.execute_script(code)
-        # else:
-        #     # I shouldn't need this hack but llama doesn't listen... to the tool description... maybe I need the system prompt to be more specific?
-        #     lines_before_last = code.splitlines()[:-1]
-        #     last_line = code.splitlines()[-1]
-        #     last_line_with_return = f"return {last_line}"
-        #     code_with_return = "\n".join(lines_before_last + [last_line_with_return])
-        #     print(f"Running modified JavaScript code:\n{code_with_return}\n")
-        #     output = driver.execute_script(code_with_return)
-        #     # FML... "Message: javascript error: Cannot read properties of null (reading 'remove')\n when return on a null
     except JavascriptException as e:
         output = e.msg
     return json.dumps({'output': output})
