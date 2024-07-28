@@ -135,11 +135,8 @@ async def run():
     messages.append(system_message)
     print_message(system_message)
     # user_request = {'role': 'user', 'content': 'Delete everything on the page'} # works llama3
-    user_request = {
-        'role': 'user',
-        'content': 'Find which search engine is loaded and use it to search for bananas.'
-    }  # I bet OpenAI/Claude can handle this one! llama went off the rails and made a mess of JS and then made up a response b/c it didn't successfully get back anything to know which website it was on
-    # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
+    # user_request = {'role': 'user', 'content': 'Find which search engine is loaded and use it to search for bananas.'}
+    user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
     # user_request = {'role': 'user', 'content': 'what is this website?'}  # *** GREAT INTRO TO what I am doing here
