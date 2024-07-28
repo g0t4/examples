@@ -24,24 +24,21 @@ def use_new_browser_instance() -> webdriver.Chrome:
     global started_new_browser
 
     options = get_common_chrome_options()
-
-    chromedriver_path = '/opt/homebrew/bin/chromedriver'
-    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+    driver = create_driver(options)
 
     driver.get("https://www.google.com")
-    # *** have this connect to my current browser (frontmost window, current tab) instead of opening a new one
-    # TODO hook up epoch times again and use ChatGPT to see how it handles it w/ tools, I think it will do really well actually... and/or try Claude too
     return driver
+
+
+def create_driver(options):
+    chromedriver_path = '/opt/homebrew/bin/chromedriver'
+    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 
 def use_existing_browser_instance() -> webdriver.Chrome:
     options = get_common_chrome_options()
-
-    chromedriver_path = '/opt/homebrew/bin/chromedriver'
-
-    # how do I know what tab to use?
     options.add_experimental_option("debuggerAddress", "localhost:9222")
-    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
+    return create_driver(options)
 
 
 def run_javascript_selenium(code: str):
