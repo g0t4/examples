@@ -215,8 +215,8 @@ driver = use_existing_browser_instance()
 
 ensure_browser_and_selenium_on_same_tab(driver)
 
-test_selenium_without_llm()
-exit()
+# test_selenium_without_llm()
+# exit()
 
 test_llm()
 
