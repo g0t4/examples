@@ -204,7 +204,10 @@ def ensure_browser_and_selenium_on_same_tab(driver):
     # can change tabs the driver uses (also changes tab in browser if not current/focused... interesting, at least this way I know which is being used until I find a way to determine and switch the driver to the current/frontmost tab if that is possible)... FYI w/o this it seems to connect to oldest opened tab (first opened)
     # for now just make sure that the controlled tab is shown so I can pre-load content there... I don't care to switch to current active tab as I can just manually update the tab that is being used: PITA yes but it works and for my testing I don't need multi tab (not yet)
     # -1 seems to also pick the oldest tab, IIUC that is why I am using it... maybe I am wrong, doesn't matter either way
-    driver.switch_to.window(driver.window_handles[-1])
+    # *** dammit now this is pointing to an extension instance... randomly
+    # FYI localhost:9222/json => returns tabs w/ ID that is == window_handles! so I could use this to ensure I don't select an extension "window" as a stopgap for now?
+    # print(f"window_handles: {driver.window_handles}")
+    return
 
 
 # driver = use_new_browser_instance()
