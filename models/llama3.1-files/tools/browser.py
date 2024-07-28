@@ -95,7 +95,7 @@ async def run(model: str):
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     system_message = {
         'role': 'system',
-        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. I am providing tools for you to use to run JavaScript code and get back a response. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you find and change whatever the user asks for.'
+        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. I am providing tools for you to run JavaScript code and get back a response. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you find and change whatever the user asks for. If you use eval_javascript, you must add a return statement to get information back.'
     }
     messages.append(system_message)
     print_message(system_message)
@@ -104,7 +104,7 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'write a random string to console and then read the value from the console'} # kinda llama3.1
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
-    user_request = {'role': 'user', 'content': 'what is this website?'} # *** GREAT INTRO TO what I am doing here
+    user_request = {'role': 'user', 'content': 'what is this website?'}  # *** GREAT INTRO TO what I am doing here
     messages.append(user_request)
     print_message(user_request)
 
@@ -112,16 +112,32 @@ async def run(model: str):
         {
             'type': 'function',
             'function': {
-                'name': 'eval_javascript',
-                # PRN should I add a method specific to eval_javascript that makes it clear it can be used to look up information?
-                'description': 'Run a script in the browser. The last return statment is returned to you.',
+                'name': 'run_javascript_with_return',
+                'description': 'Run a return statement (in the browser) and get the response back.',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'return_statement': {
+                            'type': 'string',
+                            'description': 'The JavaScript code to run. MUST include a return statement i.e. `return 1+1` or `return document.hidden`',
+                        }
+                    },
+                    'required': ['return_statement'],
+                },
+            },
+        },
+        {
+            'type': 'function',
+            'function': {
+                'name': 'run_javascript',
+                'description': 'Run a script in the browser.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
                         'code': {
                             'type': 'string',
-                            'description': 'The JavaScript code to run',
-                        },
+                            'description': 'The JavaScript code to run.',
+                        }
                     },
                     'required': ['code'],
                 },
@@ -159,8 +175,10 @@ async def run(model: str):
         for tool in response['message']['tool_calls']:
             name = tool['function']['name']
             args = tool['function']['arguments']
-            if name == 'eval_javascript':
+            if name == 'run_javascript':
                 function_response = run_javascript_selenium(args['code'])
+            elif name == 'run_javascript_with_return':
+                function_response = run_javascript_selenium(args['return_statement'])
             elif name == 'get_browser_logs':
                 function_response = get_browser_logs()
             else:
