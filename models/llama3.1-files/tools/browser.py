@@ -182,6 +182,7 @@ async def run(model: str):
 
 def test_selenium_without_llm():
     # test (temporary) for injecting return when LLM assumes it's not needed
+    print("test if hidden", run_javascript_selenium("return document.hidden"))
     print("test single line w/o return: ", run_javascript_selenium("document.title"))
     print("test multi line w/o return: ", run_javascript_selenium("document.title\ndocument.location.href"))
 
@@ -198,19 +199,15 @@ def test_llm():
     asyncio.run(run(model))
 
 
-def ensure_browser_and_selenium_on_same_tab(driver):
-    # !! TLDR for now I am leaving it connected to whatever it first connects to... and the user will have to find that tab (seems to be oldest tab)
-
+def ensure_browser_and_selenium_on_same_tab(driver: webdriver.Chrome):
+    # ensure we are on the tab we are working with (FYI we could check document.hidden before doing this, but meh)
+    driver.switch_to.window(driver.current_window_handle)
     #print(f"window_handles: {driver.window_handles}")
-    # TODO need to find a way to get current tab and set driver to use it
-    # can change tabs the driver uses (also changes tab in browser if not current/focused... interesting, at least this way I know which is being used until I find a way to determine and switch the driver to the current/frontmost tab if that is possible)... FYI w/o this it seems to connect to oldest opened tab (first opened)
-    # for now just make sure that the controlled tab is shown so I can pre-load content there... I don't care to switch to current active tab as I can just manually update the tab that is being used: PITA yes but it works and for my testing I don't need multi tab (not yet)
-    # -1 seems to also pick the oldest tab, IIUC that is why I am using it... maybe I am wrong, doesn't matter either way
-    # *** dammit now this is pointing to an extension instance... randomly
-    # FYI localhost:9222/json => returns tabs w/ ID that is == window_handles! so I could use this to ensure I don't select an extension "window" as a stopgap for now?
-    #    FYI type: "background_page", "service_worker", "page" are marked on each window/tab
-    # print(f"window_handles: {driver.window_handles}")
-    return
+
+    # FYI localhost:9222/json remote debug has info that might help
+    #   ID == window_handle
+    #   type: "background_page", "service_worker", "page" are marked on each window/tab
+    #   just missing active tab indicator
 
 
 # driver = use_new_browser_instance()
