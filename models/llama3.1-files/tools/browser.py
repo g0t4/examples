@@ -43,17 +43,17 @@ def use_existing_browser_instance() -> webdriver.Chrome:
 
 def run_javascript_selenium(code: str):
     try:
-        if code.startswith("return "):
-            output = driver.execute_script(code)
-        else:
-            # I shouldn't need this hack but llama doesn't listen... to the tool description... maybe I need the system prompt to be more specific?
-            lines_before_last = code.splitlines()[:-1]
-            last_line = code.splitlines()[-1]
-            last_line_with_return = f"return {last_line}"
-            code_with_return = "\n".join(lines_before_last + [last_line_with_return])
-            print(f"Running modified JavaScript code:\n{code_with_return}\n")
-            output = driver.execute_script(code_with_return)
-            # FML... "Message: javascript error: Cannot read properties of null (reading 'remove')\n when return on a null
+        # if code.startswith("return "):
+        output = driver.execute_script(code)
+        # else:
+        #     # I shouldn't need this hack but llama doesn't listen... to the tool description... maybe I need the system prompt to be more specific?
+        #     lines_before_last = code.splitlines()[:-1]
+        #     last_line = code.splitlines()[-1]
+        #     last_line_with_return = f"return {last_line}"
+        #     code_with_return = "\n".join(lines_before_last + [last_line_with_return])
+        #     print(f"Running modified JavaScript code:\n{code_with_return}\n")
+        #     output = driver.execute_script(code_with_return)
+        #     # FML... "Message: javascript error: Cannot read properties of null (reading 'remove')\n when return on a null
 
     except Exception as e:
         output = str(e)
@@ -95,7 +95,7 @@ async def run(model: str):
     # system_message = {'role': 'system', 'content': 'You area an expert flight tracker.'}
     system_message = {
         'role': 'system',
-        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. You can ask to have JavaScript code run and you can get the response back. You can ask for multiple rounds of tool calls until you find and change whatever the user asks for.'
+        'content': 'You are my browser extension that takes requests from a user to modify the current page that is loaded. I am providing tools for you to use to run JavaScript code and get back a response. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you find and change whatever the user asks for.'
     }
     messages.append(system_message)
     print_message(system_message)
@@ -105,7 +105,7 @@ async def run(model: str):
     # user_request = {'role': 'user', 'content': 'remove the paywall on this page'}
     # user_request = {'role': 'user', 'content': 'are there any failures loading this page? If so can you try to help me fix them?'}
     # user_request = {'role': 'user', 'content': 'what is this website?'} # *** GREAT INTRO TO what I am doing here
-    user_request = {'role': 'user', 'content': 'bypass the paywall'}
+    user_request = {'role': 'user', 'content': 'find and remove the modal covering the content of the current loaded page, it has "ELECTION SALE" in it, do not ask me for help'}
     messages.append(user_request)
     print_message(user_request)
 
@@ -196,7 +196,7 @@ def test_llm():
     # Run the async function
     model = "mistral"
     model = 'llama3.1:8b'  # makes up args/value that don't comport with requests :( ... maybe due to issues with initial quantization?
-    # model = 'llama3-groq-tool-use'
+    # model = 'llama3-groq-tool-use' # refuses to even try using tools provided?! keeps asking follow up questions for info that I told it to get
     asyncio.run(run(model))
 
 
