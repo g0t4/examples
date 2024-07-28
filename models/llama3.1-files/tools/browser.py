@@ -208,6 +208,7 @@ def ensure_browser_and_selenium_on_same_tab(driver):
     # -1 seems to also pick the oldest tab, IIUC that is why I am using it... maybe I am wrong, doesn't matter either way
     # *** dammit now this is pointing to an extension instance... randomly
     # FYI localhost:9222/json => returns tabs w/ ID that is == window_handles! so I could use this to ensure I don't select an extension "window" as a stopgap for now?
+    #    FYI type: "background_page", "service_worker", "page" are marked on each window/tab
     # print(f"window_handles: {driver.window_handles}")
     return
 
