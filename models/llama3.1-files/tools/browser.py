@@ -174,7 +174,7 @@ async def run():
     async def process_response(response):
 
         response_message = response.message
-        response_tool_calls = response_message.tool_calls  # array?
+        response_tool_calls = response_message.tool_calls
 
         # always append response message (either final or tool_call, which is needed for context of later giving a tool response)
         messages.append(response_message)
