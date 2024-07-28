@@ -64,15 +64,6 @@ def get_browser_logs(level='ALL'):
     return json.dumps({'logs': logs})
 
 
-def run_javascript_manually(code):
-    # for now I will manually copy/paste JS/response
-    print(f"Running JavaScript code:\n{code}\n")
-    console_output = input("Please copy output to clipboard, then press return to proceed and I will send the clipboard back to the model.")
-    # read output from clipboard
-    console_output = pyperclip.paste()
-    return json.dumps({'output': console_output})
-
-
 def get_color_for_role(role):
     if (role == 'user'):
         return "yellow"
