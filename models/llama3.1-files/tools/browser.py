@@ -179,11 +179,9 @@ async def run():
         response_message = response.message
         response_tool_calls = response_message.tool_calls  # array?
 
-        if response.message.content:
-            # s/b empty if tool_calls included, but just in case...
-            ass_message = {'role': 'assistant', 'content': response.message.content}
-            messages.append(ass_message)  # todo does it return role?
-            print_message(ass_message)
+        # always append response message (either final or tool_call, which is needed for context of later giving a tool response)
+        messages.append(response_message) # FYI it appears ok to mix and match my message dicts and the class from openai here (message type)
+        # print_message(response_message) # TODO add printing this so I can see tool call w/o needing to print use_tool below... but I need to standardize on the message interface first as I use a dict sometimmes and then openai message is a class... not sure I can new it up but my print needs to handle both? 
 
         if not response_tool_calls:
             # PRN add some way to ask if it fulfilled the request or not, did it give up? if so try again, if not just repeat response
