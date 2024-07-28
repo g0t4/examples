@@ -178,6 +178,7 @@ async def run(model: str):
             if name == 'run_javascript':
                 function_response = run_javascript_selenium(args['code'])
             elif name == 'run_javascript_with_return':
+                # FML... llama is still using this tool w/o a return randomly... but more often (at least 50% of time) its add a return now! but it never uses the other JS function now?! am I misconfiguring tools?
                 function_response = run_javascript_selenium(args['return_statement'])
             elif name == 'get_browser_logs':
                 function_response = get_browser_logs()
