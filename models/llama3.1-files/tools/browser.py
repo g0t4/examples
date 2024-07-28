@@ -185,7 +185,6 @@ def test_selenium_without_llm():
     logs = driver.get_log('browser')
     print("logs\n", logs)
     input("when done, press return")
-    exit(0)
 
 
 test_selenium_without_llm()
