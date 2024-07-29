@@ -177,6 +177,7 @@ def run(user_request: str, use_ollama=True):
                 },
             },
         },
+        # TODO add tools for search/summarize/question answering... to add that to llama3.1 would be interesting... lean and mean ways to scrape text from search results and then possibly open a page and scrape text from it w/o handling html (like speed reader mode in Brave)
     }]
 
     response = client.chat.completions.create(model=model, messages=messages, tools=tools).choices[0]
