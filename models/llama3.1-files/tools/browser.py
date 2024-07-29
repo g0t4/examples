@@ -255,7 +255,7 @@ def test_llm():
 
     # conclusions:
     #  llama3.1 doesn't do so well with sequential tool use (back and forth), could likely mitigate this by prompting it when it doesn't ask for tool_calls to consider if it achieved its objective yet? or if it wanna use another tool?
-    #  gpt4o and llama both can generate parallel tool calls, gpt4o does much better with handling the results of that, perhaps b/c it has tool call ids? does ollama support tool_call_id?
+    #  gpt4o and llama both can generate parallel tool calls, gpt4o does much better with handling the results of that
 
 
 # driver = use_new_browser_instance()
