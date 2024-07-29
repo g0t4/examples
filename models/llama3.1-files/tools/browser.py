@@ -90,11 +90,13 @@ def print_message(message):
         # hand rolled dict messages
         color = get_color_for_role(message['role'])
         print(f"[{color}]{message['role']}:")
+
         if (message.get('tool_calls')):
             for tool in message['tool_calls']:
                 print(f"  [{color}]{tool['function']['name']}({tool['function']['arguments']})")
+
         if (message.get('tool_call_id')):
-            print(f"  [{color}]tool_call_id: {message['tool_call_id']}")
+            print(f"  [{color}]{message['tool_call_id']} {message['name']}")
         if (message.get('content')):
             print(f"  [{color}]{message['content']}")
 
@@ -105,7 +107,7 @@ def print_message(message):
     print(f"[{color}]{message.role}:")
     if (hasattr(message, 'tool_calls') and message.tool_calls):
         for tool in message.tool_calls:
-            print(f"  [{color}]{tool.function.name}({tool.function.arguments})")
+            print(f"  [{color}]{tool.id} {tool.function.name}({tool.function.arguments})")
     if (hasattr(message, 'content') and message.content):
         print(f"  [{color}]{message.content}")
 
