@@ -135,7 +135,7 @@ def run(user_request: str, use_ollama=True):
 
     system_message = {
         'role': 'system',
-        'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`. Make sure response value is JSON serializable.',
+        'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`. Make sure response value is JSON serializable. FYI, you can use javascript to query elements!',
         # ! WOW when I added return warning to the system message, llama3.1:8b pays attention and always includes it!!!! AND when I tried to remove the same caution in the tool descriptions, it stopped adding return, so leave it in both spots for now. AND openai gpt-4o started including return consistently too!!! (it wasn't the first time I tried it prior to update system message here)
     }
     messages.append(system_message)
