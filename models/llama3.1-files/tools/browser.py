@@ -243,6 +243,7 @@ def test_llm():
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
     user_request = 'navigate me to a page with weather for KC, MO' # llama3.1 works
+    user_request = 'take me to a funny website' # llama3.1 works
 
     run(user_request, use_ollama=True)
 
