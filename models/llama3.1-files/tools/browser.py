@@ -237,7 +237,7 @@ def test_selenium_without_llm():
 def test_llm():
 
     # user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
-    user_request = 'Delete everything on the page'  # llama3 works
+    user_request = 'Delete everything on the page'  # *** llama3.1 works well, good intro to modifying a page
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
     # user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
