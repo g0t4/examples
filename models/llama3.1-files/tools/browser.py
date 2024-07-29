@@ -85,6 +85,7 @@ def get_color_for_role(role):
 
 
 def print_message(message):
+    # PRN other fields to display?
 
     if (isinstance(message, dict)):
         # hand rolled dict messages
@@ -103,6 +104,7 @@ def print_message(message):
         return
 
     # chat completion type from openai
+    # FYI right now I only use the following for assistant responses, all other messages are constructed by me with a dict that is handled above
     color = get_color_for_role(message.role)
     print(f"[{color}]{message.role}:")
     if (hasattr(message, 'tool_calls') and message.tool_calls):
