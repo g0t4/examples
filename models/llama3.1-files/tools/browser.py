@@ -242,6 +242,7 @@ def test_llm():
     # user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
+    user_request = 'navigate me to a page with weather for KC, MO' # llama3.1 works
 
     run(user_request, use_ollama=True)
 
