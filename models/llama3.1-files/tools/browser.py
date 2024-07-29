@@ -244,7 +244,9 @@ def test_llm():
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
     user_request = 'navigate me to a page with weather for KC, MO'  # llama3.1 works
     user_request = 'take me to a funny website'  # llama3.1 works
-    user_request = "get rid of the blurred out text" # gpt4o attempts serial tool use back and forth, cool, but fails to find and do anything meaningful to get rid of blurred out text
+    # user_request = "get rid of the blurred out text" # gpt4o attempts serial tool use back and forth, cool, but fails to find and do anything meaningful to get rid of blurred out text
+    # user_request = 'what news headlines are shown on this page?' # both fail
+    user_request = 'what time is it?' # llama3.1 fails, gpt4o works
 
     run(user_request, use_ollama=False)
 
