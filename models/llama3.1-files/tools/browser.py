@@ -237,7 +237,7 @@ def test_selenium_without_llm():
 def test_llm():
 
     # user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
-    # user_request = 'Delete everything on the page'  # *** llama3.1 works well, good intro to modifying a page
+    user_request = 'Delete everything on the page'  # *** llama3.1 works well, good intro to modifying a page
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
     # user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall modal on this page that has "1 for 6 months. Cancel anytime." on it'
@@ -250,7 +250,7 @@ def test_llm():
     # user_request = 'list image links' # gpt4o gets it but fails repeatedly to add return to front of js...
     # user_request = "how do I login?" # llama3.1 fails
     # user_request = "what am I doing?"
-    user_request = "add a keyboard shortcut for ctrl+shift+k to focus the textarea id=APjFqb" # gpt4o works, llama3.1 halfway works (focuses the textarea in tool call but doesn't add the keyboard shortcut)
+    # user_request = "add a keyboard shortcut for ctrl+shift+k to focus the textarea id=APjFqb" # gpt4o works, llama3.1 halfway works (focuses the textarea in tool call but doesn't add the keyboard shortcut)
 
     run(user_request, use_ollama=True)
 
