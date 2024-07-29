@@ -237,18 +237,19 @@ def test_selenium_without_llm():
 def test_llm():
 
     # user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
-    user_request = 'Delete everything on the page'  # *** llama3.1 works well, good intro to modifying a page
+    # user_request = 'Delete everything on the page'  # *** llama3.1 works well, good intro to modifying a page
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
     # user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
-    user_request = 'navigate me to a page with weather for KC, MO'  # llama3.1 works
-    user_request = 'take me to a funny website'  # llama3.1 works
+    # user_request = 'navigate me to a page with weather for KC, MO'  # *** llama3.1 works
+    # user_request = 'take me to a funny website'  # *** llama3.1 works
     # user_request = "get rid of the blurred out text" # gpt4o attempts serial tool use back and forth, cool, but fails to find and do anything meaningful to get rid of blurred out text
     # user_request = 'what news headlines are shown on this page?' # both fail
-    user_request = 'what time is it?' # llama3.1 fails, gpt4o works
+    # user_request = 'what time is it?' # llama3.1 fails, *** gpt4o works
     # user_request = 'list image links' # gpt4o gets it but fails repeatedly to add return to front of js...
     # user_request = "how do I login?" # llama3.1 fails
+    user_request = "what am I doing?"
 
     run(user_request, use_ollama=True)
 
