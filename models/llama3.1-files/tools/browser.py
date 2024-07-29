@@ -135,7 +135,7 @@ def run(user_request: str, use_ollama=True):
 
     system_message = {
         'role': 'system',
-        'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`'
+        'content': 'You are a browser extension that takes requests from a user to interact with the current page. You have control over my browser with these tools. You can ask for multiple rounds of tool calls until you accomplish whatever was requested. To get a response from javascript you MUST include a `return` i.e. `return 1+1` or `return document.hidden`. Make sure response value is JSON serializable.',
         # ! WOW when I added return warning to the system message, llama3.1:8b pays attention and always includes it!!!! AND when I tried to remove the same caution in the tool descriptions, it stopped adding return, so leave it in both spots for now. AND openai gpt-4o started including return consistently too!!! (it wasn't the first time I tried it prior to update system message here)
     }
     messages.append(system_message)
@@ -237,9 +237,9 @@ def test_selenium_without_llm():
 def test_llm():
 
     # user_request = 'what is this website?'  # *** GREAT INTRO TO what I am doing here
-    # user_request = 'Delete everything on the page'  # llama3 works
+    user_request = 'Delete everything on the page'  # llama3 works
     # user_request = 'Find which search engine is loaded and use it to search for bananas.' # both llama3.1 & gpt-4o fail
-    user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
+    # user_request = 'generate and write a random string to console and then read the value from the console'  # *** gpt4o works now (uses parallel tool calls, one time sequential too IIRC), llama3.1 generates and writes but fails to read logs (hallucinates random string)
     # user_request = 'remove the paywall on this page'
     # user_request = 'are there any failures loading this page? If so can you try to help me fix them?'
 
