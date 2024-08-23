@@ -6,3 +6,5 @@ keyring
 keyrings.cryptfile
 
 pylint
+
+ipykernel
