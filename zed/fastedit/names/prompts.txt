@@ -1,0 +1,1 @@
+write a  function with a well understood algorithm that I can use for learning purposes that has many intermediate variables, that would be immediately recognized with good variable names, not fibonacci, not sorting
