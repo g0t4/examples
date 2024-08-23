@@ -6,4 +6,6 @@ console.log(foo + bar);
 // %%
 
 console.log("foo" + "bar");
+
 // %%
+await new Promise(resolve => setTimeout(resolve, 3000));
