@@ -115,6 +115,74 @@ Vagrant.configure("2") do |config|
     # https://www.phoronix.com/news/Nouveau-DRM-Panic-Patches
     #     echo c | sudo tee /proc/sysrq-trigger  # locks up of course in parallels and nothing else
 
+
+    # OTHER NOTES (from linux-next clone)
+    #
+    ## *** FYI articles about new DRM PANIC SCREEN
+    # https://www.phoronix.com/news/Linux-6.10-DRM-Panic-Handler
+    # https://www.phoronix.com/news/Linux-DRM-Panic-QR-Codes
+    # https://www.phoronix.com/news/Linux-6.12-DRM-Panic-QR-Code
+    #
+    ##
+
+    # COMPILING failure early on certs:
+    # failure1:
+    #   make[3]: *** No rule to make target 'debian/canonical-certs.pem', needed by 'certs/x509_certificate_list'.  Stop.
+    #   *** OK FOUND FIX:
+    #     CONFIG_SYSTEM_TRUSTED_KEYS = ""
+    #     https://wiki.debian.org/BuildADebianKernelPackage
+    #     when you use the stock /boot/config-$(uname -r) file, you need to mod this line to blank (above)
+    #       SOF post also talking about this: https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce
+    #
+    #  │ Symbol: SYSTEM_TRUSTED_KEYS [=debian/canonical-certs.pem]                                                                    │
+    #  │ Type  : string                                                                                                               │
+    #  │ Defined at certs/Kconfig:58                                                                                                  │
+    #  │   Prompt: Additional X.509 keys for default system keyring                                                                   │
+    #  │   Depends on: CRYPTO [=y] && SYSTEM_TRUSTED_KEYRING [=y]                                                                     │
+    #  │   Location:                                                                                                                  │
+    #  │     -> Cryptographic API (CRYPTO [=y])                                                                                       │
+    #  │       -> Certificates for signature checking                                                                                 │
+    #  │         -> Provide system-wide ring of trusted keys (SYSTEM_TRUSTED_KEYRING [=y])                                            │
+    #  │ (2)       -> Additional X.509 keys for default system keyring (SYSTEM_TRUSTED_KEYS [=debian/canonical-certs.pem])            │
+    #
+
+    # *** pay attention to "Depends on:" => QR_CODE requires RUST
+    # /panic =>
+    #
+    # *** I SET THESE in menuconfig on first pass:
+    #   DRM_PANIC
+    #   DRM_PANIC_DEBUG
+    #      Prompt: Add a debug fs entry to trigger drm_panic
+    #
+    # *** later for fun:
+    #   DRM_PANIC_BACKGROUND_COLOR
+    #   DRM_PANIC_FOREGROUND_COLOR
+    #   DRM_PANIC_SCREEN # formatter?
+    #
+    #
+    # *** DRM_PANIC_SCREEN_QR_CODE   # enable QR code based panic screen!
+    #         Depends on: HAS_IOMEM [=y] && DRM [=y] && DRM_PANIC [=y] && RUST [=n]
+    #     DRM_PANIC_SCREEN_QR_CODE_URL   # base url
+    #     DRM_PANIC_SCREEN_QR_VERSION # smth about size of QR code
+
+    # reference full meta for DRM_PANIC so I can locate it in the menuconfig:
+    # │ Symbol: DRM_PANIC [=n]
+    # │ Type  : bool
+    # │ Defined at drivers/gpu/drm/Kconfig:108
+    # │   Prompt: Display a user-friendly message when a kernel panic occurs
+    # │   Depends on: HAS_IOMEM [=y] && DRM [=y]
+    # │   Location:
+    # │     -> Device Drivers
+    # │       -> Graphics support
+    # │         -> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) (DRM [=y])
+    # │ (4)       -> Display a user-friendly message when a kernel panic occurs (DRM_PANIC [=n])
+    # │ Selects: FONT_SUPPORT [=y]
+
+    # TODO Next step... try a diff hypervisor and/or my desktop dual boot
+    #
+
+
+
   end
 
 end
