@@ -1,0 +1,50 @@
+<domain type='hvf' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <!-- from https://raw.githubusercontent.com/yoonsikp/vm_configs/master/ubuntu_m1.xml and article:
+  https://www.naut.ca/blog/2021/12/09/arm64-vm-on-macos-with-libvirt-qemu/ -->
+  <name>u2410</name>
+  <uuid>CC48E8B9-8091-4E71-B10B-5901DA650D85</uuid>
+  <memory unit='GiB'>16</memory>
+  <cpu mode='custom' match="exact">
+    <model>host</model>
+  </cpu>
+  <vcpu>8</vcpu>
+  <features>
+    <gic version='2' />
+  </features>
+  <os firmware='efi'>
+    <type arch='aarch64' machine='virt'>hvm</type>
+  </os>
+  <clock offset='localtime' />
+  <devices>
+    <emulator>/opt/homebrew/bin/qemu-system-aarch64</emulator>
+    <controller type='usb' model='qemu-xhci' />
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' />
+      <source file='/Users/wes/repos/github/g0t4/test-qemu/ubuntu2410/disk1.qcow2' />
+      <target dev='vda' bus='virtio' />
+      <boot order='1' />
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='raw' />
+      <source file='/Users/wes/Downloads/ubuntu-24.04.1-live-server-arm64.iso' />
+      <target dev='vdb' bus='virtio' />
+      <boot order='2' />
+    </disk>
+    <console type='pty'>
+      <target type='serial' />
+    </console>
+    <input type='tablet' bus='usb' />
+    <input type='keyboard' bus='usb' />
+    <graphics type='vnc' port='5900' listen='127.0.0.1' />
+    <video>
+      <model type='virtio' vram='32768' />
+    </video>
+  </devices>
+  <seclabel type='none' />
+  <qemu:commandline>
+    <qemu:arg value='-netdev' />
+    <qemu:arg value='user,id=n1,hostfwd=tcp::2222-:22' />
+    <qemu:arg value='-device' />
+    <qemu:arg value='virtio-net-pci,netdev=n1,bus=pcie.0,addr=0x19' />
+  </qemu:commandline>
+</domain>
