@@ -31,7 +31,9 @@ Vagrant.configure("2") do |config|
     # 1. resize partition
     # lsblk # confirm
     # sudo parted /dev/sda resizepart 3 100%
-    # *** TODO - Information: You may need to update /etc/fstab. # WARNING on resizepart?
+    # # Information: You may need to update /etc/fstab. # from resizepart cmd
+    # dmsetup info -C   # get current UUID of LV
+    # cat /etc/fstab # confirm if UUID in /etc/fstab still matches (it does == good to go)
 
     # 2. resize PV (b/c using LVM) (= Physical Volume)
     # pvdisplay # confirm
