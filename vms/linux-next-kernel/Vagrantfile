@@ -181,7 +181,11 @@ Vagrant.configure("2") do |config|
     # TODO Next step... try a diff hypervisor and/or my desktop dual boot
     #
 
-
+    # - linux-next found: https://www.kernel.org/
+    #   => git.kernel.org
+    #   => https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/
+    #   => cloned this git tree (repo) and found qrcode in the code that was close to article's patch code
+    #   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tag/?h=next-20240830
 
   end
 
