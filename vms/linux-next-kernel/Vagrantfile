@@ -55,8 +55,9 @@ Vagrant.configure("2") do |config|
 
     # build kernel
     # sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev
-    # wget https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tag/?h=next-20240830
+    # # tag: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tag/?h=next-20240830 
     #       (as of 2024-08-31 => IIUC linux-next is 6.12, cuz 6.11 is in RCs)
+    #   wget https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/snapshot/linux-next-next-20240830.tar.gz
     # tar xf linux-next-next-20240830.tar.gz -C ~/
     # make menuconfig
     #   Set DRM_PANIC and DRM_PANIC_DEBUG # try to get these to work (new in 6.10)
