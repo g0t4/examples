@@ -107,6 +107,7 @@ Vagrant.configure("2") do |config|
     #   sudo reboot # OR better yet send reboot from parallels GUI and make sure the window (GUI) is focused so keys work
     #   once it reboots, hit ESC (one time) and grub will show shortly after, pick new kernel... if it works can update grub to use it by default!!!
     #
+    # uname -a # verify kernel :)
 
   end
 
