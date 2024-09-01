@@ -108,6 +108,12 @@ Vagrant.configure("2") do |config|
     #   once it reboots, hit ESC (one time) and grub will show shortly after, pick new kernel... if it works can update grub to use it by default!!!
     #
     # uname -a # verify kernel :)
+    #
+    # OF COURSE I SHOULD'VE verified if parallels can integrate with DRM... and IIUC no it doesn't so I can't ever see this panic screen? and no QR codes (le sigh)
+    #
+    # FYI testing a panic:
+    # https://www.phoronix.com/news/Nouveau-DRM-Panic-Patches
+    #     echo c | sudo tee /proc/sysrq-trigger  # locks up of course in parallels and nothing else
 
   end
 
