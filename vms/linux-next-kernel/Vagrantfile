@@ -10,10 +10,48 @@ Vagrant.configure("2") do |config|
   config.vm.provider "parallels" do |prl|
     prl.cpus = 10
     prl.memory = 32768
-    prl.linked_clone = false # so I can expand drive size manually
+    prl.linked_clone = false # so I can expand drive size manually, else if a linked clone it seems like there is no way to ever expand drive?!
 
-    # vagrant up first time (have the following uncommented so it fails b/c this doesn't work for sevearl reasons, this failure means you can resize disk before first boot, ... so, open parallels gui => storage => drive => Advanced => Properties => Manage Snapshots (delete initial one) then close to save, then go back into Properties and it will show storage slider... then comment this out and run vagrant up...)
-    # prl.customize ["set", :id, "--device-set", "hdd0", "--size", 100*1024] # this won't work b/c of some initial snapshot still present on the non linked clone?
+    # steps
+    # boot VM for first time to create non linked_clone VM
+    # vagrant halt => manually expand drive size in parallels GUI
+    # vagrant up
+    # vagrant ssh
+    #
+    # lsblk # confirm drive is larger
+    # sda                         8:0    0  170G  0 disk
+    # ├─sda1                      8:1    0    1G  0 part /boot/efi
+    # ├─sda2                      8:2    0    2G  0 part /boot
+    # └─sda3                      8:3    0   36G  0 part
+    #   └─ubuntu--vg-ubuntu--lv 252:0    0   18G  0 lvm  /
+    # sudo lvdisplay
+    #   LV Name                ubuntu-lv
+    #   LV Size                18.00 GiB
+    #
+    # 1. resize partition
+    # lsblk # confirm
+    # sudo parted /dev/sda resizepart 3 100%
+    # *** TODO - Information: You may need to update /etc/fstab. # WARNING on resizepart?
+
+    # 2. resize PV (b/c using LVM) (= Physical Volume)
+    # pvdisplay # confirm
+    # sudo pvresize /dev/sda3
+
+    # 3. resize LV (= Logical Volume)
+    # lvdisplay # confirm
+    # sudo lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+
+    # 4. resize filesystem
+    # df -h # confirm
+    # sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
+
+    # get kernel build going
+    # sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev
+    # tar xf linux-next-next-20240830.tar.gz -C ~/
+    #  copy in my .config # or follow my menuconfig prev notes
+    # make -j$(nproc)
+    #
+
   end
 
 end
