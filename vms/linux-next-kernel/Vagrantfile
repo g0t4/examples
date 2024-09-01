@@ -51,7 +51,7 @@ Vagrant.configure("2") do |config|
     # sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
 
     # tools
-    # sudo apt install -y bat icdiff
+    # sudo apt install -y bat icdiff tree
 
     # build kernel
     # sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev
@@ -116,6 +116,60 @@ Vagrant.configure("2") do |config|
     # https://www.phoronix.com/news/Nouveau-DRM-Panic-Patches
     #     echo c | sudo tee /proc/sysrq-trigger  # locks up of course in parallels and nothing else
 
+    # FYI testing panic in qemu+virsh:
+    #   ssh'd in and ran `echo c | sudo tee /proc/sysrq-trigger'
+    #     via `virsh console u2410` I got the dump of linux Kernel panic in the console logs
+    #     obviously, nothing via vnc/ssh b/c the kernel is dead
+    #   supposedly `echo 1 > /sys/kernel/debug/dri/0/drm_panic_plane_0` should work b/c of DRM_PANIC_DEBUG kernel option
+    #     sudo ls /sys/kernel/debug/dri/0  # this time I actually see /0 whereas it was always /1 before
+    #
+
+    # digging into SimpleDRM (one of the drivers that supports this new blue screen DRM_PANIC)
+    #     CONFIG_DRM_SIMPLEDRM=y   # confirm is enabled in kernel options for my new compiled kernel
+    #     sudo dmesg | grep drm # on qemu+virsh => shows bochs-drm
+    #       # my desktop tower (w/ ubuntu 24.04) starts w/ simpledrm
+    #          => then switches to noveau drm later (nvidia gpu)
+    #
+    #   sudo apt install -y drm-info
+    #
+    # forcing virsh+qemu to use simpledrm:
+    #
+    #    qemu-system-aarch64 --device help  # look at diplay devices and try them out and see if any use simpledrm?
+    #       <model type='virtio' vram='32768' /> # fb0: virtio_gpudrmfb frame buffer device
+    #       <model type='vga' vram='16384' heads='1' primary='yes'/>  # bochs-drm fb
+    #       ati-vga # fails on virsh define
+    #       ramfb   # *** OMG simpledrm and `ls /sys/kernel/debug/dri/0` shows drm_panic_plane_0!!!
+    #             VNC in!!!!!! (virsh console - does not show it b/c its VT Console)
+    #                 FUCK YES IT SHOWS THE KERNEL PANIC SCREEN!!!
+    #           FYI I DID NOT NEED to modify cmd line:  GRUB_CMDLINE_LINUX="video=simpledrm" ... ramfb is using simpledrm by default
+    #              FYI dmesg shows:     [    0.512943] simple-framebuffer simple-framebuffer.0: [drm] Registered 1 planes with drm panic
+    #                  another way to confirm sipmledrm + panic screen is gonna work
+
+
+    # build13 rebooted into new kernel!
+    #   forcing it to use simpledrm
+    #   sudo vim /etc/default/grub
+    #     GRUB_CMDLINE_LINUX="video=simpledrm modprobe.blacklist=nouveau"
+    #        # video=simpledrm alone didn't do it so i blacklisted nouveau...
+    #           # ??? might mean I don't need video=simpledrm (b/c simpledrm already used before nouveau is loaded)
+    #     sudo update-grub
+    #     sudo reboot
+    #     sudo dmesg | grep drm # shows simpledrm initialized (good deal)
+    #     sudo drm_info # shows simpledrm used!
+    #     tree /dev/dri/
+    # /dev/dri/
+    # ├── by-path
+    # │   └── pci-0000:03:00.0-platform-simple-framebuffer.0-card -> ../card0
+    # └── card0
+    # lspci shows 03:00 is nvidia gpu
+    #
+    # sudo su
+    #    ls /sys/kernel/debug/dri/0   # finally!!! shows drm_panic_plane_0 # may work!
+    #   echo 1 > /sys/kernel/debug/dri/0/drm_panic_plane_0   # WORKED!!!
+    #   echo 0 > /sys/kernel/debug/dri/0/drm_panic_plane_0   # can reset it and use system (not a real panic,  just seems to draw to the screen as if it were real... )
+    #
+    #   echo c > /proc/sysrq-trigger  # real panic, shows diff reason on panic screen! (obvi not recoverable)
+    #
 
     # OTHER NOTES (from linux-next clone)
     #
