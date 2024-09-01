@@ -12,6 +12,9 @@ Vagrant.configure("2") do |config|
     prl.memory = 32768
     prl.linked_clone = false # so I can expand drive size manually, else if a linked clone it seems like there is no way to ever expand drive?!
 
+    # TODO: does disk mgmt work with parallels plugin
+    # https://github.com/hashicorp/vagrant/pull/11165
+
     # steps
     # boot VM for first time to create non linked_clone VM
     # vagrant halt => manually expand drive size in parallels GUI
