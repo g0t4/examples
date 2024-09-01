@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "test-ubuntu2410-arm"
+
+  config.vm.box_check_update = false
+
+  config.vm.provider "parallels" do |prl|
+    prl.cpus = 10
+    prl.memory = 32768
+    prl.linked_clone = false # so I can expand drive size manually
+
+    # vagrant up first time (have the following uncommented so it fails b/c this doesn't work for sevearl reasons, this failure means you can resize disk before first boot, ... so, open parallels gui => storage => drive => Advanced => Properties => Manage Snapshots (delete initial one) then close to save, then go back into Properties and it will show storage slider... then comment this out and run vagrant up...)
+    # prl.customize ["set", :id, "--device-set", "hdd0", "--size", 100*1024] # this won't work b/c of some initial snapshot still present on the non linked clone?
+  end
+
+end
