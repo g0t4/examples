@@ -371,11 +371,55 @@ Vagrant.configure("2") do |config|
     # wait... did I need make LLVM=1 clean?! FUUUU2
     #
     # sudo make LLVM=1 -j$(nproc)    # I think llvm is compiling faster than gcc... TBD... maybe run a perf test later on (overnight tests) to see total time LLVM vs GCC on entire kernel
+    #   echo $?  # 0 !!! yay
     # sudo make LLVM=1 modules_install
+    #     # only two :( ... seems like modules_install isn't actually working?
+    #     INSTALL /lib/modules/6.11.0-qrcodewes-next-20240830/modules.builtin
+    #     INSTALL /lib/modules/6.11.0-qrcodewes-next-20240830/modules.builtin.modinfo
     # sudo make LLVM=1 install
+    #     zstd: error 70 : Write error : cannot write block : No space left on device
+    #       was space on /boot that ran out so I nuked all qrcodewes kernels and files and re-ran make install and it worked
+    # OMG reboot and pick grub menu entry over VNC (then virsh console was attached and showed logs booting up!!!...  worked but vnc isn't showing anything... interesting)
+    #    I logged in, lets try it
+    #     cannot use test DRM panic... but
+    #       echo c > /proc/sysrq-trigger # shows black screen! NOT QR CODE... do I need special panic scenario for a QR code to work?!
+    # I still think the modules are not fully installed... and that might explain the vnc display not showing login screen after initial boot (does show grub boot loader)
+    #         there were some modprobe errors in VT console logs... until I:
+    #         I went ahead and nuked the /lib/modules/...qrcodewes... modules dir and re-installed it (sudo LLVM=1 make modules_install) and it had fewer files (2 only) and now on boot I don't see erorrs from modprobe like I did before'
+    #         I think it had old files from my first attempts w/o LLVM=1...
+    #             I diff'd the old and new dir and saw that there are other files so yeah good to remove
     #
-    #     LEFT OFF HERE ... CROSSING FINGERS
+    # ... wait ok
+    # sudo ls /sys/kernel/debug/dri/ has 0,1,2 folders now... 3 of them (1/2 not there before)
+    #     /sys/kernel/debug/dri/2 has drm_panic_plane_0
+    #   I WONDER IF VNC is connecting to a display that is one of these others or somehow not normally used... I bet that is why it shows panic screen but not login too?
+    #   lets try panic
+    #      echo 1 > /sys/kernel/debug/dri/2/drm_panic_plane_0
+    #        ***  works, but no QR code :(
+    #           My guess is I don't have a panic scneario that has a configured QR Code?'
+    #  this article shows sysrq triggered crash w/ QR Code... :( https://www.phoronix.com/news/Linux-DRM-Panic-QR-Codes
+    #      do I need the URL set too?
     #
+    # *** gonna set BASEURL and see if it works, logic differs w and w/o
+    #     CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL="https://example.com/"
+    #
+    #     btw impl is here: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L704
+    #
+    #     sudo make LLVM=1 -j$(nproc)  # cross fingers I can just rebuild w/o clean (which FYI worked w/ blue screen BG color change)
+    #     sudo make LLVM=1 modules_install
+    #     clean up /booot since space is low
+    #           sudo rm /boot/*qrcodewes*
+    #     sudo make LLVM=1 install
+    #     sudo reboot
+    #         cat /boot/config*qrcodewes* | grep URL # confirm
+    #  STILL NO QR CODE screen :( ... only guess is that multiple DRI devices mean I am looking at one that isn't the QR code one OR is it possible simpledrm doesn't work with QR codes?
+    #
+    # change to blue just to see if it works
+    #    sed -i 's/^CONFIG_DRM_PANIC_BACKGROUND_COLOR=.*/CONFIG_DRM_PANIC_BACKGROUND_COLOR=0x0000ff/' .config
+    #   make LLVM ... # reboot # works! blue background but not a QR code :(
+    #     STILL  ODD THAT vnc doesn't show the login screen... I suspect smth is off with vnc connection... lets see if I can see the other DRI devices
+    #
+    #  is resolution an issue? or am I connecting to wrong display with VNC?
     #
 
     # build13 bg color change test
@@ -400,9 +444,21 @@ Vagrant.configure("2") do |config|
     #          WORKED TO PICK FROM MENU and then BSOD worked!
     #  BLUE PANIC SCREEN worked!
 
-
     # *** CLEANUP TODOs  => drop CMDLINE args on build13 so not blocking nouveau display driver
     #    if QR Code build works in VM, I wanna compile it for my build13 too and then make build13 my custom kernel testing box and daily driver for custom kernel stuffs
+
+
+    ## panic src review
+    #   CONFIG_LOGO   # can logo be set? looks like a bitmap or some graphics
+    #       uses this instead of tux IIUC => https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L516
+    #
+
+    # ok I wanna try build13 w/ QR code and see if it works
+    #  extract src again too (entirely new src dir)
+    #  make LLVM=1 menuconfig    # fails b/c no clang (use as test to make sure I install it properly)
+    #     sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"   # from https://apt.llvm.org/
+    #
+
 
   end
 
