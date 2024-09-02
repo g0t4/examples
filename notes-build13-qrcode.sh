@@ -135,6 +135,6 @@ make LLVM=1 -j$(nproc)
 #  disabling guest hyperv support (was marked =m so a module)
 # Device Drivers => Microsoft hyperv guest => disable
 # not doing a make clean, yet
-
+# ... dont forget you are building on amd64 on tower, vs aarch64 on mac qemu VMs... that could explain speed diff in compile and also hyperv guest bug wasn't in VM
 make LLVM=1 -j$(nproc)
 # llvm build seems slower on my tower?! crazy...
