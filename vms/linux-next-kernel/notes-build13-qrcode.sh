@@ -213,3 +213,20 @@ sudo update-grub
 
 # drop time to change to 3 sec
 sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' /etc/default/grub
+
+# INTERESTING!
+# I switched to rpi 5" display and... the resolution defaults to 800x600 now!
+#    but when I flipped cables before rebooting and it had the 1024x768 resolution (was on ninja v5 display and I moved cable to rpi 5" display)... the panic screen still shows but it was in a box with black borders all around so it was like it was using an even higher resolution...
+#    HOW can I control the resolution? how is simpledrm negotiating a resolution? it obviously differs based on display as I suspected (ninja was higher)...
+#
+# can I find EDID data of the display and confirm that this is used  by simpledrm?
+sudo apt install -y edid-decode read-edid
+sudo get-edid | parse-edid # fails b/c no edid found
+# crud edid is empty for my current simpledrm device
+sudo cat /sys/class/drm/card0/card0-Unknown-1/edid # empty
+
+# TODO try to force resolution
+#   https://www.kernel.org/doc/html/latest/gpu/drm-kms.html#forcing-a-mode
+#
+#   Modify Kernel Parameters: You can pass kernel parameters to set the framebuffer resolution. For example:
+#     video=HDMI-A-1:1024x768@60 video=DP-1:1920x1080@60
