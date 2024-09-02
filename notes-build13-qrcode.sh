@@ -27,8 +27,10 @@ make LLVM=1 menuconfig    # fails b/c no clang (use as test to make sure I insta
     # CONFIG_DRM_PANIC_DEBUG=y
     # CONFIG_DRM_PANIC_SCREEN="user"
 
-    # use red bg
-    sed -i 's/CONFIG_DRM_PANIC_BACKGROUND_COLOR=.*/CONFIG_DRM_PANIC_BACKGROUND_COLOR=0xff0000/' .config
+    # change => use red bg
+    # sed -i 's/CONFIG_DRM_PANIC_BACKGROUND_COLOR=.*/CONFIG_DRM_PANIC_BACKGROUND_COLOR=0xff0000/' .config
+    scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0xff0000
+
 
 # install rust
 make LLVM=1 rustavailable  # fails, see message for help
@@ -78,10 +80,10 @@ make LLVM=1 menuconfig
 # / RUST  => !MODVERSIONS must be off (it's yes currently)
 # first time use scripts/config to modify config
     cp .config before.config # first time using scripts to modify config
-    scripts/config --disable CONFIG_MODVERSIONS
+    scripts/config --disable CONFIG_MODVERSIONS # ***
     icdiff before.config .config # confirmed just that one line is changed
 
-# enable RUST support
+# *** enable RUST support
 # scripts/config --enable CONFIG_RUST # !!! does not do the same thing as menuconfig and manual selection?!
 #
 # MANUALLY SET IT:
@@ -100,7 +102,39 @@ make LLVM=1 menuconfig
     # CONFIG_RUST_OVERFLOW_CHECKS=y                         # ADDED
     # # CONFIG_RUST_BUILD_ASSERT_ALLOW is not set           # commented out
 
-# MANUALLY set QR CODE, changes these lines:
+# *** MANUALLY set QR CODE, changes these lines:
 # CONFIG_DRM_PANIC_SCREEN_QR_CODE=y       # this is the one I set in menuconfig, other two are set default too:
 # CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL=""
 # CONFIG_DRM_PANIC_SCREEN_QR_VERSION=40
+
+# backup
+cp .config final.config
+
+make LLVM=1 -j$(nproc)
+# shit forgot this:
+    # EXTRAVERSION = -qrcodewes
+    # kill Ctrl+C make
+    vim Makefile # set EXTRAVERSION = -qrcodewes
+    make LLVM=1 clean
+    make LLVM=1 menuconfig # save changes
+        # updates commented out line that must be used to detect changes to EXTRAVERSION?
+            # Linux/x86 6.11.0-rc5 Kernel Configuration  # BEFORE
+            # Linux/x86 6.11.0-qrcodewes Kernel Configuration  # AFTER save menuconfig
+        # no actual changes to .config (I confirmed) other than adding extraversion in commented out line
+# FUCK accidentlaly rm * files fuck... oh well just re-extract kernel and all I Have to do is options
+tar -xzf linux-next-next-20240830.tar.gz  # after installs diff version of tar is default...
+
+# all options (as above)
+
+make LLVM=1 -j$(nproc)
+# error :(...
+#   arch/x86/kvm/hyperv.c:2002:12: error: stack frame size (1336) exceeds limit (1024) in 'kvm_hv_flush_tlb' [-Werror,-Wframe-larger-than]
+#   2002 | static u64 kvm_hv_flush_tlb(struct kvm_vcpu *vcpu, struct kvm_hv_hcall *hc)
+#        |            ^
+# WTF why is hyperv ...
+#  disabling guest hyperv support (was marked =m so a module)
+# Device Drivers => Microsoft hyperv guest => disable
+# not doing a make clean, yet
+
+make LLVM=1 -j$(nproc)
+# llvm build seems slower on my tower?! crazy...
