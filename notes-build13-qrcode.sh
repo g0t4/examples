@@ -1,7 +1,8 @@
 
 
 # ok I wanna try build13 w/ QR code and see if it works
-#  extract src again too (entirely new src dir)
+#    TRYING TO be a bit more careful and not just run commands rapidly
+# AND extracted kernel src again too (entirely new src dir)
 
 make LLVM=1 menuconfig    # fails b/c no clang (use as test to make sure I install it properly)
     bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"   # from https://apt.llvm.org/
@@ -71,3 +72,35 @@ make LLVM=1 rustavailable  # fails, see message for help
     rustup component add rust-src # per quick start guide
 
     make LLVM=1 rustavailable # WORKS => Rust is available!
+
+# configure RUST & QR CODE
+make LLVM=1 menuconfig
+# / RUST  => !MODVERSIONS must be off (it's yes currently)
+# first time use scripts/config to modify config
+    cp .config before.config # first time using scripts to modify config
+    scripts/config --disable CONFIG_MODVERSIONS
+    icdiff before.config .config # confirmed just that one line is changed
+
+# enable RUST support
+# scripts/config --enable CONFIG_RUST # !!! does not do the same thing as menuconfig and manual selection?!
+#
+# MANUALLY SET IT:
+    # lines modified in .config by menuconfig:
+    # CONFIG_RUST_IS_AVAILABLE=y                                         # ADDED
+    # CONFIG_RUST=y                                                      # ADDED
+    # CONFIG_RUSTC_VERSION_TEXT="rustc 1.80.1 (3f5fd8dd4 2024-08-06)"    # ADDED
+    # CONFIG_BINDGEN_VERSION_TEXT="bindgen 0.70.1"          # ADDED
+    # CONFIG_ASM_MODVERSIONS=y                              # REMOVED
+    # # CONFIG_RUST_FW_LOADER_ABSTRACTIONS is not set       # ADDED, commented out
+    # # CONFIG_BLK_DEV_RUST_NULL is not set                 # ADDED, commented out
+    # # CONFIG_RUST_PHYLIB_ABSTRACTIONS is not set          # ADDED, commented out
+    # # CONFIG_DRM_PANIC_SCREEN_QR_CODE is not set          # ADDED, commented out
+    # # CONFIG_SAMPLES_RUST is not set                      # ADDED, commented out
+    # # CONFIG_RUST_DEBUG_ASSERTIONS is not set             # ADDED, commented out
+    # CONFIG_RUST_OVERFLOW_CHECKS=y                         # ADDED
+    # # CONFIG_RUST_BUILD_ASSERT_ALLOW is not set           # commented out
+
+# MANUALLY set QR CODE, changes these lines:
+# CONFIG_DRM_PANIC_SCREEN_QR_CODE=y       # this is the one I set in menuconfig, other two are set default too:
+# CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL=""
+# CONFIG_DRM_PANIC_SCREEN_QR_VERSION=40
