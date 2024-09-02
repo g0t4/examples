@@ -400,6 +400,10 @@ Vagrant.configure("2") do |config|
     #          WORKED TO PICK FROM MENU and then BSOD worked!
     #  BLUE PANIC SCREEN worked!
 
+
+    # *** CLEANUP TODOs  => drop CMDLINE args on build13 so not blocking nouveau display driver
+    #    if QR Code build works in VM, I wanna compile it for my build13 too and then make build13 my custom kernel testing box and daily driver for custom kernel stuffs
+
   end
 
 end
