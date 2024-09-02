@@ -242,6 +242,126 @@ Vagrant.configure("2") do |config|
     #   => cloned this git tree (repo) and found qrcode in the code that was close to article's patch code
     #   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tag/?h=next-20240830
 
+    # -- attempting QR code panic screens... will require rust?
+    #  => https://www.phoronix.com/news/Linux-6.12-DRM-Panic-QR-Code
+    # copied to `linux-next-qr-code` dir in my VM (whole copy of entire linux next src from initial panic screen compiled kernel ... hopefully not too expensive to mod for qr code screen and recompile minimal stuff?)
+    #    EXTRAVERSION = -qrcodewes
+    # make menuconfig
+    #  menu entires for QR_CODE not showing, IIAC b/c I did not yet enable RUST
+    #  / RUST => shows where
+    #      RUST_IS_AVAILABLE [=n]  # IIGC b/c rust tooling is missing on host?
+    #  Install RUST: https://www.rust-lang.org/tools/install
+    #     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    #       default install (enter)
+    #  verify:
+    #    rustc --version && cargo --version
+    #  # install RUST
+    #    rustup install nightly
+    #    rustup default nightly
+    #    # chatgpt says nightly needed for linux kernel?
+    #
+    #   FYI init/Kconfig has RUST_IS_AVAILABLE defined, refers to:
+    #     scripts/rust_is_available.sh # run by make rustavailable
+    #     Documentation/rust/quick-start.rst
+    #     Makefile target 'rustavailable' # use to troubleshoot
+    #
+    #  make rustavailable
+    #    mentions bindings not avail... so lets look at docs instead of chatgpt
+    #
+    #  Documentation/rust/quick-start.rst
+    #    sudo apt install -y rustc rust-src bindgen rustfmt rust-clippy  # shit I should've run  this instead of script above... stop being lazy and look at docs wes
+    #       FYI also prebuilt versions: https://kernel.org/pub/tools/llvm/rust/ => "latest LLVM" and "matching LLVM"
+    #       or rustup like I started above
+    #    TODO install all components in docs yet
+    #
+    #   make LLVM=1 rustavailable  # check if reqs met ... clang missing
+    #
+    #   docs => llvm / clang needed:
+    #      https://apt.llvm.org/ mentions auto install (of custom llvm repos and packages):
+    #         sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    #
+    #       llvm-config --version .... llvm-config-18 binary works
+    #       clang --version  .... clang-18 binary works
+    #
+    #   make rustavailable # now says 'core' std lib missing
+    #      rustup component add rust-src  # squashes that warning
+    #   make rustavailable => Rust is available!    !!!!
+    #      FYI bindings warning about 0.66.1 that has a bug :(... might need new bindings version?
+    #
+    #   but I need to use `make LLVM=1 ` to use LLVM for the full kernel instead of gcc which is experimental w/ rust support...
+    #   make LLVM=1 rustavailable
+    #      clang missing... probably b/c I am using -18 version and not the default clang version
+    #      this fixed it in make output:
+    #        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+    #        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+    #        sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-18 100
+    #
+    #  https://docs.kernel.org/rust/quick-start.html  # FYI online docs
+    #
+    # make LLVM=1 menuconfig   # FYES IT OPENS!
+    #  / RUST => shows some options to disable:
+    #      !MODVERSIONS => itsw "y" now =>
+    #          top level -> Enable loadable module support (disable)
+    #      !SHADOW_CALL_STACK => its "y" now =>
+    #          General architecture-dependent options => Shadow Call Stack (disable it)
+    #
+    #    YAYAYYA  => General setup => Rust support at bottom!!!
+    #      save it .config yeah!
+    # / QR_CODE  => should show now?!
+    #   │     -> Device Drivers                                                                                                                │
+    #   │       -> Graphics support                                                                                                            │
+    #   │         -> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) (DRM [=y])                                                │
+    #   │           -> Display a user-friendly message when a kernel panic occurs (DRM_PANIC [=y])                                             │
+    #   │ (1)         -> Add a panic screen with a QR code (DRM_PANIC_SCREEN_QR_CODE [=n])
+    #       F YES! THERE IT IS!
+
+    # now for the compiler to choke :)
+    # make LLVM=1 -j$(nproc)
+    #    missing some more llvm/clang tools b/c binaries are -18
+    #    llvm-readelf:
+    #     sudo update-alternatives --install /usr/bin/llvm-readelf llvm-readelf /usr/bin/llvm-readelf-18 100
+    #    llvm-objcopy
+    #    sudo update-alternatives --install /usr/bin/llvm-objcopy llvm-objcopy /usr/bin/llvm-objcopy-18 100
+    #     llvm-nm
+    #   sudo update-alternatives --install /usr/bin/llvm-nm llvm-nm /usr/bin/llvm-nm-18 100
+    #
+    # now rust bindings arent working IIUC.. IIGC the bug that is mentioned ?
+    #
+    # *** Rust bindings generator 'bindgen' versions 0.66.0 and 0.66.1 may not
+    # *** work due to a bug (https://github.com/rust-lang/rust-bindgen/pull/2567),
+    # *** unless patched (like Debian's).
+    # ***   Your version:     0.66.1
+    #
+    # cargo install --locked bindgen-cli   # installs v0.70.1  ... now how to use this one? woa.. used automatically by make LLVM=1 -j$(nproc)...  cool
+    #
+    # NOW FOR THE NEXT FAILURE in the goddamn compile...
+    #  more missing llvm tools ... NBD
+    #     sudo update-alternatives --install /usr/bin/llvm-ar llvm-ar /usr/bin/llvm-ar-18 100
+    #    wow its compiling lots of obj files... I am gonna do a little dance if this works!
+    #      shit ... arch/arm64/kernel/signal.c:1184:14: error: use of undeclared identifier 'vdso_offset_sigtramp'
+    #
+    # make clean # forgot to do this since last build
+    #   CROSS FINGERS ... build working again... got past buidling arch/arm64/kernel/signal.o !!!!
+    #      must've been holdover code generated from prev build
+    #
+    #  missing
+    #      sudo update-alternatives --install /usr/bin/llvm-strip llvm-strip /usr/bin/llvm-strip-18 100
+    #      sudo update-alternatives --install /usr/bin/llvm-objdump llvm-objdump /usr/bin/llvm-objdump-18 100
+llvm-:
+
+
+
+    # build13 bg color change test
+    # vim Makefile
+    #   EXTRAVERSION = -bluescreen
+    #     was -rc5 before # need to fully reinstall so this becomes separte /boot/ kernel ... and /lib/modules/...-bluescreen... now!
+    # CONFIG_DRM_PANIC_BACKGROUND_COLOR=0x0000ff # set to BLUE bg
+    # left FG default: CONFIG_DRM_PANIC_FOREGROUND_COLOR=0xffffff
+    # make -j$(nproc)
+    # sudo make modules_install
+    # sudo make install
+    #  ensure new kernel is first in grub bootloader? and reboot!
+    #  *** WIP
   end
 
 end
