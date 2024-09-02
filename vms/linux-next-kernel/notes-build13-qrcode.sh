@@ -146,4 +146,11 @@ make LLVM=1 -j$(nproc)
 #           if so, I may not have a big enough monitor then (rpi monitor, unsure what its resolution is but its small too isn't it? perhaps hook up bigger external display - is that ninja 5 a 1080p display?)
 #   ALSO, is it possible qr codes are working in amd64 but not aarch64 yet? another possible variable
 #
+# still had a fucking error on hyperv from maybe a diff module so I just...
 #
+# FUCKING KVM -Werror crap
+#  I have seen this as a warning (frame buffer size) in other spots so just F it
+#  menuconfig => Virtualization => disable Compile KVM with -Werror
+#  resume building after this, shouldn't need to clean to resume
+#    ok good =>   CC [M]  arch/x86/kvm/hyperv.o
+#         BUT I THOUGHT I TURNED THIS OFF, I MUST NOT HAVE...
