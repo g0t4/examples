@@ -347,9 +347,36 @@ Vagrant.configure("2") do |config|
     #  missing
     #      sudo update-alternatives --install /usr/bin/llvm-strip llvm-strip /usr/bin/llvm-strip-18 100
     #      sudo update-alternatives --install /usr/bin/llvm-objdump llvm-objdump /usr/bin/llvm-objdump-18 100
-llvm-:
-
-
+    #   FYI measuring progress by compiled kernel file sizes :) ... 13GB (woa big jump recently)... was slow to about 9GB and then jumped a bit
+    #     28 GB was my last build size for the kernel src dir when done
+    #     crap smth led to Killed (not sure if I hit ctrl+c maybe in wrong pane or?)... could have corrupted kernel build? who knows...was around `LD vmlinux` linking
+    #        no specific error so I re-ran the `make` resumed it  and its working fine so far *crosses fingers*
+    #
+    # woa finished
+    # sudo make modules_install # two lines of output only?! seems wrong # FUUUU FORGOT LLVM=1 DUMBASS wes
+    # sudo make install #
+    #    GRUB has -qrcodewes kernel as second option... lets just restart and select manually b/c I dont think it will work anyways so I dont wanna bork my VM in case
+    #   show grub menu (not showing)
+    #     sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=10/' /etc/default/grub
+    #     sudo sed -i 's/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/' /etc/default/grub
+    #        was hidden, should now show
+    #        NOT SURE I NEEDED THIS, I wasn't using vnc to the display...
+    #  BTW esc on startup (with virsh console interface) => shows BIOS for qemu VM
+    #  SHIT VT Console is not the spot to find grub menu! derp wes
+    #  lol ok new kernel fails to boot! as if it didn't even start...
+    #    lets do clean!!!
+    #
+    # make clean # and recompile....
+    # OMFG... I just realized I did not use `make LLVM=1` FUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
+    # wait... did I need make LLVM=1 clean?! FUUUU2
+    #
+    # sudo make LLVM=1 -j$(nproc)    # I think llvm is compiling faster than gcc... TBD... maybe run a perf test later on (overnight tests) to see total time LLVM vs GCC on entire kernel
+    # sudo make LLVM=1 modules_install
+    # sudo make LLVM=1 install
+    #
+    #     LEFT OFF HERE ... CROSSING FINGERS
+    #
+    #
 
     # build13 bg color change test
     # vim Makefile
@@ -361,7 +388,18 @@ llvm-:
     # sudo make modules_install
     # sudo make install
     #  ensure new kernel is first in grub bootloader? and reboot!
-    #  *** WIP
+    #     not... need to pick it or leave bootloader up a second?
+    # need to get grub menu to show
+    #     https://www.gnu.org/software/grub/manual/grub/html_node/timeout.html
+    #   sudo grep TIMEOUT /etc/default/grub
+    #     GRUB_TIMEOUT=10
+    #     GRUB_TIMEOUT_STYLE=hidden
+    #      ok set menu
+    #        sudo sed -i 's/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/' /etc/default/grub
+    #        sudo update-grub
+    #          WORKED TO PICK FROM MENU and then BSOD worked!
+    #  BLUE PANIC SCREEN worked!
+
   end
 
 end
