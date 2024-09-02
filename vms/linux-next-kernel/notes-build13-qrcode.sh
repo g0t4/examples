@@ -154,3 +154,62 @@ make LLVM=1 -j$(nproc)
 #  resume building after this, shouldn't need to clean to resume
 #    ok good =>   CC [M]  arch/x86/kvm/hyperv.o
 #         BUT I THOUGHT I TURNED THIS OFF, I MUST NOT HAVE...
+
+# asked chatgpt to read the qr code (copy/pasted it from  https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c )
+# https://chatgpt.com/c/7fd36197-2567-41c7-8c91-134ffe4d1d4c
+# it says yes the code will not show qr if display is too small... chatgpt estimated 420x730 needed at least... this has to be my issue...
+#
+
+# BTW
+make LLVM=-18 ... # so I don't have to update alternatives
+
+# ok red/white works so QR build is working on build13 but still not showing qr code... I suspect its cuz of screen size... lets try bigger screen
+# fails on ninja with HDp60 HDMI input...
+# checking size:
+sudo apt install -y fbset
+sudo fbset -s  # FYI VM gives same size as build13 here:
+# mode "1024x768"
+#    geometry 1024 768 1024 768 32
+#    timings 0 0 0 0 0 0 0
+#    rgba 8/16,8/8,8/0,0/0
+# endmode
+#
+# FYI lots graphics info...
+tree /sys/class/drm/card0
+# i.e.:
+cat card0-Unknown-1/modes
+# 1024x768
+
+sudo apt install -y libdrm-tests
+sudo modetest -c
+# FYI vm has 800x600 for simpledrm display :( ... so clearly neither work for qr code :(... nor can either be changed... what other drivers exist that support panic screen?
+
+# OK I found some info on drivers:
+# https://fedoraproject.org/wiki/Changes/EnableDrmPanic
+#   *** nouveau is WIP so I should just wait for that if I think it's a screen size issue
+#
+#   FYI set viable web site to decode QR CODES: https://github.com/kdj0c/panic_report
+scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.github.io/panic_report" # setting both on VM and build13
+#   *** test samples: https://github.com/kdj0c/panic_report/issues/1 => clearly these are high resolution displays, look how small tux is
+#
+#   OMG this describes everything I stumbled through, awesome:
+#       https://fedoraproject.org/wiki/Changes/EnableDrmPanic#How_To_Test
+#
+
+# aside - fish shell
+sudo apt install -y fish
+sudo chsh -s /usr/bin/fish wes # don't need password this way
+
+# FYI get rid of old builds in /boot
+sudo rm /boot/*rc5-next*
+sudo update-grub # unless gonna run `make LLVM=1 install` again and it will do this for you
+# also FYI I forgot to add Makefile EXTRAVERSION on latest QR Code build so its just:
+#   /boot/config-6.11.0-rc5-next-20240830
+# make LLVM=1 modules_install / install
+
+# set default to first item in adv sub menu
+sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT="1>0"/' /etc/default/grub
+sudo update-grub
+
+# drop time to change to 3 sec
+sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=3/' /etc/default/grub
