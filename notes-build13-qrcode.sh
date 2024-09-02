@@ -138,3 +138,12 @@ make LLVM=1 -j$(nproc)
 # ... dont forget you are building on amd64 on tower, vs aarch64 on mac qemu VMs... that could explain speed diff in compile and also hyperv guest bug wasn't in VM
 make LLVM=1 -j$(nproc)
 # llvm build seems slower on my tower?! crazy...
+#
+# THOUGHTS waiting for compiles
+#   FYI looking at the screen shots again for qr codes... makes me thing resolution could be the issue...
+#       https://www.phoronix.com/news/Linux-6.12-DRM-Panic-QR-Code
+#       => these are much bigger (comparing the logo in upper left vs the entire qr code so I wonder if there is not enough room in my VM display to show qr code and so it doesn't... there is logic looking at sizes of buffers before generating qr code...) => see https://www.phoronix.com/news/Linux-6.12-DRM-Panic-QR-Code
+#           if so, I may not have a big enough monitor then (rpi monitor, unsure what its resolution is but its small too isn't it? perhaps hook up bigger external display - is that ninja 5 a 1080p display?)
+#   ALSO, is it possible qr codes are working in amd64 but not aarch64 yet? another possible variable
+#
+#
