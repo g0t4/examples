@@ -51,5 +51,12 @@ netstat -an | grep 5900 # I added graphics => vnc on 0.0.0.0 b/c that is easier 
 #   PRN later can do bridged or otherwise so I can direct connect from network, though I dont need that for this project (panic screen)
 virsh net-list --all  # obvi none
 virsh net-define nat-default.xml
-# virsh net-start default
-virsh net-autostart default
+virsh net-start default
+    # FAILED:
+    #    error: Failed to start network default
+    #    error: error creating bridge interface virbr0: Operation not permitted
+sudo virsh net-start default # worked (I setup sudoless virsh but that isn't going to be all things it might do)
+virsh net-autostart default # TODO does this work on reboot? or would it have permission issues?
+# network inactive state, IIAC b/c no interfaces (domains) attached?
+
+# redefine virsh VM
