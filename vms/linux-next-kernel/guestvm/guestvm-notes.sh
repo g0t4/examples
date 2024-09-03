@@ -124,20 +124,16 @@ sudo chown root:root /var/lib/libvirt/boot/ubuntu-24.04.1-live-server-amd64.iso
 # OMFG finally it worked... ya know its permission denied errors should be a hell of a lot more clear about why they failed (mention SELinux or if its a blocked path or whatever just TELL ME)
 virsh define guestvm.xml
 virsh start guestvm # WORKED!!!!
-
-
-
-
-
-# update guestvm.xml to point to new location
+# F YEAH installer working over VNC (and found the NIC!)
+#   setup with same creds as my mac's qemu VM so the VMs are all the same for testing
 #
 
 
-# I am already in the kvm group so this works to get me access if needed (never have so far)
-# FYI teh guestvm_VARS.fd already owned by libvirt-qemu:kvm
-
-
-# FYI backup files on VM to this repo
+# ASIDE - FYI backup files on VM to this repo
 scp "build13.lan:~/guestvm/*.xml" .
 
-# redefine virsh VM
+
+
+
+
+#
