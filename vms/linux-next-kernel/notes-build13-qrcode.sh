@@ -6,6 +6,8 @@
 
 make LLVM=1 menuconfig    # fails b/c no clang (use as test to make sure I install it properly)
     bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"   # from https://apt.llvm.org/
+    llvm-config-18 --version
+    clang-18 --version
 
     sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
     sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100

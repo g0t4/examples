@@ -46,3 +46,32 @@ GRUB_DEFAULT="1>4" # 5th entry, 6.8 original kernel should be more stable
 #
 # got guestvm configured for fish shell and other tools I like
 sudo hostnamectl set-hostname guestvm
+
+
+# setup clang/llvm/rust/etc from notes about build13
+make LLVM=-18 rustavailable # works (gonna use version in LLVM arg instead of aliasing clang to clang-18)
+make LLVM=-18 menuconfig # saved
+scripts/config --disable CONFIG_MODVERSIONS
+# manually enable RUST (needed for DRM qr code option)
+# manually enable DRM support + new panic screen options
+# had to regen the .config b/c it was missing DRM support altogether?!
+scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.github.io/panic_report" # setting both on VM and build13
+#   => confirmed in menuconfig too
+scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0x0000ff # blue bg
+#
+# confirms
+grep DRM_PANIC .config
+grep CONFIG_RUST .config
+grep CONFIG_BINDGEN .config
+
+# forgot certs
+scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ""
+scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
+# confirm
+grep "CONFIG_SYSTEM_.*_KEYS" .config
+
+
+# compile time!
+make LLVM=-18 -j$(nproc)
+sudo make LLVM=-18 modules_install
+sudo make LLVM=-18 install
