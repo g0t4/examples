@@ -62,6 +62,57 @@ virsh net-autostart default # TODO does this work on reboot? or would it have pe
 #    => NOPE... not starting
 sudo virsh net-start default # says started BUT still inactive
 ip a # shows virbr0 and I can ping 192.168.122.1
+# try to destroy it:
+sudo virsh net-destroy default # works yes, and now virbr0 is gone
+# OMG ..
+virsh net-list # inactive
+sudo virsh net-list # shows ACTIVE!
+#       => *** also shows autostart no... do I need sudo for it to autostart?
+# *** TODO remove autostart on lowely user?
+#
+# FUUUUUUU I was targeting the user session (b/c sudoless does that), thus why sudo shows diff domains/networks
+virsh uri # => qemu:///session
+virsh --connect qemu:///system net-list # => shows network
+#
+# CLEANUP qemu:///session (user session)
+# destroys if needed, not in my case cuz I rebooted recently
+virsh undefine guestvm --nvram
+virsh net-undefine default
+
+# specify system wide session:
+export LIBVIRT_DEFAULT_URI=qemu:///system
+virsh uri # validate => qemu:///system
+#   ADDED to private fish.config (think per machine)
+vim "$HOME/.config/fish/config-private.fish"
+#   export LIBVIRT_DEFAULT_URI=qemu:///system
+#
+# now I can still do sudoless and target the system wide config
+#    PART OF ME WONDERSS if it would be easier just to use sudo and have it default to system wide?
+#
+virsh net-autostart default
+virsh define guestvm.xml
+
+virsh define guestvm.xml
+virsh start guestvm # FUUU permission denied
+sudo systemctl status libvirtd.service # shows log failure too
+#  Cannot access storage file '/home/wes/guestvm/disk1.qcow2' (as uid:..., gid:...):
+# ok its running as libvirt-qemu
+
+# lets move to standard location for libvirt, make new disk:
+sudo mkdir -p /var/lib/libvirt/images
+sudo mv ~/guestvm/disk1.qcow2 /var/lib/libvirt/images/
+sudo qemu-img create -f qcow2 /var/lib/libvirt/images/guestvm-primary.qcow2 100G
+# I had nothing on the drive so just recreated and nuked
+rm ~/guestvm/disk1.qcow2
+
+
+
+# update guestvm.xml to point to new location
+#
+
+
+# I am already in the kvm group so this works to get me access if needed (never have so far)
+# FYI teh guestvm_VARS.fd already owned by libvirt-qemu:kvm
 
 
 # FYI backup files on VM to this repo
