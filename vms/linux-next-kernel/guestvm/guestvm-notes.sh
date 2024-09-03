@@ -126,12 +126,30 @@ virsh define guestvm.xml
 virsh start guestvm # WORKED!!!!
 # F YEAH installer working over VNC (and found the NIC!)
 #   setup with same creds as my mac's qemu VM so the VMs are all the same for testing
-#
+#   I wish the auto partition would let me expand the /boot partition...  it is on 2GB too which is fine actually as i want most space for the drive to compile kernel and I can cleanup old kernels when I make install new ones
+
+
 
 
 # ASIDE - FYI backup files on VM to this repo
 scp "build13.lan:~/guestvm/*.xml" .
 
+
+# guestvm OS installed and got access over VNC! yay, let's do spice now
+sudo dmesg | grep drm # FYI starts with simpledrm then qxl (which is high res w/ spice IIUC)...
+tree /sys/class/drm/ # shows card1 as pci...02.0 (matches guestvm.xml)
+sudo apt install -y fbset edid-decode read-edid drm-info
+sudo drm_info  # => yup qxl visible
+cat /sys/class/drm/card1/card1-Virtual-1/modes # max is 1024 :( but does have other entries and this is VNC so it is possibly different otherwise, in fact
+# TODO SPICE can't I set the resolution
+# yes... Since 5.9.0, the model element may also have an optional resolution sub-element. The resolution element has attributes x and y to set the minimum resolution for the video device. This sub-element is valid for model types "vga", "qxl", "bochs", "gop", and "virtio".
+
+
+
+# TODO need SSH too, probably have to double hop to it so I can leave it NATd
+#   TODO and IIUC I can map SSH to host port 2222 like on my mac... so I don't need to change network to expose default network to my network...
+#      so like VNC/SPICE, SSH will be published to a host port so I don't need to route to my VM
+#          THOUGH BE CAREFUL, VNC/SPICE are services run on host (not in guest), whereas SSH is a published port to the service running in my guest
 
 
 
