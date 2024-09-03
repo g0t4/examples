@@ -3,7 +3,7 @@
   <uuid>90084c22-fabc-4c54-ba23-d83cb858954a</uuid> <!-- adding this allows to call define w/o undefine first -->
   <memory unit='GiB'>16</memory>
   <cpu mode='host-passthrough'/>
-  <vcpu placement='static'>8</vcpu> <!-- increase to 12? -->
+  <vcpu placement='static'>12</vcpu> <!-- increase to 12? -->
   <os>
     <type arch='x86_64' machine='q35'>hvm</type>
     <loader readonly='yes' type='pflash'>/usr/share/OVMF/OVMF_CODE_4M.fd</loader>
