@@ -70,6 +70,9 @@ scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
 # confirm
 grep "CONFIG_SYSTEM_.*_KEYS" .config
 
+# forgot to disable Virtualization => "Compile KVM with -Werror"
+# scripts/config --disable CONFIG_KVM_WERROR # TODO verify this is the flag (it is not set after I manaully marked it in menuconfig)
+#   resume compile
 
 # compile time!
 make LLVM=-18 -j$(nproc)
