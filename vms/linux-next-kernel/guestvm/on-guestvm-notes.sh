@@ -73,6 +73,8 @@ grep "CONFIG_SYSTEM_.*_KEYS" .config
 # forgot to disable Virtualization => "Compile KVM with -Werror"
 # scripts/config --disable CONFIG_KVM_WERROR # TODO verify this is the flag (it is not set after I manaully marked it in menuconfig)
 #   resume compile
+# FYI perhaps this is a culprit for the VM freeze last night... which btw I reverted to 6.8 kernel from ubuntu and so far have not had (KNOCK ON WOOD)
+#     might be legit issues in KVM code in this linux-next src... wouldn't be surprising
 
 # compile time!
 make LLVM=-18 -j$(nproc)
