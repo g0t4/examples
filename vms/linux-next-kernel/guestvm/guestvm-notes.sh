@@ -40,3 +40,16 @@ netstat -an | grep 5900 # I added graphics => vnc on 0.0.0.0 b/c that is easier 
 #
 # OMG w00t w00t it works! (vnc => build13)... yes I know its not secured, I dont care about this guest
 #
+# TODO find spice interface...
+#
+
+# setup networking
+#    https://libvirt.org/formatnetwork.html
+# installer rightly shows no interfaces b/c I had none configured, unlike my mac where it got a nic OOB (with some sort of SLURP IIUC)
+#
+# NAT https://libvirt.org/formatnetwork.html#nat-based-network
+#   PRN later can do bridged or otherwise so I can direct connect from network, though I dont need that for this project (panic screen)
+virsh net-list --all  # obvi none
+virsh net-define nat-default.xml
+# virsh net-start default
+virsh net-autostart default
