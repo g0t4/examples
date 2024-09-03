@@ -59,4 +59,7 @@ sudo virsh net-start default # worked (I setup sudoless virsh but that isn't goi
 virsh net-autostart default # TODO does this work on reboot? or would it have permission issues?
 # network inactive state, IIAC b/c no interfaces (domains) attached?
 
+# FYI backup files on VM to this repo
+scp "build13.lan:~/guestvm/*.xml" .
+
 # redefine virsh VM
