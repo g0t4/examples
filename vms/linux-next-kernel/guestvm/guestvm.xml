@@ -80,11 +80,5 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </memballoon>
   </devices>
-  <qemu:commandline>
-    <qemu:arg value='-netdev'/>
-    <qemu:arg value='user,id=hostnet0,hostfwd=tcp::2222-:22'/>
-    <qemu:arg value='-device'/>
-    <qemu:arg value='virtio-net-pci,netdev=hostnet0,id=net0,mac=52:54:00:6b:3c:58'/>
-  </qemu:commandline>
 </domain>
 

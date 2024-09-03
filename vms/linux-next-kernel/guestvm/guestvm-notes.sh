@@ -152,6 +152,11 @@ cat .../modes shows many more above previous top of 1024x768...  COOL
 #   TODO and IIUC I can map SSH to host port 2222 like on my mac... so I don't need to change network to expose default network to my network...
 #      so like VNC/SPICE, SSH will be published to a host port so I don't need to route to my VM
 #          THOUGH BE CAREFUL, VNC/SPICE are services run on host (not in guest), whereas SSH is a published port to the service running in my guest
+# FYI ssh from build13 works IIUC w/o the port forward
+sudo systemctl start ssh.service # was stoppped and disabled
+
+ssh wes@192.168.122.180 # from build13 WORKS! good enough for me, screw the published port to the host
+
 
 
 
