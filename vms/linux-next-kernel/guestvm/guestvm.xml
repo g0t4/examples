@@ -59,8 +59,8 @@
     <input type='tablet' bus='usb'/>
     <input type='keyboard' bus='ps2'/>
     <graphics type='vnc' port='5900' listen='0.0.0.0'/>
-    <graphics type='spice' autoport='yes'>
-      <listen type='none'/>
+    <graphics type='spice' port='5901' listen='0.0.0.0'>
+      <listen type='address' address='0.0.0.0'/>
       <image compression='off'/>
     </graphics>
     <video>
@@ -81,4 +81,3 @@
     </memballoon>
   </devices>
 </domain>
-
