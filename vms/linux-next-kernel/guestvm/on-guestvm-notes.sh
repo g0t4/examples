@@ -80,3 +80,7 @@ grep "CONFIG_SYSTEM_.*_KEYS" .config
 make LLVM=-18 -j$(nproc)
 sudo make LLVM=-18 modules_install
 sudo make LLVM=-18 install
+
+
+# so far no qr codes even with 1280x800 resolution :(... looks closer but not quite there yet for small enough logo
+#     and I removed blacklist on qxl and you can see in boot when the resolution goes from 1280x800 to 1920x1080... it's when the qxl driver is loaded and used
