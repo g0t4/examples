@@ -102,6 +102,11 @@ sudo systemctl status libvirtd.service # shows log failure too
 sudo mkdir -p /var/lib/libvirt/images
 sudo mv ~/guestvm/disk1.qcow2 /var/lib/libvirt/images/
 sudo qemu-img create -f qcow2 /var/lib/libvirt/images/guestvm-primary.qcow2 100G
+# FYI all images have SELinux basic confinement:
+#    https://libvirt.org/drvqemu.html#selinux-basic-confinement
+#    Also discussed:
+#         https://superuser.com/questions/298426/kvm-image-failed-to-start-with-virsh-permission-denied
+#
 # I had nothing on the drive so just recreated and nuked
 rm ~/guestvm/disk1.qcow2
 
