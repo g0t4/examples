@@ -34,3 +34,9 @@ qemu-img create -f qcow2 ~/guestvm/disk1.qcow2 100G
 # vm tweaking
 # nvram will be taken from template into /var/lib/libvirt/qemu/nvram/guestvm_VARS.fd, saves cp template myself to that new location
 #
+sudo apt install -y net-tools
+netstat -an | grep 5900 # I added graphics => vnc on 0.0.0.0 b/c that is easier to test for me
+# tcp        0      0 0.0.0.0:5900            0.0.0.0:*               LISTEN # GOOD!
+#
+# OMG w00t w00t it works! (vnc => build13)... yes I know its not secured, I dont care about this guest
+#
