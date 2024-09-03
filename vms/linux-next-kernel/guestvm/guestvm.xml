@@ -36,7 +36,7 @@
     </disk>
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw' />
-      <source file='/home/wes/ubuntu-24.04.1-live-server-amd64.iso' />
+      <source file='/var/lib/libvirt/boot/ubuntu-24.04.1-live-server-amd64.iso' />
       <target dev='vdb' bus='virtio' />
       <boot order='2' />
     </disk>

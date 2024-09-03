@@ -109,6 +109,23 @@ sudo qemu-img create -f qcow2 /var/lib/libvirt/images/guestvm-primary.qcow2 100G
 #
 # I had nothing on the drive so just recreated and nuked
 rm ~/guestvm/disk1.qcow2
+#
+# fix nvram path too and make its new dir:
+/var/lib/libvirt/nvram
+sudo mkdir -p /var/lib/libvirt/nvram
+rm ~/guestvm/guestvm_VARS.fd # let it recreate it
+#
+# move ISO too  (ISOs are same thing as disks, so they must be protected too and cannot let system wide session be compromised so... I had to movee ISO to (even though it had read access for everyone from my home dir)
+sudo mv ubuntu-24.04.1-live-server-amd64.iso  /var/lib/libvirt/boot/
+#  ==> I chose /boot (could've used /images but IIUC boot meant for installer disks - or at least not same as images for drives)
+# PRN try /isos? does that dir work for SELinux too?
+sudo chown root:root /var/lib/libvirt/boot/ubuntu-24.04.1-live-server-amd64.iso
+#
+# OMFG finally it worked... ya know its permission denied errors should be a hell of a lot more clear about why they failed (mention SELinux or if its a blocked path or whatever just TELL ME)
+virsh define guestvm.xml
+virsh start guestvm # WORKED!!!!
+
+
 
 
 
