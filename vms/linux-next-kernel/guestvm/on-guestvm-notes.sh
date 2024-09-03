@@ -73,6 +73,7 @@ grep "CONFIG_SYSTEM_.*_KEYS" .config
 # forgot to disable Virtualization => "Compile KVM with -Werror"
 # scripts/config --disable CONFIG_KVM_WERROR # TODO verify this is the flag (it is not set after I manaully marked it in menuconfig)
 #   resume compile
+grep CONFIG_KVM_WERROR .config # ensure not set
 # FYI perhaps this is a culprit for the VM freeze last night... which btw I reverted to 6.8 kernel from ubuntu and so far have not had (KNOCK ON WOOD)
 #     might be legit issues in KVM code in this linux-next src... wouldn't be surprising
 
@@ -84,3 +85,54 @@ sudo make LLVM=-18 install
 
 # so far no qr codes even with 1280x800 resolution :(... looks closer but not quite there yet for small enough logo
 #     and I removed blacklist on qxl and you can see in boot when the resolution goes from 1280x800 to 1920x1080... it's when the qxl driver is loaded and used
+
+# YAY I got help from the author of the qr code patch...
+echo -n "qr_code" > /sys/module/drm/parameters/panic_screen
+# VERSUS DEFAULT: # echo -n "user" > /sys/module/drm/parameters/panic_screen
+# OR compile it in:
+#       from this setting,  which I saw some documentation for IIRC but I didn't realize it had to be set to qr_code!
+# │ Symbol: DRM_PANIC_SCREEN [=user]                                                                                                                   │
+# │ Type  : string                                                                                                                                     │
+# │ Defined at drivers/gpu/drm/Kconfig:139                                                                                                             │
+# │   Prompt: Panic screen formatter                                                                                                                   │
+# │   Depends on: HAS_IOMEM [=y] && DRM [=y] && DRM_PANIC [=y]                                                                                         │
+# │   Location:                                                                                                                                        │
+# │     -> Device Drivers                                                                                                                              │
+# │       -> Graphics support                                                                                                                          │
+# │         -> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) (DRM [=y])                                                              │
+# │           -> Display a user-friendly message when a kernel panic occurs (DRM_PANIC [=y])                                                           │
+# │ (5)         -> Panic screen formatter (DRM_PANIC_SCREEN [=user])
+#
+# drivers/gpu/drm/Kconfig:139 =>
+# config DRM_PANIC_SCREEN
+# 	string "Panic screen formatter"
+#	default "user"
+#	depends on DRM_PANIC
+#	help
+#	  This option enable to choose what will be displayed when a kernel
+#	  panic occurs. You can choose between "user", a short message telling
+#	  the user to reboot the system, or "kmsg" which will display the last
+#	  lines of kmsg.
+#	  This can also be overridden by drm.panic_screen=xxxx kernel parameter
+#	  or by writing to /sys/module/drm/parameters/panic_screen sysfs entry
+#	  Default is "user"
+#
+
+# the docs for DRM_PANIC_SCREEN_QR_CODE had "qr_code" in it but I didn't see this in menuconfig
+#  *** IN THE FUTURE read the linked docs (Defined at drivers/gpu/drm/Kconfig)
+#    i.e.: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/Kconfig#L152
+#
+
+# other tidbits reading the docs:
+# 	  To support Hi-DPI Display, you can enable bigger fonts like FONT_TER16x32
+#         SO => might've been a good thing I didn't have a hidpi display? or would it just be tiny?
+#
+
+# qr code and iphone camera / web site to scan:
+# FYI when scanning my qr codes with iphone it isn't recognizing the "zl" param but if I use:
+#    https://scanqr.org/    # this successfully grabs the zl param and gets full report:
+#        => RELIABLY extracting data from QR codes
+#
+# ok I tried his V40 QR Code and indeed iPhone cannot extract the zl param... from sound of his messages:
+#   https://github.com/kdj0c/panic_report/issues/1
+#     sounds like his first example (which works on iPhone) is not v40, maybe v10/v20?
