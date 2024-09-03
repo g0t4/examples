@@ -57,7 +57,12 @@ virsh net-start default
     #    error: error creating bridge interface virbr0: Operation not permitted
 sudo virsh net-start default # worked (I setup sudoless virsh but that isn't going to be all things it might do)
 virsh net-autostart default # TODO does this work on reboot? or would it have permission issues?
-# network inactive state, IIAC b/c no interfaces (domains) attached?
+# TODO network inactive state => crapola... hrm (sudo problems?)
+# rebooting host to see if autostarts
+#    => NOPE... not starting
+sudo virsh net-start default # says started BUT still inactive
+ip a # shows virbr0 and I can ping 192.168.122.1
+
 
 # FYI backup files on VM to this repo
 scp "build13.lan:~/guestvm/*.xml" .
