@@ -143,7 +143,8 @@ sudo drm_info  # => yup qxl visible
 cat /sys/class/drm/card1/card1-Virtual-1/modes # max is 1024 :( but does have other entries and this is VNC so it is possibly different otherwise, in fact
 # TODO SPICE can't I set the resolution
 # yes... Since 5.9.0, the model element may also have an optional resolution sub-element. The resolution element has attributes x and y to set the minimum resolution for the video device. This sub-element is valid for model types "vga", "qxl", "bochs", "gop", and "virtio".
-
+# OMG resolution worked!!!! vnc is YUUUUGE.. so now I need to blacklist qxl driver
+#  *** TODO - LEFT OFF HERE and see if I can get simpledrm to 1080p before I bother with copying over custom kernel and doing that via SSH
 
 
 # TODO need SSH too, probably have to double hop to it so I can leave it NATd
