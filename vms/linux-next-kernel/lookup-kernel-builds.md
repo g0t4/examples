@@ -2,6 +2,7 @@ btw use:
 grep DRM_PANIC /boot/config-*  # check actual last installed vs src dir (might have partial/wip install not yet actuall sys installed)
 
 
+Use 6.8 on any of these for no panic screen at all (show why that is a problem)
 
 # macos qemu VM (neither currently qr code capable)
 - black => rc5-next
