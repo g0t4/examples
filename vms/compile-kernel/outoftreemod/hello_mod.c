@@ -4,14 +4,14 @@
 // Function called when the module is loaded into the kernel
 static int __init hello_init(void)
 {
-    printk(KERN_INFO "Hello, World!\n");
+    printk(KERN_INFO "Hello from out of tree module!\n");
     return 0;  // Return 0 to indicate successful loading
 }
 
 // Function called when the module is removed from the kernel
 static void __exit hello_exit(void)
 {
-    printk(KERN_INFO "Goodbye, World!\n");
+    printk(KERN_INFO "Goodbye from out of tree module\n");
 }
 
 // Macros to define the entry and exit points of the module
