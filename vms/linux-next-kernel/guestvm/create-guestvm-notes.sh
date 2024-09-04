@@ -14,13 +14,7 @@ source ~/repos/github/g0t4/dotfiles/fish/install/install.fish # installs fisher 
 # PRN link other dotfiles like .grc and .gitconfig
 sudo apt install -y silversearcher-ag
 curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash # or use iterm2 menu to do this
-# iterm shell integration s/b to open remote files, todo try it
-sudo apt install -y pipx # for osc-copy
-pipx install oscclip # so I can copy to clipboard (i.e. ctrl+K to copy cmd line)
-# => CRAP pipx failed to install (cannot find compat version)...
-#     FUUUUU oscclip repo (https://github.com/rumpelsepp/oscclip?tab=readme-ov-file) marked archived as of Aug 2024 :(
-#            did they pull oscclip?! YUP FUCK
-#     suggests => https://github.com/theimpostor/osc
+# osc for clipboard copy:
 sudo apt install -y golang
 go install -v github.com/theimpostor/osc@latest
 #       update fish copy stuffs => "osc copy",   i.e. `echo foooooo | osc copy`

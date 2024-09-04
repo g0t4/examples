@@ -1,5 +1,11 @@
 
 
+# kernel debian build deps
+sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev
+#   articles basics of building:
+#       https://kernelnewbies.org/KernelBuild
+#       https://davidaugustat.com/linux/how-to-compile-linux-kernel-on-ubuntu
+
 # ok I wanna try build13 w/ QR code and see if it works
 #    TRYING TO be a bit more careful and not just run commands rapidly
 # AND extracted kernel src again too (entirely new src dir)
