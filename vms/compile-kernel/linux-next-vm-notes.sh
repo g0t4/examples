@@ -125,3 +125,7 @@ echo 1 | sudo tee /sys/kernel/debug/dri/simple-framebuffer.0/drm_panic_plane_0
 # here is what looks like logic to decide which drm devices are supported:
 #    https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L994
 #    IIGC this would be what limits to simpledrm (etc)? indirectly via what is available in the driver plane?
+
+# *** more memory (on host)
+prlctl set {f9748b72-911e-4c14-b1d5-9b3a0044a2ee} --memsize 16384
+vagrant reload
