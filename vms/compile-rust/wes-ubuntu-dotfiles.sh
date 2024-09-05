@@ -38,6 +38,6 @@ sudo fish -c "source /root/repos/github/g0t4/dotfiles/fish/install/install.fish"
 go install -v github.com/theimpostor/osc@latest
 sudo go install -v github.com/theimpostor/osc@latest
 
-# todo only once / copy it
-curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash
+# todo only once / copy it => ~/.iterm2_shell_integration*
+curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash #J??? wait, run for bash or fish?
 curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | sudo bash
