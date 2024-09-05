@@ -11,7 +11,7 @@ sudo apt install -y fish golang
 #   Ignoring file 'ubuntu.sources.curtin.old' in directory '/etc/apt/sources.list.d/' as it has an invalid filename extension
 #
 
-sudo chsh -s /usr/bin/fish $USER
+sudo chsh -s /usr/bin/fish $USER # avoids need for password
 sudo chsh -s /usr/bin/fish root
 
 # TODO only clone once would be preferrable

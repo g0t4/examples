@@ -204,10 +204,6 @@ scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.gith
 #       https://fedoraproject.org/wiki/Changes/EnableDrmPanic#How_To_Test
 #
 
-# aside - fish shell
-sudo apt install -y fish
-sudo chsh -s /usr/bin/fish wes # don't need password this way
-
 # FYI get rid of old builds in /boot
 sudo rm /boot/*rc5-next*
 sudo update-grub # unless gonna run `make LLVM=1 install` again and it will do this for you
