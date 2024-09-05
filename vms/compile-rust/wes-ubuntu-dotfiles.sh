@@ -1,15 +1,21 @@
 # assumes sudoers access setup, and run script as the lowly user you want to setup (i.e. vagrant user, or wes user , or w/e)
 # alternatively I could enumerate all users in /home and usually that would be just one and do all of them
 
+# common apt packages
+sudo apt update # optional
+sudo apt install -y fish golang # necessary for below
+sudo apt install -y apt-file bat command-not-found curl dnsutils git grc icdiff iproute2 \
+    iputils-arping iputils-ping iputils-tracepath jq lshw lsof net-tools most \
+    procps psmisc silversearcher-ag tree unzip util-linux vim wget
+
+# todo what is this from:
+#   Ignoring file 'ubuntu.sources.curtin.old' in directory '/etc/apt/sources.list.d/' as it has an invalid filename extension
+#
+
 # TODO move these to my dotfiles repo so I can keep it there
 touch $HOME/.hushlogin
 sudo touch /root/.hushlogin
 
-sudo apt update # optional
-sudo apt install -y fish golang
-# todo what is this from:
-#   Ignoring file 'ubuntu.sources.curtin.old' in directory '/etc/apt/sources.list.d/' as it has an invalid filename extension
-#
 
 sudo chsh -s /usr/bin/fish $USER # avoids need for password
 sudo chsh -s /usr/bin/fish root
