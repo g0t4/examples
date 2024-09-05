@@ -1,0 +1,7 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # config.vm.box = "wesdemos/ubuntu2404-arm"
+  config.vm.box = "test-ubuntu2404-arm"
+end
