@@ -114,30 +114,41 @@ cp .config $HOME/configs/03-rust-qr.config # for comparison later on
 
 # compile it!
 time make LLVM=-18 -j$(nproc)
+# time w/ 4CPU and 4GB ram => 561.12 => 9.3s
+# time w/ 10CPU and 16GB ram => ____
 
 # at any time to restart and get accurate total compile time:
 make clean mrproper
 cp $HOME/configs/03-rust-qr.config .config
 # LEFT OFF HERE
-time sudo make modules_install
+time sudo make modules_install # < 1s
 
 time sudo make install
 sudo dkms status # shows parallel-tools
-sudo dkms remove -m parallels-tools -v 19.4.0.54962 --all
-time sudo make install
+sudo dkms remove -m parallels-tools -v 19.3.0.54924 --all # check version if failed
+sudo dkms status # s/b none
+sudo rm /boot/*6.11.0* # remove prev attempt(s)
+time sudo make install # 3.5s
 
-sudo rm /boot/*6.11.0*
+# check menu entries in grub:
+sudo cat /boot/grub/grub.cfg | grep menuent
+# don't need default or timeout changes if ok as is
 
 # update grub to let me pick
 cat /etc/default/grub
 sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/' /etc/default/grub
 sudo sed -i 's/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/' /etc/default/grub
-sudo sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>2"/' /etc/default/grub
+sudo sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>0"/' /etc/default/grub
 # black list vritio_gpu
 sudo dmesg | grep drm # starts with simpledrm, blacklist subsequently loaded virtio_gpu
 sudo sed -i 's/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="modprobe.blacklist=virtio_gpu"/' /etc/default/grub
 sudo update-grub
 sudo reboot
 
+uname -a # w00t
+# OPEN parallels GUI to see panic screen
+echo 1 | sudo tee /sys/kernel/debug/dri/simple-framebuffer.0/drm_panic_plane_0
+# qr code:
+echo -n "qr_code" | sudo tee /sys/module/drm/parameters/panic_screen
 
-echo -n "qr_code" > /sys/module/drm/parameters/panic_screen
+# PROFIT! DONE!
