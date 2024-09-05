@@ -23,7 +23,7 @@ sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-
 # setup initial config:
 cd $HOME/linux-next
 cp -v /boot/config-$(uname -r) .config
-yes "" | make localmodconfig # strip down to local h/w modules/drivers... and answer default to questions
+yes "" | make LLVM=-18 localmodconfig # strip down to local h/w modules/drivers... and answer default to questions
 #
 grep "SYSTEM_.*_KEYS" .config # check
 scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ""
@@ -31,6 +31,9 @@ scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
 #
 mkdir $HOME/configs
 cp .config $HOME/configs/01-localmodconfig.config # for comparison later on
+
+# FYI
+./scripts/config -h # help
 
 
 # check if LLVM is working:
@@ -105,12 +108,7 @@ grep CONFIG_RUST .config
 # s/b good to go!
 cp .config $HOME/configs/03-rust-qr.config # for comparison later on
 
-# FYI depend on env, if you have KVM loaded, you will need to disable -Werror for KVM (virutalziation => ...)
-#
-#
-# alternative:
-#    scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0xff0000
-    # ...
+# FYI if you have KVM included, you will need to disable -Werror for KVM (virutalziation => ...)
 
 # compile it!
 time make LLVM=-18 -j$(nproc)
@@ -164,3 +162,34 @@ icdiff .config ../configs/03-rust-qr.config
 # see how it updates depenedent config (ie QR_CODE=n now too)
 cp .config $HOME/configs/04-llvm-no-rust.config
 time make LLVM=-18 -j$(nproc) # 290.42s
+
+
+
+
+# *** FULLY gen config w/ script
+cp -v /boot/config-$(uname -r) .config
+yes "" | make LLVM=-18 localmodconfig # strip down to local h/w modules/drivers... and answer default to questions
+cp .config $HOME/configs/01-localmodconfig.config
+#
+scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ""
+scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
+# enable rust:
+scripts/config --disable CONFIG_MODVERSIONS
+scripts/config --disable CONFIG_SHADOW_CALL_STACK
+scripts/config --enable CONFIG_RUST
+# enable panic screen:
+# enable QR code panic screen:
+scripts/config --enable CONFIG_DRM_PANIC
+scripts/config --enable CONFIG_DRM_PANIC_DEBUG
+
+# scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0xff0000
+# scripts/config --set-val CONFIG_DRM_PANIC_FOREGROUND_COLOR 0xffffff
+scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE
+scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.github.io/panic_report" # setting both on VM and build13
+cp .config ../configs/02-after-scripts-config-calls.config
+
+make LLVM=-18 menuconfig # save => exit (fixes up dependencies / sorting too)
+cp .config ../configs/03-after-final-menuconfig.config
+# this matches original manually selected items from above testing.. however b/c I blacklisted the virtio_gpu it wasn't included any more
+#    scripts/config --disable CONFIG_DRM_VIRTIO_GPU
+#    alternative to modprobe black listing
