@@ -90,3 +90,38 @@ time sudo make install # round3: 3s
 # GRUB_CMDLINE_LINUX="video=simpledrm "
 sudo sed -i 's/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="modprobe.blacklist=virtio_gpu"/' /etc/default/grub
     sudo update-grub
+sudo reboot
+#
+sudo apt install -y fbset edid-decode read-edid drm-info
+# double check simpledrm after blacklist
+sudo fbset -s # ensure simpledrm at top of output OR if multi device somewhere in output
+sudo ls /sys/kernel/debug/dri/simple-framebuffer.0/drm_panic_plane_0
+sudo ls /sys/module/drm/parameters/panic_screen # config for type of panic screen
+
+# logo higher quality (mono)
+scripts/config --enable CONFIG_LOGO
+scripts/config --enable CONFIG_LOGO_LINUX_MONO
+# then the panic screen uses the mono logo (not ascii logo)
+#
+# FYI there are other logics (color) but the panic module calls fb_find_logo(1) which sets color depth to 1 (mono) as max:
+#   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L42
+#
+scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0xff00df # pink
+scripts/config --set-val CONFIG_DRM_PANIC_FOREGROUND_COLOR 0x000000 # white
+# FYI --set-str wraps the value in quotes, --set-val does not
+grep DRM_PANIC .config
+
+# disable blinking cursor on login screen:
+sudo sed -i 's/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="modprobe.blacklist=virtio_gpu vt.global_cursor_default=0"/' /etc/default/grub
+    sudo update-grub
+
+# trigger panic w/o sudo so
+echo 1 | sudo tee /sys/kernel/debug/dri/simple-framebuffer.0/drm_panic_plane_0
+
+# FYI kernel code to register panic handler AND debugfs handler:
+#   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L1021
+#   thus, we can trigger panic display w/o a real panic using debugfs b/c it has a separate registration that doesn't have to get monkey patched through a real panic
+#
+# here is what looks like logic to decide which drm devices are supported:
+#    https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next/blob/985bf40edf4343dcb04c33f58b40b4a85c1776d4/drivers/gpu/drm/drm_panic.c#L994
+#    IIGC this would be what limits to simpledrm (etc)? indirectly via what is available in the driver plane?
