@@ -41,3 +41,14 @@ sudo go install -v github.com/theimpostor/osc@latest
 # todo only once / copy it => ~/.iterm2_shell_integration*
 curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash #J??? wait, run for bash or fish?
 curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | sudo bash
+
+
+ln -s $HOME/repos/github/g0t4/dotfiles/.grc  $HOME/.grc
+mkdir -p $HOME/.config/bat
+ln -s $HOME/repos/github/g0t4/dotfiles/.config/bat/config  $HOME/.config/bat/config
+ln -s $HOME/repos/github/g0t4/dotfiles/git/linux.gitconfig  $HOME/.gitconfig
+# root:
+sudo ln -s /root/repos/github/g0t4/dotfiles/.grc  /root/.grc
+sudo mkdir -p /root/.config/bat
+sudo ln -s /root/repos/github/g0t4/dotfiles/.config/bat/config  /root/.config/bat/config
+sudo ln -s /root/repos/github/g0t4/dotfiles/git/linux.gitconfig  /root/.gitconfig
