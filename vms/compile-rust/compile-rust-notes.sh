@@ -73,3 +73,71 @@ rustup component add rust-src
 make LLVM=-18 rustavailable
 make rustavailable # FYI this can work too to test for rust support
 make LLVM=1 rustavailable # However, this will report "unknown C compiler"
+
+# now lets get config going and use the QR panic code as an example to test rust support
+grep DRM_PANIC .config # "is not set"
+#
+# use menuconfig so I can show how w/o RUST=y then the QR code option doesn't show
+make LLVM=-18 menuconfig
+# Device Drivers => Graphics  support  => DRM => DRM_PANIC=y , DRM_PANIC_DEBUG=y
+#    note no option for QR code (yet)
+#    /QR_CODE => shows Depends on RUST [=n]
+#    /RUST => depends on !MODVERSIONS
+#    exit/save changes
+scripts/config --disable CONFIG_MODVERSIONS
+make LLVM=-18 menuconfig
+# SHADOW_CALL_STACK s/b n (is y)
+#   General Arch => disable shadow call stack # initial inspect looks ok to use:
+#       scripts/config --disable SHADOW_CALL_STACK
+#       I haven't yet tested that so leave it out
+#  ok now, all the way up to:
+#     "General setup" => "Rust support" => RUST=y
+#  now up to:
+#     "Device Drivers" => "Graphics support" => "DRM" => QR code = y
+#         QR code option now shows
+#  exit/save
+#
+grep DRM_PANIC .config # confirm
+# one more option for base URL:
+scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.github.io/panic_report" # setting both on VM and build13
+grep DRM_PANIC .config # show that one is changed
+grep CONFIG_RUST .config
+# s/b good to go!
+cp .config $HOME/configs/03-rust-qr.config # for comparison later on
+
+# FYI depend on env, if you have KVM loaded, you will need to disable -Werror for KVM (virutalziation => ...)
+#
+#
+# alternative:
+#    scripts/config --set-val CONFIG_DRM_PANIC_BACKGROUND_COLOR 0xff0000
+    # ...
+
+# compile it!
+time make LLVM=-18 -j$(nproc)
+
+# at any time to restart and get accurate total compile time:
+make clean mrproper
+cp $HOME/configs/03-rust-qr.config .config
+# LEFT OFF HERE
+time sudo make modules_install
+
+time sudo make install
+sudo dkms status # shows parallel-tools
+sudo dkms remove -m parallels-tools -v 19.4.0.54962 --all
+time sudo make install
+
+sudo rm /boot/*6.11.0*
+
+# update grub to let me pick
+cat /etc/default/grub
+sudo sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/' /etc/default/grub
+sudo sed -i 's/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/' /etc/default/grub
+sudo sed -i 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>2"/' /etc/default/grub
+# black list vritio_gpu
+sudo dmesg | grep drm # starts with simpledrm, blacklist subsequently loaded virtio_gpu
+sudo sed -i 's/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="modprobe.blacklist=virtio_gpu"/' /etc/default/grub
+sudo update-grub
+sudo reboot
+
+
+echo -n "qr_code" > /sys/module/drm/parameters/panic_screen
