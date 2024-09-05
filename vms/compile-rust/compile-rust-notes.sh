@@ -115,15 +115,17 @@ cp .config $HOME/configs/03-rust-qr.config # for comparison later on
 # compile it!
 time make LLVM=-18 -j$(nproc)
 # time w/ 4CPU and 4GB ram => 561.12 => 9.3s
-# time w/ 10CPU and 16GB ram => ____
+# time w/ 10CPU and 16GB ram => 307s (WOW LLVM+rust is faster than gcc+no-rust)
+# see below for LLVM w/o rust => 290.42s # not a big diff!
 
 # at any time to restart and get accurate total compile time:
 make clean mrproper
 cp $HOME/configs/03-rust-qr.config .config
-# LEFT OFF HERE
+
 time sudo make modules_install # < 1s
 
 time sudo make install
+# fails b/c of parallel-tools (just remove these, NBD just lose shared volumes)
 sudo dkms status # shows parallel-tools
 sudo dkms remove -m parallels-tools -v 19.3.0.54924 --all # check version if failed
 sudo dkms status # s/b none
@@ -152,3 +154,13 @@ echo 1 | sudo tee /sys/kernel/debug/dri/simple-framebuffer.0/drm_panic_plane_0
 echo -n "qr_code" | sudo tee /sys/module/drm/parameters/panic_screen
 
 # PROFIT! DONE!
+
+
+# test LLVM w/o rust timing:
+cp ../configs/03-rust-qr.config . # then will strip rust
+make LLVM=-18 menuconfig
+# General setup => Rust support = n
+icdiff .config ../configs/03-rust-qr.config
+# see how it updates depenedent config (ie QR_CODE=n now too)
+cp .config $HOME/configs/04-llvm-no-rust.config
+time make LLVM=-18 -j$(nproc) # 290.42s
