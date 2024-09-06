@@ -65,7 +65,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # exit shell / start new shell (b/c rustup is cached as not avail) => ensure in path
 rustup --version # works
 rustc --version # works
-rustup show # check version / compat
+rustup show # stable is installed + default
+# optional install diff version (nightly)
 
 make LLVM=-18 rustavailable
 # => Rust bindings generator 'bindgen' could not be found.
@@ -193,6 +194,7 @@ scripts/config --set-str CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL "https://kdj0c.gith
 cp .config ../configs/02-after-scripts-config-calls.config
 
 make LLVM=-18 menuconfig # save => exit (fixes up dependencies / sorting too)
+# OR # make LLVM=-18 olddefconfig # keep config as is but apply defaults to new options / deps from changes via scripts/config
 cp .config ../configs/03-after-final-menuconfig.config
 # this matches original manually selected items from above testing.. however b/c I blacklisted the virtio_gpu it wasn't included any more
 #    scripts/config --disable CONFIG_DRM_VIRTIO_GPU
