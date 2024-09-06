@@ -38,9 +38,10 @@ sudo fish -c "source /root/repos/github/g0t4/dotfiles/fish/install/install.fish"
 go install -v github.com/theimpostor/osc@latest
 sudo go install -v github.com/theimpostor/osc@latest
 
-# todo only once / copy it => ~/.iterm2_shell_integration*
-curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash #J??? wait, run for bash or fish?
-curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | sudo bash
+# SHELL=fish (env var) is used by script to add ~/.iterm2_shell_integration.fish (not .bash)
+# FYI this enables ask openai iterm tool (any remote/shell that has iterm integration)
+curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | SHELL=fish bash
+curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | sudo SHELL=fish bash
 
 
 ln -s $HOME/repos/github/g0t4/dotfiles/.grc  $HOME/.grc
