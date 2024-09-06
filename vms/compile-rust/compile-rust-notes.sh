@@ -14,7 +14,8 @@ sudo hostnamectl set-hostname compile-rust
 
 
 # host:
-vagrant snapshot save linux-next
+# set 10cpu + 16GB ram
+vagrant snapshot save linux-next-10cpu
 
 
 # kernel build deps:
@@ -24,7 +25,8 @@ sudo apt install -y build-essential libncurses-dev bison flex libssl-dev libelf-
 cd $HOME/linux-next
 cp -v /boot/config-$(uname -r) .config
 yes "" | make LLVM=-18 localmodconfig # strip down to local h/w modules/drivers... and answer default to questions
-#
+#   => first time I did these instructions using gcc (no LLVM option)
+#       => will need clang/llvm before localmodconfig works
 grep "SYSTEM_.*_KEYS" .config # check
 scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ""
 scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
@@ -34,13 +36,15 @@ cp .config $HOME/configs/01-localmodconfig.config # for comparison later on
 
 # FYI
 ./scripts/config -h # help
-
+# FYI
+make help # i.e. what is localmodconfig
 
 # check if LLVM is working:
 make LLVM=1 menuconfig
 # => clang: not found
 # install llvm/clang:
 sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+#  alt: sudo apt install -y clang llvm # others? I don't mind passing LLVM=-18 b/c already have to pass LLVM=1 regardless
 # validate:
 llvm-config-18 --version
 clang-18 --version
@@ -55,13 +59,13 @@ make LLVM=-18 menuconfig # check again
 make LLVM=-18 rustavailable
 # => Rust compiler 'rustc' could not be found.
 #   => fix issues one by one
-# install rustup:
+# install rustup (https://rustup.rs/):
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # proceed with standard installation
-# exit shell / start new shell (b/c rustup is cached as not avail)
+# exit shell / start new shell (b/c rustup is cached as not avail) => ensure in path
 rustup --version # works
 rustc --version # works
-rustup show
+rustup show # check version / compat
 
 make LLVM=-18 rustavailable
 # => Rust bindings generator 'bindgen' could not be found.
