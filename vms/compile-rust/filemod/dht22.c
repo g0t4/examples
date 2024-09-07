@@ -22,7 +22,6 @@ static struct dht22_data sensor_data;
 static int dht22_read(void)
 {
     int data[5] = {0}; // 5 bytes of data (humidity and temperature)
-    int bit_count = 0;
     int i, j;
 
     // Send the start signal to DHT22
@@ -81,7 +80,6 @@ static int dht22_read(void)
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
     char buffer[64];
-    int ret;
 
     if (dht22_read() < 0)
     {
