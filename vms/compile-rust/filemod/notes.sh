@@ -76,3 +76,6 @@ sudo dmesg --human/-h # when batches of messages (based on time) are shown, firs
 # *** FYI, this doesn't mean they are related, just that they arrived about the same time as others
 
 
+# quickly reload and see printk output
+sudo rmmod filemod; sudo insmod filemod.ko; sudo dmesg --raw | tail
+
