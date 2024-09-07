@@ -12,6 +12,7 @@ static int __init hello_init(void)
     printk(KERN_WARNING "Hello, world!  " "foo\n"); // KERN_WARNING is a macro => "4" thus setting the priority level
     printk("Hello, 2\n");
     printk("\001" "6Hello, 3\n"); // pass priority w/o macros KERN_INFO => KERN_SOH "6" => "\001" "6"
+    // FYI linux/kernel.h => #include <linux/printk.h> => #include <linux/kern_levels.h> => #define KERN_SOH "\001" => #define KERN_INFO "<6>" ...
     return 0; // Return 0 means successful loading
 }
 
