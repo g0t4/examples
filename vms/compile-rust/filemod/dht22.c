@@ -10,18 +10,6 @@ static int major;
 static struct class *my_class;
 static struct cdev my_cdev;
 
-static int dht22_open(struct inode *inode, struct file *file)
-{
-    pr_info("dht22_open opened\n");
-    return 0;
-}
-
-static int dht22_release(struct inode *inode, struct file *file)
-{
-    pr_info("dht22_release closed\n");
-    return 0;
-}
-
 // store string of content in memory
 static char msg[100] = "Hello from dht22\n";
 
@@ -32,22 +20,10 @@ static ssize_t dht22_read(struct file *file, char __user *buf, size_t len, loff_
     return simple_read_from_buffer(buf, len, offset, msg, strlen(msg));
 }
 
-static ssize_t dht22_write(struct file *file, const char __user *buf, size_t len, loff_t *offset)
-{
-    pr_info("dht22_write called\n");
-    // erase msg (probably shoudn't do this and instead let it overwrite subset of msg (offset/len) but meh... just erase it all for now on each write)
-    memset(msg, 0, sizeof(msg)); // null terminate entire msg buffer so the new message is it
-    // PRN use offset
-    return simple_write_to_buffer(msg, sizeof(msg), offset, buf, len);
-}
-
 // FYI defined: include/linux/fs.h
 static struct file_operations fops = {
     .owner = THIS_MODULE,
-    .open = dht22_open,
-    .release = dht22_release,
     .read = dht22_read,
-    .write = dht22_write,
 };
 
 static int __init dht22_init(void)
