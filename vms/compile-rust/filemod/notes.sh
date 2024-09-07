@@ -79,3 +79,11 @@ sudo dmesg --human/-h # when batches of messages (based on time) are shown, firs
 # quickly reload and see printk output
 sudo rmmod filemod; sudo insmod filemod.ko; sudo dmesg --raw | tail
 
+
+# FYI search for module authors in kernel source
+grep --no-filename --recursive MODULE_AUTHOR * | sort | uniq
+
+make tags # for vim code navigation
+
+# module params
+# https://tldp.org/LDP/lkmpg/2.6/html/x323.html
