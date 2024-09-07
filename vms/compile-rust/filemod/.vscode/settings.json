@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "**/*.repo": "ini",
+    "vlcrc": "ini",
+    "org.videolan.vlc": "ini",
+    "Vagrantfile": "ruby",
+    "*.plist": "xml",
+    "*.fwinfo": "jsonc",
+    "*.ks": "shellscript",
+    "Corefile": "caddyfile",
+    "*.officeUI": "xml",
+    "ignore": "ignore",
+    "**/.grc/**/conf.*": "ini",
+    "kernel.h": "c"
+  }
+}
