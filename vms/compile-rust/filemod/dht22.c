@@ -120,38 +120,40 @@ static struct device *dht22_device = NULL;
 
 static int __init dht22_init(void)
 {
+    int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
+    if (ret)
+    {
+        pr_err("DHT22: Unable to request GPIO pin\n");
+        return ret;
+    }
 
-    // int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
-    // if (ret)
-    // {
-    //     pr_err("DHT22: Unable to request GPIO pin\n");
-    //     return ret;
-    // }
     // Register the character device
-
     major = register_chrdev(0, "dht22", &dht22_fops);
-    if (major < 0) {
+    if (major < 0)
+    {
         pr_err("DHT22: Unable to register character device\n");
-        // gpio_free(DHT22_GPIO_PIN);
+        gpio_free(DHT22_GPIO_PIN);
         return major;
     }
 
     // Create the device class
     dht22_class = class_create("dht22");
-    if (IS_ERR(dht22_class)) {
+    if (IS_ERR(dht22_class))
+    {
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
-        // gpio_free(DHT22_GPIO_PIN);
+        gpio_free(DHT22_GPIO_PIN);
         return PTR_ERR(dht22_class);
     }
 
     // Create the device file /dev/dht22
     dht22_device = device_create(dht22_class, NULL, MKDEV(major, 0), NULL, "dht22");
-    if (IS_ERR(dht22_device)) {
+    if (IS_ERR(dht22_device))
+    {
         class_destroy(dht22_class);
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create device\n");
-        // gpio_free(DHT22_GPIO_PIN);
+        gpio_free(DHT22_GPIO_PIN);
         return PTR_ERR(dht22_device);
     }
 
@@ -162,7 +164,7 @@ static int __init dht22_init(void)
 static void __exit dht22_exit(void)
 {
     // Free the GPIO pin
-    //gpio_free(DHT22_GPIO_PIN);
+    gpio_free(DHT22_GPIO_PIN);
 
     // Remove the device
     device_destroy(dht22_class, MKDEV(major, 0));
