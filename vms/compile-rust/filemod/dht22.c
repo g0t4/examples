@@ -21,6 +21,9 @@ static struct dht22_data sensor_data;
 
 static int dht22_read(void)
 {
+    // TODO lock for one read at a time?
+    // TODO fail if read too soon after last read? (IIUC 2 second probing interval minimum required)
+
     // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
