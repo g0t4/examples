@@ -24,7 +24,7 @@ static int dht22_read(void)
     // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
-    int data[5] = {0}; // 5 bytes of data (humidity and temperature)
+    short data[5] = {0}; // 5 bytes of data (humidity and temperature)
     int i, j;
 
     // Send the start signal to DHT22
@@ -48,8 +48,10 @@ static int dht22_read(void)
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
     for (i = 0; i < 5; i++)
     {
+        // 5 bytes of data sent
         for (j = 0; j < 8; j++)
         {
+            // 8 bits per byte obviously
             while (gpio_get_value(DHT22_GPIO_PIN) == 0)
                 ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
             udelay(30); // Delay to determine if it's a '1' or '0'
@@ -63,14 +65,22 @@ static int dht22_read(void)
         }
     }
 
-    // Check if data is valid
+    // MSB sent first
+    // 40bits of data is divided into 5 bytes
+    // Convert data to temperature and humidity
+    // 1st Byte: Relative Humidity Integral Data in % (Integer Part)
+    // 2nd Byte: Relative Humidity Decimal Data in % (Fractional Part) – Zero for DHT11
+    // 3rd Byte: Temperature Integral in Degree Celsius (Integer Part)
+    // 4th Byte: Temperature in Decimal Data in % (Fractional Part) – Zero for DHT11
+    // 5th Byte: Checksum (Last 8 bits of {1st Byte + 2nd Byte + 3rd Byte+ 4th Byte})
+
+    // check checksum // last byte (8 bits) as each byte is 8 bits (not int size)
     if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF))
     {
         pr_err("DHT22: Data checksum error\n");
         return -1;
     }
 
-    // Convert data to temperature and humidity
     sensor_data.humidity = ((data[0] << 8) + data[1]) / 10;
     sensor_data.temperature = (((data[2] & 0x7F) << 8) + data[3]) / 10;
     if (data[2] & 0x80)
