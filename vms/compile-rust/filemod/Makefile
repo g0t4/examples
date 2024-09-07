@@ -1,5 +1,10 @@
 # obj-m => means that the filemod.o file is a loadable module, in kernel tree you might have obj-y, IIUC
 obj-m += filemod.o
+#
+# add more modules:
+# 	obj-m += examples/filemod-legacy-init_module-cleanup_module.o
+#  	  # sudo insmod examples/filemod-legacy-init_module-cleanup_module.ko
+
 
 # full build process for modules is integrated into the kernel build process, hence why Makefile points to it (=> ~ "make modules")
 # 	linux/Documentation/kbuild/modules.txt
