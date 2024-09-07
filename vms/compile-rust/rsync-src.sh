@@ -1,0 +1,1 @@
+rsync --delete --archive --verbose compile-rust:~/filemod ./
