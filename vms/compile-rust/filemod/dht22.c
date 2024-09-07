@@ -5,82 +5,120 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
+#include <linux/gpio.h>
+#include <linux/delay.h>
+#include <linux/interrupt.h>
 
-static int major;
-static struct class *my_class;
-static struct cdev my_cdev;
 
-// store string of content in memory
-static char msg[100] = "Hello from dht22\n";
+#define DHT22_GPIO_PIN 4 // TODO find CORRECT PIN ON RPI
 
-static ssize_t dht22_read(struct file *file, char __user *buf, size_t len, loff_t *offset)
-{
-    pr_info("dht22_read called with len: %d, offset: %lld\n", (int)len, *offset);
-    // prn use offset?
-    return simple_read_from_buffer(buf, len, offset, msg, strlen(msg));
-}
-
-// FYI defined: include/linux/fs.h
-static struct file_operations fops = {
-    .owner = THIS_MODULE,
-    .read = dht22_read,
+struct dht22_data {
+    int temperature;
+    int humidity;
 };
 
-static int __init dht22_init(void)
-{
-    // allocate chrdev region
-    dev_t dev_num;
+static struct dht22_data sensor_data;
 
-    int ret = alloc_chrdev_region(&dev_num, 0, 1, "dht22");
-    if (ret < 0)
-    {
-        printk(KERN_ERR "Failed to allocate chrdev region\n");
-        return ret;
+static int dht22_read(void) {
+    int data[5] = {0};  // 5 bytes of data (humidity and temperature)
+    int bit_count = 0;
+    int i, j;
+
+    // Send the start signal to DHT22
+    gpio_direction_output(DHT22_GPIO_PIN, 1);
+    udelay(20);  // Pull high for 20us
+    gpio_direction_output(DHT22_GPIO_PIN, 0);
+    msleep(18);  // Pull low for at least 18ms
+    gpio_direction_output(DHT22_GPIO_PIN, 1);
+    udelay(40);  // Pull high for 40us
+    gpio_direction_input(DHT22_GPIO_PIN);
+
+    // Wait for the sensor response (80us low, 80us high)
+    while (gpio_get_value(DHT22_GPIO_PIN) == 1);
+    udelay(80);
+    while (gpio_get_value(DHT22_GPIO_PIN) == 0);
+    udelay(80);
+
+    // Read the data (40 bits)
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 8; j++) {
+            while (gpio_get_value(DHT22_GPIO_PIN) == 0);  // Wait for the pin to go high
+            udelay(30);  // Delay to determine if it's a '1' or '0'
+
+            if (gpio_get_value(DHT22_GPIO_PIN) == 1) {
+                data[i] |= (1 << (7 - j));  // Set bit
+                while (gpio_get_value(DHT22_GPIO_PIN) == 1);  // Wait for the pin to go low
+            }
+        }
     }
 
-    major = MAJOR(dev_num);
-    printk(KERN_INFO "Allocated chrdev region: %d\n", major);
-
-    // create/register cdev
-
-    cdev_init(&my_cdev, &fops);
-    my_cdev.owner = THIS_MODULE;
-
-    if (cdev_add(&my_cdev, dev_num, 1) < 0)
-    {
-        unregister_chrdev_region(dev_num, 1);
+    // Check if data is valid
+    if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
+        pr_err("DHT22: Data checksum error\n");
         return -1;
     }
 
-    // create device node
-    my_class = class_create("dht22_class");
-    if (IS_ERR(my_class))
-    {
-        cdev_del(&my_cdev);
-        unregister_chrdev_region(dev_num, 1);
-        return PTR_ERR(my_class);
+    // Convert data to temperature and humidity
+    sensor_data.humidity = ((data[0] << 8) + data[1]) / 10;
+    sensor_data.temperature = (((data[2] & 0x7F) << 8) + data[3]) / 10;
+    if (data[2] & 0x80) {
+        sensor_data.temperature = -sensor_data.temperature;  // Handle negative temperature
     }
-
-    device_create(my_class, NULL, dev_num, NULL, "dht22");
 
     return 0;
 }
 
-static void __exit dht22_exit(void)
-{
-    // destroy device node
-    dev_t dev_num = MKDEV(major, 0);
-    device_destroy(my_class, dev_num);
-    class_destroy(my_class);
+static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset) {
+    char buffer[64];
+    int ret;
 
-    // unregister cdev
-    cdev_del(&my_cdev);
+    if (dht22_read() < 0) {
+        return -EFAULT;  // Error reading sensor
+    }
 
-    // unregister chrdev region
-    unregister_chrdev_region(dev_num, 1);
+    // Format the data
+    snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
-    printk(KERN_INFO "Unregistered chrdev region: %d\n", major);
+    // Copy the data to user space
+    ret = simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
+
+    return ret;
 }
+
+static const struct file_operations dht22_fops = {
+    .owner = THIS_MODULE,
+    .read = dht22_read_data,
+};
+
+static int __init dht22_init(void) {
+
+    int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
+    if (ret) {
+        pr_err("DHT22: Unable to request GPIO pin\n");
+        return ret;
+    }
+
+    ret = register_chrdev(0, "dht22", &dht22_fops);
+    if (ret < 0) {
+        pr_err("DHT22: Unable to register character device\n");
+        gpio_free(DHT22_GPIO_PIN);
+        return ret;
+    }
+
+    pr_info("DHT22: Driver loaded successfully\n");
+    return 0;
+}
+
+static void __exit dht22_exit(void) {
+    // Free the GPIO pin
+    gpio_free(DHT22_GPIO_PIN);
+
+    // Unregister the character device
+    unregister_chrdev(0, "dht22");
+
+    pr_info("DHT22: Driver unloaded\n");
+}
+
 
 module_init(dht22_init);
 module_exit(dht22_exit);
