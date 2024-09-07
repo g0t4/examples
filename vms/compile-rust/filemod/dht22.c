@@ -118,19 +118,19 @@ static const struct file_operations dht22_fops = {
 static int __init dht22_init(void)
 {
 
-    int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
-    if (ret)
-    {
-        pr_err("DHT22: Unable to request GPIO pin\n");
-        return ret;
-    }
+    // int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
+    // if (ret)
+    // {
+    //     pr_err("DHT22: Unable to request GPIO pin\n");
+    //     return ret;
+    // }
 
     major = register_chrdev(0, "dht22", &dht22_fops);
     if (major < 0)
     {
         pr_err("DHT22: Unable to register character device\n");
         gpio_free(DHT22_GPIO_PIN);
-        return ret;
+        return major;
     }
 
     pr_info("DHT22: Driver loaded successfully\n");
@@ -140,7 +140,7 @@ static int __init dht22_init(void)
 static void __exit dht22_exit(void)
 {
     // Free the GPIO pin
-    gpio_free(DHT22_GPIO_PIN);
+    //gpio_free(DHT22_GPIO_PIN);
 
     // Unregister the character device
     unregister_chrdev(major, "dht22");
