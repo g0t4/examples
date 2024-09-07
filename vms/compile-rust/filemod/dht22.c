@@ -24,7 +24,7 @@ static int dht22_read(void)
     // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
-    short data[5] = {0}; // 5 bytes of data (humidity and temperature)
+    int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
     int i, j;
 
     // Send the start signal to DHT22
