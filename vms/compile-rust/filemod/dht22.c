@@ -137,7 +137,7 @@ static int __init dht22_init(void)
     }
 
     // Create the device class
-    dht22_class = class_create(THIS_MODULE, "dht22");
+    dht22_class = class_create("dht22");
     if (IS_ERR(dht22_class)) {
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
