@@ -6,7 +6,7 @@
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
 
-static int major;
+static int my_major;
 static struct class *my_class;
 static struct cdev my_cdev;
 
@@ -62,8 +62,8 @@ static int __init rwdev_init(void)
         return ret;
     }
 
-    major = MAJOR(dev_num);
-    printk(KERN_INFO "Allocated chrdev region: %d\n", major);
+    my_major = MAJOR(dev_num);
+    printk(KERN_INFO "Allocated chrdev region: %d\n", my_major);
 
     // create/register cdev
 
@@ -93,7 +93,7 @@ static int __init rwdev_init(void)
 static void __exit rwdev_exit(void)
 {
     // destroy device node
-    dev_t dev_num = MKDEV(major, 0);
+    dev_t dev_num = MKDEV(my_major, 0);
     device_destroy(my_class, dev_num);
     class_destroy(my_class);
 
@@ -103,7 +103,7 @@ static void __exit rwdev_exit(void)
     // unregister chrdev region
     unregister_chrdev_region(dev_num, 1);
 
-    printk(KERN_INFO "Unregistered chrdev region: %d\n", major);
+    printk(KERN_INFO "Unregistered chrdev region: %d\n", my_major);
 }
 
 module_init(rwdev_init);

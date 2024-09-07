@@ -11,6 +11,8 @@
 
 #define DHT22_GPIO_PIN 4 // TODO find CORRECT PIN ON RPI
 
+static int major;
+
 struct dht22_data
 {
     int temperature;
@@ -123,8 +125,8 @@ static int __init dht22_init(void)
         return ret;
     }
 
-    ret = register_chrdev(0, "dht22", &dht22_fops);
-    if (ret < 0)
+    major = register_chrdev(0, "dht22", &dht22_fops);
+    if (major < 0)
     {
         pr_err("DHT22: Unable to register character device\n");
         gpio_free(DHT22_GPIO_PIN);
@@ -141,7 +143,7 @@ static void __exit dht22_exit(void)
     gpio_free(DHT22_GPIO_PIN);
 
     // Unregister the character device
-    unregister_chrdev(0, "dht22");
+    unregister_chrdev(major, "dht22");
 
     pr_info("DHT22: Driver unloaded\n");
 }
