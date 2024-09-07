@@ -21,7 +21,7 @@ static void __exit hello_exit(void)
 module_init(hello_init);
 module_exit(hello_exit);
 
-MODULE_LICENSE("GPL");             // License type
-MODULE_AUTHOR("Your Name");        // Module author
-MODULE_DESCRIPTION("A simple Hello World LKM");  // Module description
-MODULE_VERSION("0.1");             // Version number
+MODULE_LICENSE("MIT");
+MODULE_AUTHOR("Wes");
+MODULE_DESCRIPTION("Hello World Module");
+MODULE_VERSION("0.1");

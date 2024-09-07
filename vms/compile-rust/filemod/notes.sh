@@ -14,5 +14,10 @@ cat /etc/modprobe.conf
 # blacklisting modules:
 cat /etc/modprobe.d/blacklist*.conf
 cat /etc/modprobe.d/dkms.conf # DKMS
+#
+# show effective config (of /etc/modprobe.d/*.conf et al)
+modprobe -c
 
 
+make LLVM=-18 # compile modules w/ same compiler and version used to compile kernel (in my rust env I am using LLVM tooling v18)
+modinfo filemod.ko # shows metadata from module source file
