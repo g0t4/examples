@@ -7,7 +7,9 @@
 // Function executed when the module is loaded
 static int __init hello_init(void)
 {
-    printk(KERN_WARNING "Hello, world!\n");
+    // KERN_WARNING/INFO/etc are marcros => see include/linux/kern_levels.h
+    // btw in C, string literals separated by whitespace are concatenated ... so printk is called with one big string:
+    printk(KERN_WARNING "Hello, world!  " "foo\n"); // KERN_WARNING is a macro => "4" thus setting the priority level
     return 0; // Return 0 means successful loading
 }
 
