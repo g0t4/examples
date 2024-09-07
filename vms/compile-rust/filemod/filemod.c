@@ -7,7 +7,7 @@
 // Function executed when the module is loaded
 static int __init hello_init(void)
 {
-    printk(KERN_INFO "Hello, world!\n");
+    printk(KERN_WARNING "Hello, world!\n");
     return 0; // Return 0 means successful loading
 }
 
