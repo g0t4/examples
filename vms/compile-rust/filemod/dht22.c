@@ -21,35 +21,39 @@ static struct dht22_data sensor_data;
 
 static int dht22_read(void)
 {
+    // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
+    // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
+
     int data[5] = {0}; // 5 bytes of data (humidity and temperature)
     int i, j;
 
     // Send the start signal to DHT22
     gpio_direction_output(DHT22_GPIO_PIN, 1); // pull high
-    udelay(20);                               // for 20us
+    udelay(20);                               // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
     gpio_direction_output(DHT22_GPIO_PIN, 0); // pull low
     msleep(18);                               // for at least 18ms
     gpio_direction_output(DHT22_GPIO_PIN, 1); // pull high
-    udelay(40);                               // for 40us
-    gpio_direction_input(DHT22_GPIO_PIN);
+    udelay(40);                               // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
+
+    gpio_direction_input(DHT22_GPIO_PIN); // start reading (can't I start reading right after pull high? or?)
 
     // Wait for the sensor response (80us low, 80us high)
     while (gpio_get_value(DHT22_GPIO_PIN) == 1)
         ;
-    udelay(80);
+    udelay(80); // once low, wait 80us // should we check every 5us instead of just skip 80?!
     while (gpio_get_value(DHT22_GPIO_PIN) == 0)
         ;
-    udelay(80);
+    udelay(80); // once high, wait 80us => "get ready" for data transmission
 
-    // Read the data (40 bits)
+    // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
     for (i = 0; i < 5; i++)
     {
         for (j = 0; j < 8; j++)
         {
             while (gpio_get_value(DHT22_GPIO_PIN) == 0)
-                ;       // Wait for the pin to go high
+                ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
             udelay(30); // Delay to determine if it's a '1' or '0'
-
+            // after 30us if it is still high, then it is a '1', otherwise it is a '0'
             if (gpio_get_value(DHT22_GPIO_PIN) == 1)
             {
                 data[i] |= (1 << (7 - j)); // Set bit
