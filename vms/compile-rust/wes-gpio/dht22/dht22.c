@@ -8,69 +8,9 @@
 #include <linux/gpio.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
+#include "../ledfs/pins.h"
 
-// GLOBAL PIN NUMBER for gpio_* functions
-#define RPI5_GPIO_3 574 // reads as 1
-#define RPI5_GPIO_4 575
-#define RPI5_GPIO_5 576
-#define RPI5_GPIO_6 577
-#define RPI5_GPIO_7 578 // reads as 1
-#define RPI5_GPIO_8 579 // reads as 1
-#define RPI5_GPIO_9 580 // reads as 0
-#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
-// !! FUU still not working but then again I don't have anything connected so I can't tell what error 517 means
-
-// okkk I think i get it now
-//   in kernel space you use linux/gpio.h (and/or linux/gpio/consumer.h/driver.h ...)
-//       kernel space line/pins are based on global line numbers (each chip has a base line number + offset of line you want)
-//   in user space you can use deprecated sysfs (deprecated 4.8) or new chardev API... this one is based on chip/line numbers (two params)
-//
-// find base:
-//   on device, list chips
-//      ls /sys/class/gpio/
-//      cat /sys/class/gpio/gpiochip*/label # find the one you want (e.g. pinctrl-rp1)
-//      cat /sys/class/gpio/gpiochip*/base # find the one you want (e.g. pinctrl-rp1)
-//      for my rpi5 =>  gpiochip571, so base is 571
-//          for GPIO4 (is line 4 below)
-//          571 + 4 = 575 => use 575 for GPIO4
-//          571 + 5 = 576 => use 576 for GPIO5
-//          etc
-//      btw physical pin #s don't match GPIO line #s... i.e. GPIO4 is pin 7
-//          https://www.ics.com/blog/explore-hardware-capabilities-raspberry-pis-gpio-interface
-//   sudo gpioinfo # shows all chips/lines
-//   sudo gpioinfo gpiochip571 # shows all lines for chip I care about (GPIO header plus a few more)
-
-// find base + offset (line #)
-// 571 is base here:
-// sudo gpioinfo gpiochip571
-//         line   0:     "ID_SDA"       unused   input  active-high
-//         line   1:     "ID_SCL"       unused   input  active-high
-//         line   2:      "GPIO2"       unused   input  active-high
-//         line   3:      "GPIO3"       unused   input  active-high
-//         line   4:      "GPIO4"       unused   input  active-high
-//         line   5:      "GPIO5"       unused   input  active-high
-//         line   6:      "GPIO6"       unused   input  active-high
-//         line   7:      "GPIO7"       unused   input  active-high
-//         line   8:      "GPIO8"       unused   input  active-high
-//         line   9:      "GPIO9"       unused   input  active-high
-//         line  10:     "GPIO10"       unused   input  active-high
-//         line  11:     "GPIO11"       unused   input  active-high
-//         line  12:     "GPIO12"       unused   input  active-high
-//         line  13:     "GPIO13"       unused   input  active-high
-//         line  14:     "GPIO14"       unused   input  active-high
-//         line  15:     "GPIO15"       unused   input  active-high
-//         line  16:     "GPIO16"       unused   input  active-high
-//         line  17:     "GPIO17"       unused   input  active-high
-//         line  18:     "GPIO18"       unused   input  active-high
-//         line  19:     "GPIO19"       unused   input  active-high
-//         line  20:     "GPIO20"       unused   input  active-high
-//         line  21:     "GPIO21"       unused   input  active-high
-//         line  22:     "GPIO22"       unused   input  active-high
-//         line  23:     "GPIO23"       unused   input  active-high
-//         line  24:     "GPIO24"       unused   input  active-high
-//         line  25:     "GPIO25"       unused   input  active-high
-//         line  26:     "GPIO26"       unused   input  active-high
-//         line  27:     "GPIO27"       unused   input  active-high
+#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_17 // TODO what pin?
 
 struct dht22_data
 {
