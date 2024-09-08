@@ -1,1 +1,1 @@
-rsync --delete --archive --verbose ./filemod pi6:~/
+rsync --delete --archive --verbose ./wes-modules pi6:~/
