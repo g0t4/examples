@@ -14,5 +14,10 @@ make menuconfig
 
 # compile new kernel
 time make -j$(nproc) # using gcc this time
+time sudo make modules_install
+time sudo make install
 
+# issue with initrd/ramfs... just realized I don't need a custom kernel on my pi... just use the stable builtin ones.. I don't need 6.11+ features # probably would need rpi patches or smth anyways...
+
+# FYI current kernel: 6.6.31+rpt-rpi-2712
 
