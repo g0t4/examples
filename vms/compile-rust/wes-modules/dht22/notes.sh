@@ -65,6 +65,13 @@ ls -al /sys/class/gpio/gpiochip571 # => ../../devices/platform/axi/1000120000.pc
 
 
 
-# TODO review => GPIO kernel guide https://embetronicx.com/tutorials/linux/device-drivers/gpio-driver-basic-using-raspberry-pi/
+# GPIO kernel guide https://embetronicx.com/tutorials/linux/device-drivers/gpio-driver-basic-using-raspberry-pi/ => simple guide... after reading some of it I get gpio_ methods working (except request but who fucking cares about that ;) )
+
+# drivers/iio/humidity/dht11.c # lolz kernel has a driver for dht11 (and IIAC dht22 the successor)
+#   wtf man... "bit banging" sounds like ... wow... as does "banging bits"... ~palindrome :)
+#   uses IRQs on edges it seems... 
+#      iio_chan_spec # 
 
 # alt => https://github.com/raspberrypi/linux  # pull official rpi kernel source if I wanna compile new kernel
+
+#
