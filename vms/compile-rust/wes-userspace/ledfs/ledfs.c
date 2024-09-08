@@ -74,7 +74,7 @@ static const struct file_operations ledfs_fops = {
 static int major;
 static struct class *ledfs_class = NULL;
 static struct device *ledfs_device = NULL;
-static bool do_request_gpio = false; // skip request/free methods for now
+static bool do_request_gpio = false; // skip request/free methods for now... /dev/ledfs is working w/o them!
 static bool do_pin_tests = false;
 static int do_pin_tests_msdelay = 500;
 
