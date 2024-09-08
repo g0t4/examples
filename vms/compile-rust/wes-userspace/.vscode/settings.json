@@ -10,5 +10,19 @@
     "--style",
     "{split_penalty_excess_character: 0, column_limit: 999, allow_split_before_dict_value: False, split_before_first_argument: True }"
   ],
+  "files.associations": {
+    "**/*.repo": "ini",
+    "vlcrc": "ini",
+    "org.videolan.vlc": "ini",
+    "Vagrantfile": "ruby",
+    "*.plist": "xml",
+    "*.fwinfo": "jsonc",
+    "*.ks": "shellscript",
+    "Corefile": "caddyfile",
+    "*.officeUI": "xml",
+    "ignore": "ignore",
+    "**/.grc/**/conf.*": "ini",
+    "pins.h": "c"
+  },
   // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
 }

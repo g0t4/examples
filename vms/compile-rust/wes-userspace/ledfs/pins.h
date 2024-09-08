@@ -1,6 +1,8 @@
 #ifndef RPI5_GPIO_H
 #define RPI5_GPIO_H
 
+// GLOBAL PIN NUMBERs for gpio_* functions (not for gpio_v2_* nor gpiod_* APIs)
+
 #define RPI5_GPIO_BASE 571
 // GPIO general purpose pins (not tied to protocol/driver like SPI, I2C, UART, PWM, EEPROM)
 // LEFT SIDE
