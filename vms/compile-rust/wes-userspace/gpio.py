@@ -1,5 +1,5 @@
 import time
-import gpiod
+import gpiod # uses libgpiod which uses gpiod_ functions in the kernel in drivers/gpio/gpiolib.c (i.e. gpiod_request, gpiod_get_value, gpiod_set_value, etc.)
 from gpiod.line import Direction, Value
 
 LINE = 4
@@ -21,6 +21,8 @@ with gpiod.request_lines(
         request.set_value(LINE, Value.INACTIVE)
         print(f"Current value: {request.get_value(LINE)}")
         time.sleep(1)
+
+
 
 # CRUCIAL for user space programs, I need access to GPIO w/o sudo...
 # sudo usermod -aG gpio $USER
