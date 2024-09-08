@@ -10,7 +10,7 @@
 #include <linux/interrupt.h>
 #include "../ledfs/pins.h"
 
-#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_17 // TODO what pin?
+#define GPIO_DATA_LINE RPI5_GPIO_17 // TODO what pin?
 // 1 = VCC (3.3V)
 // 2 = DATA (GPIO)
 // 3 = NC (not connected)
@@ -36,20 +36,20 @@ static int dht22_read(void)
     int i, j;
 
     // Send the start signal to DHT22
-    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
+    gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
     udelay(20);                                       // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
-    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0); // pull low
+    gpio_direction_output(GPIO_DATA_LINE, 0); // pull low
     msleep(18);                                       // for at least 18ms (holy crap that is a long long time)
-    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
+    gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
     udelay(40);                                       // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
 
-    gpio_direction_input(USE_GLOBAL_LINE_NUMBER); // start reading (can't I start reading right after pull high? or?)
+    gpio_direction_input(GPIO_DATA_LINE); // start reading (can't I start reading right after pull high? or?)
 
     // Wait for the sensor response (80us low, 80us high)
-    while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
+    while (gpio_get_value(GPIO_DATA_LINE) == 1)
         ;
     udelay(80); // once low, wait 80us // should we check every 5us instead of just skip 80?!
-    while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 0)
+    while (gpio_get_value(GPIO_DATA_LINE) == 0)
         ;
     udelay(80); // once high, wait 80us => "get ready" for data transmission
 
@@ -61,14 +61,14 @@ static int dht22_read(void)
         for (j = 0; j < 8; j++)
         {
             // 8 bits per byte obviously
-            while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 0)
+            while (gpio_get_value(GPIO_DATA_LINE) == 0)
                 ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
             udelay(30); // Delay to determine if it's a '1' or '0'
             // after 30us if it is still high, then it is a '1', otherwise it is a '0'
-            if (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
+            if (gpio_get_value(GPIO_DATA_LINE) == 1)
             {
                 data[i] |= (1 << (7 - j)); // Set bit
-                while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
+                while (gpio_get_value(GPIO_DATA_LINE) == 1)
                     ; // Wait for the pin to go low
             }
         }
@@ -129,29 +129,29 @@ static int __init dht22_init(void)
 {
     if (do_pin_tests)
     {
-        pr_info("DHT22: Testing GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        pr_info("DHT22: Testing GPIO pin %d\n", GPIO_DATA_LINE);
 
         // just get a damn pin
-        if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+        if (gpio_is_valid(GPIO_DATA_LINE))
         {
             // OMG this returns true
-            pr_info("DHT22: Using GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+            pr_info("DHT22: Using GPIO pin %d\n", GPIO_DATA_LINE);
         }
         else
         {
-            pr_err("DHT22: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+            pr_err("DHT22: Invalid GPIO pin %d\n", GPIO_DATA_LINE);
             return -EINVAL;
         }
         // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
-        int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // matches gpioget gpiochip4 X for a range of #s!
-        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
+        int value = gpio_get_value(GPIO_DATA_LINE); // matches gpioget gpiochip4 X for a range of #s!
+        pr_info("DHT22: GPIO pin %d value is %d\n", GPIO_DATA_LINE, value);
 
         // void gpio_set_value(unsigned int gpio, int value);
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
+        gpio_set_value(GPIO_DATA_LINE, 1); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
 
-        int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
+        int value2 = gpio_get_value(GPIO_DATA_LINE); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
         // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
-        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value2);
+        pr_info("DHT22: GPIO pin %d value is %d\n", GPIO_DATA_LINE, value2);
         // *** WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
 
         // int gpio_export(unsigned int gpio, bool direction_may_change);
@@ -159,7 +159,7 @@ static int __init dht22_init(void)
 
         // int  gpio_direction_input(unsigned gpio)
         // int  gpio_direction_output(unsigned gpio, int value)
-        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0) < 0) // CONFIRMED VALUE IS SET!
+        if (gpio_direction_output(GPIO_DATA_LINE, 0) < 0) // CONFIRMED VALUE IS SET!
         {
             // OMFG it worked, I flipped GPIO7 to output!!!
             // sudo gpioinfo gpiochip4  | grep "GPIO\d"
@@ -167,17 +167,17 @@ static int __init dht22_init(void)
             pr_err("DHT22: gpio_direction_output failed\n");
             return -1;
         }
-        int value3 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
-        pr_info("DHT22: GPIO pin %d value is %d (after output dir)\n", USE_GLOBAL_LINE_NUMBER, value3);
+        int value3 = gpio_get_value(GPIO_DATA_LINE);
+        pr_info("DHT22: GPIO pin %d value is %d (after output dir)\n", GPIO_DATA_LINE, value3);
 
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING TOO
-        int value4 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
-        pr_info("DHT22: GPIO pin %d value is %d (after set 1)\n", USE_GLOBAL_LINE_NUMBER, value4);
+        gpio_set_value(GPIO_DATA_LINE, 1); // WORKING TOO
+        int value4 = gpio_get_value(GPIO_DATA_LINE);
+        pr_info("DHT22: GPIO pin %d value is %d (after set 1)\n", GPIO_DATA_LINE, value4);
     }
 
     if (do_request_gpio)
     {
-        pr_info("DHT22: Requesting GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        pr_info("DHT22: Requesting GPIO pin %d\n", GPIO_DATA_LINE);
         // ! is it possible gpio_request is resetting the value to 1? (i.e. active-high bias)... was that part of my issue with trying to find what reset my value, I know at the time I was still calling this (failed module load) and so maybe this was doing that?
         // if this fails, can I just ignore it? some of the guides I saw said it is not enforced? ...
         int ret = gpio_request(4, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
@@ -195,7 +195,7 @@ static int __init dht22_init(void)
     if (major < 0)
     {
         pr_err("DHT22: Unable to register character device\n");
-        gpio_free(USE_GLOBAL_LINE_NUMBER);
+        gpio_free(GPIO_DATA_LINE);
         return major;
     }
 
@@ -206,7 +206,7 @@ static int __init dht22_init(void)
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
         if (do_request_gpio)
-            gpio_free(USE_GLOBAL_LINE_NUMBER);
+            gpio_free(GPIO_DATA_LINE);
         return PTR_ERR(dht22_class);
     }
 
@@ -218,7 +218,7 @@ static int __init dht22_init(void)
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create device\n");
         if (do_request_gpio)
-            gpio_free(USE_GLOBAL_LINE_NUMBER);
+            gpio_free(GPIO_DATA_LINE);
         return PTR_ERR(dht22_device);
     }
 
@@ -230,7 +230,7 @@ static void __exit dht22_exit(void)
 {
     // Free the GPIO pin
     if (do_request_gpio)
-        gpio_free(USE_GLOBAL_LINE_NUMBER);
+        gpio_free(GPIO_DATA_LINE);
 
     // Remove the device
     device_destroy(dht22_class, MKDEV(major, 0));
