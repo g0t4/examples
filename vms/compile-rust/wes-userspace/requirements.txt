@@ -1,0 +1,3 @@
+gpiozero # higher level abstractions like LED, Button, etc.
+rpi.gpio # not updated since 2022
+gpiod # works with libgpiod (IIUC works with kernel's gpiod interface)
