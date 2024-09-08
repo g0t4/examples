@@ -58,16 +58,33 @@ static bool do_request_gpio = false; // skip request/free methods for now
 static bool do_pin_tests = true;
 static int do_pin_tests_msdelay = 1000;
 
+static int set_led_to(bool enabled)
+{
+    // probably don't need gpio_is_valid
+    if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+    {
+        // any overhead to set direction every time the value is changed?
+        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, enabled) < 0)
+        {
+            pr_err("ledfs: gpio_direction_output failed\n");
+            return -1;
+        }
+        pr_info("ledfs: LED turned %s\n", enabled ? "on" : "off");
+        return 0;
+    }
+    else
+    {
+        pr_err("ledfs: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        return -EINVAL;
+    }
+}
+
 static int __init ledfs_init(void)
 {
     if (do_pin_tests)
     {
-        pr_info("ledfs: Testing GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
-
-        // just get a damn pin
         if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
         {
-            // OMG this returns true
             pr_info("ledfs: Using GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
         }
         else
@@ -75,40 +92,17 @@ static int __init ledfs_init(void)
             pr_err("ledfs: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
             return -EINVAL;
         }
-        // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
-        int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // matches gpioget gpiochip4 X for a range of #s!
-        pr_info("ledfs: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
+
+        pr_info("ledfs: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, gpio_get_value(USE_GLOBAL_LINE_NUMBER));
         msleep(do_pin_tests_msdelay);
 
-        // void gpio_set_value(unsigned int gpio, int value);
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
-
-        int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
-        // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, ledfs, etc!!!
-        pr_info("ledfs: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value2);
-        msleep(do_pin_tests_msdelay);
-        // *** WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
-
-        // int gpio_export(unsigned int gpio, bool direction_may_change);
-        // int gpio_unexport(unsigned int gpio);
-
-        // int  gpio_direction_input(unsigned gpio)
-        // int  gpio_direction_output(unsigned gpio, int value)
-        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0) < 0) // CONFIRMED VALUE IS SET!
-        {
-            // OMFG it worked, I flipped GPIO7 to output!!!
-            // sudo gpioinfo gpiochip4  | grep "GPIO\d"
-            // first 10: // sudo gpioinfo gpiochip4  | grep "GPIO[[:digit:]]\b"
-            pr_err("ledfs: gpio_direction_output failed\n");
-            return -1;
-        }
-        int value3 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
-        pr_info("ledfs: GPIO pin %d value is %d (after output dir)\n", USE_GLOBAL_LINE_NUMBER, value3);
+        set_led_to(1);
+        pr_info("ledfs: GPIO pin %d value is %d (after set 1)\n", USE_GLOBAL_LINE_NUMBER, gpio_get_value(USE_GLOBAL_LINE_NUMBER));
         msleep(do_pin_tests_msdelay);
 
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING TOO
-        int value4 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
-        pr_info("ledfs: GPIO pin %d value is %d (after set 1)\n", USE_GLOBAL_LINE_NUMBER, value4);
+        set_led_to(0);
+        pr_info("ledfs: GPIO pin %d value is %d (after set 0)\n", USE_GLOBAL_LINE_NUMBER, gpio_get_value(USE_GLOBAL_LINE_NUMBER));
+        msleep(do_pin_tests_msdelay);
     }
 
     if (do_request_gpio)
