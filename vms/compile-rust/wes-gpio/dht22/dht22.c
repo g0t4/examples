@@ -11,6 +11,10 @@
 #include "../ledfs/pins.h"
 
 #define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_17 // TODO what pin?
+// 1 = VCC (3.3V)
+// 2 = DATA (GPIO)
+// 3 = NC (not connected)
+// 4 = GND
 
 struct dht22_data
 {
