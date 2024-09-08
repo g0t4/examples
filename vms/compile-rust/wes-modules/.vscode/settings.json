@@ -11,6 +11,7 @@
     "*.officeUI": "xml",
     "ignore": "ignore",
     "**/.grc/**/conf.*": "ini",
-    "kernel.h": "c"
+    "kernel.h": "c",
+    "gpio.h": "c"
   }
 }

@@ -26,6 +26,6 @@ time sudo make install
 
 # *** testing dht22 on pi6
 
-
+# FYI https://lwn.net/Articles/532714/ - GPIO in the kernel
 
 

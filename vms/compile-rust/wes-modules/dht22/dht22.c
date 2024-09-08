@@ -11,8 +11,6 @@
 
 #define DHT22_GPIO_PIN 4 // TODO find CORRECT PIN ON RPI
 
-static int major;
-
 struct dht22_data
 {
     int temperature;
@@ -98,14 +96,14 @@ static int dht22_read(void)
 
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
-    char buffer[64];
+    char buffer[64] = "test";
 
-    if (dht22_read() < 0)
-    {
-        return -EFAULT; // Error reading sensor
-    }
+    // if (dht22_read() < 0)
+    // {
+    //     return -EFAULT; // Error reading sensor
+    // }
 
-    snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
+    // snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
 }
@@ -115,16 +113,22 @@ static const struct file_operations dht22_fops = {
     .read = dht22_read_data,
 };
 
+static int major;
 static struct class *dht22_class = NULL;
 static struct device *dht22_device = NULL;
+static bool do_request_gpio = false; // disable request/free gpio (i.e. to test device works /dev/dht22)
 
 static int __init dht22_init(void)
 {
-    int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin");
-    if (ret)
+    if (do_request_gpio)
     {
-        pr_err("DHT22: Unable to request GPIO pin\n");
-        return ret;
+        int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
+        if (ret)
+        {
+            // gpio_request failed with error -517 // currently, but I have not vetted if 4 is appropriate for RPI
+            pr_err("DHT22: gpio_request failed with error %d\n", ret);
+            return ret;
+        }
     }
 
     // Register the character device
@@ -142,7 +146,8 @@ static int __init dht22_init(void)
     {
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
-        gpio_free(DHT22_GPIO_PIN);
+        if (do_request_gpio)
+            gpio_free(DHT22_GPIO_PIN);
         return PTR_ERR(dht22_class);
     }
 
@@ -153,7 +158,8 @@ static int __init dht22_init(void)
         class_destroy(dht22_class);
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create device\n");
-        gpio_free(DHT22_GPIO_PIN);
+        if (do_request_gpio)
+            gpio_free(DHT22_GPIO_PIN);
         return PTR_ERR(dht22_device);
     }
 
@@ -164,7 +170,8 @@ static int __init dht22_init(void)
 static void __exit dht22_exit(void)
 {
     // Free the GPIO pin
-    gpio_free(DHT22_GPIO_PIN);
+    if (do_request_gpio)
+        gpio_free(DHT22_GPIO_PIN);
 
     // Remove the device
     device_destroy(dht22_class, MKDEV(major, 0));
