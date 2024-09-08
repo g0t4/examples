@@ -2,6 +2,7 @@
   // BTW... ls ~/.vscode-server/extensions/ # on remote machine to see what is already installed, as it is per user on the remote (SSH)
   "recommendations": [
     "ms-python.python",
-    "donjayamanne.python-extension-pack"
+    "donjayamanne.python-extension-pack",
+    "eeyore.yapf"
   ]
 }

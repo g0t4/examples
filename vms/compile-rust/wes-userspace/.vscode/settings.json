@@ -1,0 +1,14 @@
+{
+  "[python]": {
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": false,
+    "editor.tabCompletion": "on",
+    "editor.defaultFormatter": "eeyore.yapf",
+  },
+  "yapf.args": [
+    "--style",
+    "{split_penalty_excess_character: 0, column_limit: 999, allow_split_before_dict_value: False, split_before_first_argument: True }"
+  ],
+  // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
+}
