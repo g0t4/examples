@@ -75,8 +75,8 @@ static int major;
 static struct class *ledfs_class = NULL;
 static struct device *ledfs_device = NULL;
 static bool do_request_gpio = false; // skip request/free methods for now
-static bool do_pin_tests = true;
-static int do_pin_tests_msdelay = 1000;
+static bool do_pin_tests = false;
+static int do_pin_tests_msdelay = 500;
 
 static int __init ledfs_init(void)
 {
