@@ -10,10 +10,11 @@
 #include <linux/interrupt.h>
 
 // GLOBAL PIN NUMBER for gpio_* functions
-#define RPI5_GPIO_3 (571 + 3)
-#define RPI5_GPIO_4 (571 + 4)
-#define RPI5_GPIO_5 (571 + 5)
+#define RPI5_GPIO_3 574
+#define RPI5_GPIO_4 575
+#define RPI5_GPIO_5 576
 #define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
+// !! FUU still not working but then again I don't have anything connected so I can't tell what error 517 means
 
 // okkk I think i get it now
 //   in kernel space you use linux/gpio.h (and/or linux/gpio/consumer.h/driver.h ...)
@@ -23,7 +24,8 @@
 // find base:
 //   on device, list chips
 //      ls /sys/class/gpio/
-//      grep /sys/class/gpio/gpiochip*/label # find the one you want (e.g. pinctrl-rp1)
+//      cat /sys/class/gpio/gpiochip*/label # find the one you want (e.g. pinctrl-rp1)
+//      cat /sys/class/gpio/gpiochip*/base # find the one you want (e.g. pinctrl-rp1)
 //      for my rpi5 =>  gpiochip571, so base is 571
 //          for GPIO4 (is line 4 below)
 //          571 + 4 = 575 => use 575 for GPIO4
