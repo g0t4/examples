@@ -95,7 +95,7 @@ static int dht22_read(void)
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
     udelay(20);                                       // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0); // pull low
-    msleep(18);                                       // for at least 18ms
+    msleep(18);                                       // for at least 18ms (holy crap that is a long long time)
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
     udelay(40);                                       // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
 
@@ -110,6 +110,7 @@ static int dht22_read(void)
     udelay(80); // once high, wait 80us => "get ready" for data transmission
 
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
+    // up to 5ms total if all 1s, ~3ms if all 0s
     for (i = 0; i < 5; i++)
     {
         // 5 bytes of data sent
