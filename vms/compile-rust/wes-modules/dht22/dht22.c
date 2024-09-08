@@ -177,50 +177,55 @@ static const struct file_operations dht22_fops = {
 static int major;
 static struct class *dht22_class = NULL;
 static struct device *dht22_device = NULL;
-static bool do_request_gpio = false; // disable request/free gpio (i.e. to test device works /dev/dht22)
+static bool do_request_gpio = false; // skip request/free methods for now
+static bool do_pin_tests = true;
 
 static int __init dht22_init(void)
 {
-    // just get a damn pin
-    if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+    if (do_pin_tests)
     {
-        // OMG this returns true
-        pr_info("DHT22: Using GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+
+        // just get a damn pin
+        if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+        {
+            // OMG this returns true
+            pr_info("DHT22: Using GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        }
+        else
+        {
+            pr_err("DHT22: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+            return -EINVAL;
+        }
+        // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
+        int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // matches gpioget gpiochip4 X for a range of #s!
+        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
+
+        // void gpio_set_value(unsigned int gpio, int value);
+        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
+
+        int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
+        // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
+        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value2);
+        // *** WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
+
+        // int gpio_export(unsigned int gpio, bool direction_may_change);
+        // int gpio_unexport(unsigned int gpio);
+
+        // int  gpio_direction_input(unsigned gpio)
+        // int  gpio_direction_output(unsigned gpio, int value)
+        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1) < 0)
+        {
+            // OMFG it worked, I flipped GPIO7 to output!!!
+            // sudo gpioinfo gpiochip4  | grep "GPIO\d"
+            // first 10: // sudo gpioinfo gpiochip4  | grep "GPIO[[:digit:]]\b"
+            pr_err("DHT22: gpio_direction_output failed\n");
+            return -1;
+        }
+
+        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // todo confirm if changes back
+        int value3 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
+        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value3);
     }
-    else
-    {
-        pr_err("DHT22: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
-        return -EINVAL;
-    }
-    // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
-    int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // DOES NOT FAIL, RETURNS 1 which matches:     sudo gpioget gpiochip4 4 # but I am not sure if this is the right line/pin and set_value below didn't persist any changes?
-    pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
-
-    // void gpio_set_value(unsigned int gpio, int value);
-    gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // WORKING but in some conditions gets reverted to 1 (i.e. run `gpioget` again and I think even after testing valid above?)
-
-    int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // shows set is working, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
-    // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
-    pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value2);
-    // WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
-
-    // int gpio_export(unsigned int gpio, bool direction_may_change);
-    // int gpio_unexport(unsigned int gpio);
-
-    // int  gpio_direction_input(unsigned gpio)
-    // int  gpio_direction_output(unsigned gpio, int value)
-    if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1) < 0)
-    {
-        // OMFG it worked, I flipped GPIO7 to output!!!
-        // sudo gpioinfo gpiochip4  | grep "GPIO\d"
-        // first 10: // sudo gpioinfo gpiochip4  | grep "GPIO[[:digit:]]\b"
-        pr_err("DHT22: gpio_direction_output failed\n");
-        return -1;
-    }
-
-    // gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // DOES not seem to work?! in either input or output mode?
-
-    //
 
     if (do_request_gpio)
     {
@@ -232,6 +237,7 @@ static int __init dht22_init(void)
             pr_err("DHT22: gpio_request failed with error %d\n", ret);
             return ret;
         }
+        // PRN need to export/unexport? would it help to do this to test via sysfs debug fs (IIUC that makes this possible)... also wondering if setting label with request + export then results in that label showing in the output of the command `gpioinfo`? (instead of "unused")... note unused seems to be a column for a second label of sorts which I speculate is from when it is exported? and first requested? or?
     }
 
     // Register the character device
