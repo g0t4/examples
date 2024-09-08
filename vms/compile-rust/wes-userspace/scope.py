@@ -19,7 +19,6 @@ with gpiod.request_lines(
 ) as request:
     print(f"Initial value: {request.get_value(LINE)}")
 
-    start_time = time.time()
 
     plt.ion()  # Enable interactive mode for real-time updates
     fig, ax = plt.subplots()
@@ -32,6 +31,8 @@ with gpiod.request_lines(
 
     times = []
     values = []
+
+    start_time = time.time()
 
     while True:
         current_time = time.time() - start_time
