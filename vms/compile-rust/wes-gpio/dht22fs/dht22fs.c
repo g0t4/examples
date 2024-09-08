@@ -122,75 +122,9 @@ static const struct file_operations dht22_fops = {
 static int major;
 static struct class *dht22_class = NULL;
 static struct device *dht22_device = NULL;
-static bool do_request_gpio = false; // skip request/free methods for now
-static bool do_pin_tests = true;
 
 static int __init dht22_init(void)
 {
-    if (do_pin_tests)
-    {
-        pr_info("DHT22: Testing GPIO pin %d\n", GPIO_DATA_LINE);
-
-        // just get a damn pin
-        if (gpio_is_valid(GPIO_DATA_LINE))
-        {
-            // OMG this returns true
-            pr_info("DHT22: Using GPIO pin %d\n", GPIO_DATA_LINE);
-        }
-        else
-        {
-            pr_err("DHT22: Invalid GPIO pin %d\n", GPIO_DATA_LINE);
-            return -EINVAL;
-        }
-        // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
-        int value = gpio_get_value(GPIO_DATA_LINE); // matches gpioget gpiochip4 X for a range of #s!
-        pr_info("DHT22: GPIO pin %d value is %d\n", GPIO_DATA_LINE, value);
-
-        // void gpio_set_value(unsigned int gpio, int value);
-        gpio_set_value(GPIO_DATA_LINE, 1); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
-
-        int value2 = gpio_get_value(GPIO_DATA_LINE); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
-        // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
-        pr_info("DHT22: GPIO pin %d value is %d\n", GPIO_DATA_LINE, value2);
-        // *** WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
-
-        // int gpio_export(unsigned int gpio, bool direction_may_change);
-        // int gpio_unexport(unsigned int gpio);
-
-        // int  gpio_direction_input(unsigned gpio)
-        // int  gpio_direction_output(unsigned gpio, int value)
-        if (gpio_direction_output(GPIO_DATA_LINE, 0) < 0) // CONFIRMED VALUE IS SET!
-        {
-            // OMFG it worked, I flipped GPIO7 to output!!!
-            // sudo gpioinfo gpiochip4  | grep "GPIO\d"
-            // first 10: // sudo gpioinfo gpiochip4  | grep "GPIO[[:digit:]]\b"
-            pr_err("DHT22: gpio_direction_output failed\n");
-            return -1;
-        }
-        int value3 = gpio_get_value(GPIO_DATA_LINE);
-        pr_info("DHT22: GPIO pin %d value is %d (after output dir)\n", GPIO_DATA_LINE, value3);
-
-        gpio_set_value(GPIO_DATA_LINE, 1); // WORKING TOO
-        int value4 = gpio_get_value(GPIO_DATA_LINE);
-        pr_info("DHT22: GPIO pin %d value is %d (after set 1)\n", GPIO_DATA_LINE, value4);
-    }
-
-    if (do_request_gpio)
-    {
-        pr_info("DHT22: Requesting GPIO pin %d\n", GPIO_DATA_LINE);
-        // ! is it possible gpio_request is resetting the value to 1? (i.e. active-high bias)... was that part of my issue with trying to find what reset my value, I know at the time I was still calling this (failed module load) and so maybe this was doing that?
-        // if this fails, can I just ignore it? some of the guides I saw said it is not enforced? ...
-        int ret = gpio_request(4, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
-        if (ret)
-        {
-            // gpio_request failed with error -517 // currently, but I have not vetted if 4 is appropriate for RPI
-            pr_err("DHT22: gpio_request failed with error %d\n", ret);
-            return ret;
-        }
-        // PRN need to export/unexport? would it help to do this to test via sysfs debug fs (IIUC that makes this possible)... also wondering if setting label with request + export then results in that label showing in the output of the command `gpioinfo`? (instead of "unused")... note unused seems to be a column for a second label of sorts which I speculate is from when it is exported? and first requested? or?
-    }
-
-    // Register the character device
     major = register_chrdev(0, "dht22", &dht22_fops);
     if (major < 0)
     {
@@ -228,17 +162,12 @@ static int __init dht22_init(void)
 
 static void __exit dht22_exit(void)
 {
-    // Free the GPIO pin
-    if (do_request_gpio)
-        gpio_free(GPIO_DATA_LINE);
-
     // Remove the device
     device_destroy(dht22_class, MKDEV(major, 0));
 
     // Destroy the device class
     class_destroy(dht22_class);
 
-    // Unregister the character device
     unregister_chrdev(major, "dht22");
 
     pr_info("DHT22: Driver unloaded\n");
