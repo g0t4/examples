@@ -21,6 +21,18 @@ with gpiod.request_lines(
 
     start_time = time.time()
 
+    plt.ion()  # Enable interactive mode for real-time updates
+    fig, ax = plt.subplots()
+    line, = ax.plot([], [], marker='o')  # Initialize an empty line
+    ax.set_xlim(0, SAMPLE_DURATION)
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_title(f"GPIO Line {LINE} Activity Over Time")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("GPIO Value")
+
+    times = []
+    values = []
+
     while True:
         current_time = time.time() - start_time
 
@@ -28,25 +40,35 @@ with gpiod.request_lines(
         request.set_value(LINE, Value.ACTIVE)
         active_value = request.get_value(LINE)
         print(f"Active value: {active_value}")
-        samples.append((current_time, 1 if active_value == Value.ACTIVE else 0))
+        times.append(current_time)
+        values.append(1 if active_value == Value.ACTIVE else 0)
+
+        line.set_xdata(times)
+        line.set_ydata(values)
+        ax.relim()
+        ax.autoscale_view()
+        plt.draw()
+        plt.pause(0.01)  # Pause briefly to allow the plot to update
         time.sleep(SAMPLE_INTERVAL)
 
         request.set_value(LINE, Value.INACTIVE)
         inactive_value = request.get_value(LINE)
         print(f"Inactive value: {inactive_value}")
-        samples.append((current_time, 1 if inactive_value == Value.ACTIVE else 0))
+        current_time = time.time() - start_time
+        times.append(current_time)
+        values.append(1 if inactive_value == Value.ACTIVE else 0)
+
+        line.set_xdata(times)
+        line.set_ydata(values)
+        ax.relim()
+        ax.autoscale_view()
+        plt.draw()
+        plt.pause(0.01)  # Pause briefly to allow the plot to update
         time.sleep(SAMPLE_INTERVAL)
 
-        # Check if we have three seconds' worth of samples and plot them
-        if len(samples) == samples.maxlen:
+        # Check if we have three seconds' worth of samples and stop
+        if current_time >= SAMPLE_DURATION:
             break
 
-# Plot the samples
-times, values = zip(*samples)  # Unpack times and values
-plt.plot(times, values, marker='o')
-plt.title(f"GPIO Line {LINE} Activity Over Time")
-plt.xlabel("Time (s)")
-plt.ylabel("GPIO Value")
-plt.ylim(-0.1, 1.1)  # Values are 0 or 1
-plt.show()
-samples.clear()  # Clear the samples to start a new window
+plt.ioff()  # Turn off interactive mode
+plt.show()  # Display the final plot
