@@ -9,8 +9,62 @@
 #include <linux/delay.h>
 #include <linux/interrupt.h>
 
-#define DHT22_GPIO_PIN 4 // TODO what do I use here? 
-// what do I use here?!
+// GLOBAL PIN NUMBER for gpio_* functions
+#define RPI5_GPIO_3 (571 + 3)
+#define RPI5_GPIO_4 (571 + 4)
+#define RPI5_GPIO_5 (571 + 5)
+#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
+
+// okkk I think i get it now
+//   in kernel space you use linux/gpio.h (and/or linux/gpio/consumer.h/driver.h ...)
+//       kernel space line/pins are based on global line numbers (each chip has a base line number + offset of line you want)
+//   in user space you can use deprecated sysfs (deprecated 4.8) or new chardev API... this one is based on chip/line numbers (two params)
+//
+// find base:
+//   on device, list chips
+//      ls /sys/class/gpio/
+//      grep /sys/class/gpio/gpiochip*/label # find the one you want (e.g. pinctrl-rp1)
+//      for my rpi5 =>  gpiochip571, so base is 571
+//          for GPIO4 (is line 4 below)
+//          571 + 4 = 575 => use 575 for GPIO4
+//          571 + 5 = 576 => use 576 for GPIO5
+//          etc
+//      btw physical pin #s don't match GPIO line #s... i.e. GPIO4 is pin 7
+//          https://www.ics.com/blog/explore-hardware-capabilities-raspberry-pis-gpio-interface
+//   sudo gpioinfo # shows all chips/lines
+//   sudo gpioinfo gpiochip571 # shows all lines for chip I care about (GPIO header plus a few more)
+
+// find base + offset (line #)
+// 571 is base here:
+// sudo gpioinfo gpiochip571
+//         line   0:     "ID_SDA"       unused   input  active-high
+//         line   1:     "ID_SCL"       unused   input  active-high
+//         line   2:      "GPIO2"       unused   input  active-high
+//         line   3:      "GPIO3"       unused   input  active-high
+//         line   4:      "GPIO4"       unused   input  active-high
+//         line   5:      "GPIO5"       unused   input  active-high
+//         line   6:      "GPIO6"       unused   input  active-high
+//         line   7:      "GPIO7"       unused   input  active-high
+//         line   8:      "GPIO8"       unused   input  active-high
+//         line   9:      "GPIO9"       unused   input  active-high
+//         line  10:     "GPIO10"       unused   input  active-high
+//         line  11:     "GPIO11"       unused   input  active-high
+//         line  12:     "GPIO12"       unused   input  active-high
+//         line  13:     "GPIO13"       unused   input  active-high
+//         line  14:     "GPIO14"       unused   input  active-high
+//         line  15:     "GPIO15"       unused   input  active-high
+//         line  16:     "GPIO16"       unused   input  active-high
+//         line  17:     "GPIO17"       unused   input  active-high
+//         line  18:     "GPIO18"       unused   input  active-high
+//         line  19:     "GPIO19"       unused   input  active-high
+//         line  20:     "GPIO20"       unused   input  active-high
+//         line  21:     "GPIO21"       unused   input  active-high
+//         line  22:     "GPIO22"       unused   input  active-high
+//         line  23:     "GPIO23"       unused   input  active-high
+//         line  24:     "GPIO24"       unused   input  active-high
+//         line  25:     "GPIO25"       unused   input  active-high
+//         line  26:     "GPIO26"       unused   input  active-high
+//         line  27:     "GPIO27"       unused   input  active-high
 
 struct dht22_data
 {
@@ -32,20 +86,20 @@ static int dht22_read(void)
     int i, j;
 
     // Send the start signal to DHT22
-    gpio_direction_output(DHT22_GPIO_PIN, 1); // pull high
+    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
     udelay(20);                               // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
-    gpio_direction_output(DHT22_GPIO_PIN, 0); // pull low
+    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0); // pull low
     msleep(18);                               // for at least 18ms
-    gpio_direction_output(DHT22_GPIO_PIN, 1); // pull high
+    gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
     udelay(40);                               // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
 
-    gpio_direction_input(DHT22_GPIO_PIN); // start reading (can't I start reading right after pull high? or?)
+    gpio_direction_input(USE_GLOBAL_LINE_NUMBER); // start reading (can't I start reading right after pull high? or?)
 
     // Wait for the sensor response (80us low, 80us high)
-    while (gpio_get_value(DHT22_GPIO_PIN) == 1)
+    while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
         ;
     udelay(80); // once low, wait 80us // should we check every 5us instead of just skip 80?!
-    while (gpio_get_value(DHT22_GPIO_PIN) == 0)
+    while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 0)
         ;
     udelay(80); // once high, wait 80us => "get ready" for data transmission
 
@@ -56,14 +110,14 @@ static int dht22_read(void)
         for (j = 0; j < 8; j++)
         {
             // 8 bits per byte obviously
-            while (gpio_get_value(DHT22_GPIO_PIN) == 0)
+            while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 0)
                 ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
             udelay(30); // Delay to determine if it's a '1' or '0'
             // after 30us if it is still high, then it is a '1', otherwise it is a '0'
-            if (gpio_get_value(DHT22_GPIO_PIN) == 1)
+            if (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
             {
                 data[i] |= (1 << (7 - j)); // Set bit
-                while (gpio_get_value(DHT22_GPIO_PIN) == 1)
+                while (gpio_get_value(USE_GLOBAL_LINE_NUMBER) == 1)
                     ; // Wait for the pin to go low
             }
         }
@@ -137,7 +191,7 @@ static int __init dht22_init(void)
     if (major < 0)
     {
         pr_err("DHT22: Unable to register character device\n");
-        gpio_free(DHT22_GPIO_PIN);
+        gpio_free(USE_GLOBAL_LINE_NUMBER);
         return major;
     }
 
@@ -148,7 +202,7 @@ static int __init dht22_init(void)
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
         if (do_request_gpio)
-            gpio_free(DHT22_GPIO_PIN);
+            gpio_free(USE_GLOBAL_LINE_NUMBER);
         return PTR_ERR(dht22_class);
     }
 
@@ -160,7 +214,7 @@ static int __init dht22_init(void)
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create device\n");
         if (do_request_gpio)
-            gpio_free(DHT22_GPIO_PIN);
+            gpio_free(USE_GLOBAL_LINE_NUMBER);
         return PTR_ERR(dht22_device);
     }
 
@@ -172,7 +226,7 @@ static void __exit dht22_exit(void)
 {
     // Free the GPIO pin
     if (do_request_gpio)
-        gpio_free(DHT22_GPIO_PIN);
+        gpio_free(USE_GLOBAL_LINE_NUMBER);
 
     // Remove the device
     device_destroy(dht22_class, MKDEV(major, 0));

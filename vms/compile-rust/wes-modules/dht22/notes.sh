@@ -30,9 +30,9 @@ time sudo make install
 
 
 # tentative pins to use:
-# 3.3V - 1
-# GND - 6
-# GPIO4 - 7
+# 3.3V - physical pin 1
+# GND - physical pin 6
+# GPIO4 - physical pin 7
 
 # FYI
 sudo gpiodetect
@@ -55,12 +55,6 @@ sudo gpioset gpiochip4 4=1 # fails... says device is busy? maybe b/c not connect
 cd tools/gpio/lsgpio.c # kernel source
 make
 sudo ./lsgpio
-# ! seems like I need to use smth else besides what chatgpt generated w/ gpio_* functions... 
-#   *** include/linux/gpio/consumer.h # recommended in include/linux/gpio.h 
-#   or use the new chardev interface somehow? or?
-# ! also maybe I dont need a kernel module to use it first... 
-#   ! perhaps test with direct gpio manip and only add the new char dev interface to it when I get DHT22 working to read temp/humidity
-
 
 
 # separate naming in sysfs (is this deprecated interface?)
