@@ -8,16 +8,10 @@
 #include <linux/gpio.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
+#include "pins.h"
 
-// GLOBAL PIN NUMBER for gpio_* functions
-#define RPI5_GPIO_3 574 // reads as 1
-#define RPI5_GPIO_4 575
-#define RPI5_GPIO_5 576
-#define RPI5_GPIO_6 577
-#define RPI5_GPIO_7 578 // reads as 1
-#define RPI5_GPIO_8 579 // reads as 1
-#define RPI5_GPIO_9 580 // reads as 0
-#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
+// GLOBAL PIN NUMBERs for gpio_* functions (not for gpio_v2_* nor gpiod_* APIs)
+#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_27
 // !! FUU still not working but then again I don't have anything connected so I can't tell what error 517 means
 
 // okkk I think i get it now
