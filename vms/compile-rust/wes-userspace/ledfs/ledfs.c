@@ -178,5 +178,5 @@ module_exit(ledfs_exit);
 
 MODULE_LICENSE("GPL"); // IF incompatible with other used modules, then compile fails! i.e. MIT here fails compile!
 MODULE_AUTHOR("Wes");
-MODULE_DESCRIPTION("/dev_num/ledfs driver");
+MODULE_DESCRIPTION("/dev/ledfs driver");
 MODULE_VERSION("0.1");
