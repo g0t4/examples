@@ -5,6 +5,7 @@ from gpiod.line import Direction, Value
 LINE17 = 17
 LINE27 = 27  # right below 17
 LINE22 = 22  # right below 27
+DELAY = 0.25
 
 with gpiod.request_lines(
         "/dev/gpiochip4",
@@ -21,19 +22,19 @@ with gpiod.request_lines(
         request.set_value(LINE27, Value.INACTIVE)
         request.set_value(LINE22, Value.INACTIVE)
         print(f"Current values: {request.get_value(LINE17)} {request.get_value(LINE27)} {request.get_value(LINE22)}")
-        time.sleep(1)
+        time.sleep(DELAY)
 
         request.set_value(LINE17, Value.INACTIVE)
         request.set_value(LINE27, Value.ACTIVE)
         request.set_value(LINE22, Value.INACTIVE)
         print(f"Current values: {request.get_value(LINE17)} {request.get_value(LINE27)} {request.get_value(LINE22)}")
-        time.sleep(1)
+        time.sleep(DELAY)
 
         request.set_value(LINE17, Value.INACTIVE)
         request.set_value(LINE27, Value.INACTIVE)
         request.set_value(LINE22, Value.ACTIVE)
         print(f"Current values: {request.get_value(LINE17)} {request.get_value(LINE27)} {request.get_value(LINE22)}")
-        time.sleep(1)
+        time.sleep(DELAY)
 
 # CRUCIAL for user space programs, I need access to GPIO w/o sudo...
 # sudo usermod -aG gpio $USER
