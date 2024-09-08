@@ -19,13 +19,13 @@ with gpiod.request_lines(
     while True:
         request.set_value(LINE17, Value.ACTIVE)
         request.set_value(LINE27, Value.ACTIVE)
-        request.set_value(LINE17, Value.ACTIVE)
+        request.set_value(LINE22, Value.ACTIVE)
         print(f"Current values: {request.get_value(LINE17)} {request.get_value(LINE27)} {request.get_value(LINE22)}")
         time.sleep(1)
 
         request.set_value(LINE17, Value.INACTIVE)
         request.set_value(LINE27, Value.INACTIVE)
-        request.set_value(LINE17, Value.INACTIVE)
+        request.set_value(LINE22, Value.INACTIVE)
         print(f"Current values: {request.get_value(LINE17)} {request.get_value(LINE27)} {request.get_value(LINE22)}")
         time.sleep(1)
 
