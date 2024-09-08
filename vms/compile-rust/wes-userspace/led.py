@@ -2,7 +2,7 @@ import time
 import gpiod # uses libgpiod which uses gpiod_ functions in the kernel in drivers/gpio/gpiolib.c (i.e. gpiod_request, gpiod_get_value, gpiod_set_value, etc.)
 from gpiod.line import Direction, Value
 
-LINE = 4
+LINE = 17
 
 with gpiod.request_lines(
     "/dev/gpiochip4",
