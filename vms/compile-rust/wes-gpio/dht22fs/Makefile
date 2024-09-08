@@ -1,4 +1,4 @@
-obj-m += dht22.o
+obj-m += dht22fs.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
