@@ -17,7 +17,7 @@ static ssize_t ledfs_read_data(struct file *file, char __user *buf, size_t len, 
     int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
 
     // return "on" or "off" based on GPIO pin value
-    char *data = (value == 0) ? "on\n" : "off\n";
+    char *data = (value == 1) ? "on\n" : "off\n";
 
     size_t datalen = strlen(data);
     return simple_read_from_buffer(buf, len, offset, data, datalen);
@@ -25,6 +25,7 @@ static ssize_t ledfs_read_data(struct file *file, char __user *buf, size_t len, 
 
 static ssize_t ledfs_write_data(struct file *file, const char __user *buf, size_t len, loff_t *offset)
 {
+    // working! except I think it fails if I change direction...
     char *data = kzalloc(len + 1, GFP_KERNEL);
     if (!data)
         return -ENOMEM;
