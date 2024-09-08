@@ -17,7 +17,7 @@
 #define RPI5_GPIO_7 578 // reads as 1
 #define RPI5_GPIO_8 579 // reads as 1
 #define RPI5_GPIO_9 580 // reads as 0
-#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_7
+#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
 // !! FUU still not working but then again I don't have anything connected so I can't tell what error 517 means
 
 // okkk I think i get it now
