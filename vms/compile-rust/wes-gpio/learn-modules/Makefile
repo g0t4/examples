@@ -1,7 +1,7 @@
 # obj-m => means that the filemod.o file is a loadable module, in kernel tree you might have obj-y, obj-n
 # 	in fact in kernel tree, you'll find obj-$(CONFIG_FOO) += foo.o # conditionally add as y/m/n
 # obj-m += examples/filemod/filemod.o
-obj-m += dht22/dht22.o
+obj-m += dht22-before-device/dht22-before-device.o
 # obj-m += examples/rwdev/rwdev.o # read/write a string to static variable in module/driver
 #
 # add more modules:
