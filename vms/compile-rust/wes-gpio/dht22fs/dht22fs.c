@@ -139,8 +139,6 @@ static int __init dht22_init(void)
     {
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create class\n");
-        if (do_request_gpio)
-            gpio_free(GPIO_DATA_LINE);
         return PTR_ERR(dht22_class);
     }
 
@@ -151,8 +149,6 @@ static int __init dht22_init(void)
         class_destroy(dht22_class);
         unregister_chrdev(major, "dht22");
         pr_err("DHT22: Failed to create device\n");
-        if (do_request_gpio)
-            gpio_free(GPIO_DATA_LINE);
         return PTR_ERR(dht22_device);
     }
 
