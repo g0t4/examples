@@ -11,3 +11,20 @@ ls /boot/overlays/{i2c,spi,uart,pwm}*
 # PCM 35, 38, 40
 # EEPROM 27, 28
 
+# FYI give perms to use gpio w/o sudo:
+sudo usermod -aG gpio $USER
+
+# FYI I stopped one of my flashing pins with one on...
+sudo gpioget gpiochip4 17 27 22 # this returned 0 and reset all pins that were left on!
+#  and I cannot run this when I am using the pins in python with gpiod library (request)
+#
+# gpioset works!
+gpioget gpiochip4 17 27 22 # clears all to 0
+gpioset gpiochip4 22=1 # turns on!
+gpioset gpiochip4 27=1 # turns on!
+gpioget gpiochip4 17 27 22 # resets too?!
+gpioinfo # after gpioset the pin is marked "output"
+#
+gpioinfo # after gpioget the pin is marked "input"... so gpioget is changing direction to input
+# TODO is there a way to read it w/o changing the direction?
+# !!! makes sense actually if you wanna read the value then you are changing it to an input!
