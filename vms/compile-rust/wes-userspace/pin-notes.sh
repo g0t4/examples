@@ -26,5 +26,5 @@ gpioget gpiochip4 17 27 22 # resets too?!
 gpioinfo # after gpioset the pin is marked "output"
 #
 gpioinfo # after gpioget the pin is marked "input"... so gpioget is changing direction to input
-# TODO is there a way to read it w/o changing the direction?
+# TODO is there a way to read it w/o changing the direction? gpio
 # !!! makes sense actually if you wanna read the value then you are changing it to an input!
