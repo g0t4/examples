@@ -10,10 +10,14 @@
 #include <linux/interrupt.h>
 
 // GLOBAL PIN NUMBER for gpio_* functions
-#define RPI5_GPIO_3 574
+#define RPI5_GPIO_3 574 // reads as 1
 #define RPI5_GPIO_4 575
 #define RPI5_GPIO_5 576
-#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_4
+#define RPI5_GPIO_6 577
+#define RPI5_GPIO_7 578 // reads as 1
+#define RPI5_GPIO_8 579 // reads as 1
+#define RPI5_GPIO_9 580 // reads as 0
+#define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_7
 // !! FUU still not working but then again I don't have anything connected so I can't tell what error 517 means
 
 // okkk I think i get it now
@@ -89,11 +93,11 @@ static int dht22_read(void)
 
     // Send the start signal to DHT22
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
-    udelay(20);                               // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
+    udelay(20);                                       // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0); // pull low
-    msleep(18);                               // for at least 18ms
+    msleep(18);                                       // for at least 18ms
     gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1); // pull high
-    udelay(40);                               // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
+    udelay(40);                                       // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
 
     gpio_direction_input(USE_GLOBAL_LINE_NUMBER); // start reading (can't I start reading right after pull high? or?)
 
@@ -173,12 +177,54 @@ static const struct file_operations dht22_fops = {
 static int major;
 static struct class *dht22_class = NULL;
 static struct device *dht22_device = NULL;
-static bool do_request_gpio = true; // disable request/free gpio (i.e. to test device works /dev/dht22)
+static bool do_request_gpio = false; // disable request/free gpio (i.e. to test device works /dev/dht22)
 
 static int __init dht22_init(void)
 {
+    // just get a damn pin
+    if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+    {
+        // OMG this returns true
+        pr_info("DHT22: Using GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+    }
+    else
+    {
+        pr_err("DHT22: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        return -EINVAL;
+    }
+    // int  gpio_get_value(unsigned gpio); // *** WORKING (matches values from cli `gpioget` command for ports 4 thru 9, confirmed 9 shows 0 and 7,8,4 show 1 just like `gpioget`)
+    int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // DOES NOT FAIL, RETURNS 1 which matches:     sudo gpioget gpiochip4 4 # but I am not sure if this is the right line/pin and set_value below didn't persist any changes?
+    pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
+
+    // void gpio_set_value(unsigned int gpio, int value);
+    gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // WORKING but in some conditions gets reverted to 1 (i.e. run `gpioget` again and I think even after testing valid above?)
+
+    int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // shows set is working, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
+    // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
+    pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value2);
+    // WTF IT IS CHANGING NOW... OMG READING IT WITH `gpioget` reverts the value to 1!
+
+    // int gpio_export(unsigned int gpio, bool direction_may_change);
+    // int gpio_unexport(unsigned int gpio);
+
+    // int  gpio_direction_input(unsigned gpio)
+    // int  gpio_direction_output(unsigned gpio, int value)
+    if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1) < 0)
+    {
+        // OMFG it worked, I flipped GPIO7 to output!!!
+        // sudo gpioinfo gpiochip4  | grep "GPIO\d"
+        // first 10: // sudo gpioinfo gpiochip4  | grep "GPIO[[:digit:]]\b"
+        pr_err("DHT22: gpio_direction_output failed\n");
+        return -1;
+    }
+
+    // gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // DOES not seem to work?! in either input or output mode?
+
+    //
+
     if (do_request_gpio)
     {
+        // if this fails, can I just ignore it? some of the guides I saw said it is not enforced? ...
         int ret = gpio_request(4, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
         if (ret)
         {

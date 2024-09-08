@@ -63,3 +63,8 @@ cat /sys/class/gpio/gpiochip571/label # pinctrl-rp1
 cat /sys/class/gpio/gpiochip571/ngpio # 54 => means 54 total pins (matches gpuinfo output)
 ls -al /sys/class/gpio/gpiochip571 # => ../../devices/platform/axi/1000120000.pcie/1f000d0000.gpio/gpio/gpiochip571
 
+
+
+# TODO review => GPIO kernel guide https://embetronicx.com/tutorials/linux/device-drivers/gpio-driver-basic-using-raspberry-pi/
+
+# alt => https://github.com/raspberrypi/linux  # pull official rpi kernel source if I wanna compile new kernel
