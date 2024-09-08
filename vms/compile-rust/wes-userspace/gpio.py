@@ -26,3 +26,13 @@ with gpiod.request_lines(
 
 # CRUCIAL for user space programs, I need access to GPIO w/o sudo...
 # sudo usermod -aG gpio $USER
+
+# FYI IIUC, kernel has:
+#   gpio.h => with gpio_ functions  (usess global line numbers using base offsets)
+#   gpio_v2_* functions (uses device + line number, IIUC)
+#   gpiolib.c => gpiod_* functions (uses device + line number, IIUC)
+#
+# userspace:
+#   libgpiod => uses gpiod_* functions
+#   chardev (via sysfs)
+#   sysfs legacy gpio interface (deprecated) => uses gpio_ functions
