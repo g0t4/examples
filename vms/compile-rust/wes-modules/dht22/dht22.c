@@ -157,14 +157,14 @@ static int dht22_read(void)
 
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
-    char buffer[64] = "test";
+    char buffer[64];
 
-    // if (dht22_read() < 0)
-    // {
-    //     return -EFAULT; // Error reading sensor
-    // }
+    if (dht22_read() < 0)
+    {
+        return -EFAULT; // Error reading sensor
+    }
 
-    // snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
+    snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
 }
