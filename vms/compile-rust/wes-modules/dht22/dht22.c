@@ -9,7 +9,8 @@
 #include <linux/delay.h>
 #include <linux/interrupt.h>
 
-#define DHT22_GPIO_PIN 4 // TODO find CORRECT PIN ON RPI
+#define DHT22_GPIO_PIN 4 // TODO what do I use here? 
+// what do I use here?!
 
 struct dht22_data
 {
@@ -116,13 +117,13 @@ static const struct file_operations dht22_fops = {
 static int major;
 static struct class *dht22_class = NULL;
 static struct device *dht22_device = NULL;
-static bool do_request_gpio = false; // disable request/free gpio (i.e. to test device works /dev/dht22)
+static bool do_request_gpio = true; // disable request/free gpio (i.e. to test device works /dev/dht22)
 
 static int __init dht22_init(void)
 {
     if (do_request_gpio)
     {
-        int ret = gpio_request(DHT22_GPIO_PIN, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
+        int ret = gpio_request(4, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
         if (ret)
         {
             // gpio_request failed with error -517 // currently, but I have not vetted if 4 is appropriate for RPI
