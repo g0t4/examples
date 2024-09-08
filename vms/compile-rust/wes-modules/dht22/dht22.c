@@ -184,6 +184,7 @@ static int __init dht22_init(void)
 {
     if (do_pin_tests)
     {
+        pr_info("DHT22: Testing GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
 
         // just get a damn pin
         if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
@@ -201,7 +202,7 @@ static int __init dht22_init(void)
         pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value);
 
         // void gpio_set_value(unsigned int gpio, int value);
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
+        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING within this code, just know that external forces seem to reset it when I go to inspect it with CLI `gpioget` command
 
         int value2 = gpio_get_value(USE_GLOBAL_LINE_NUMBER); // SHOWS SET WORKS, before smth else reverts it... is it reverting b/c active-high bias? (i.e. pull-up resistor)... probably because hardware is missing and so its floating or otherwise unpredictable... TLDR I think I am good to go to test this driver tomorrow.
         // !!! TLDR I think I am good to go w/o using gpio_request... it appears to be working and likely works better once I hook up actual hardware with pull up resister, DHT22, etc!!!
@@ -213,7 +214,7 @@ static int __init dht22_init(void)
 
         // int  gpio_direction_input(unsigned gpio)
         // int  gpio_direction_output(unsigned gpio, int value)
-        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 1) < 0)
+        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, 0) < 0) // CONFIRMED VALUE IS SET!
         {
             // OMFG it worked, I flipped GPIO7 to output!!!
             // sudo gpioinfo gpiochip4  | grep "GPIO\d"
@@ -221,14 +222,18 @@ static int __init dht22_init(void)
             pr_err("DHT22: gpio_direction_output failed\n");
             return -1;
         }
-
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // todo confirm if changes back
         int value3 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
-        pr_info("DHT22: GPIO pin %d value is %d\n", USE_GLOBAL_LINE_NUMBER, value3);
+        pr_info("DHT22: GPIO pin %d value is %d (after output dir)\n", USE_GLOBAL_LINE_NUMBER, value3);
+
+        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1); // WORKING TOO
+        int value4 = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
+        pr_info("DHT22: GPIO pin %d value is %d (after set 1)\n", USE_GLOBAL_LINE_NUMBER, value4);
     }
 
     if (do_request_gpio)
     {
+        pr_info("DHT22: Requesting GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        // ! is it possible gpio_request is resetting the value to 1? (i.e. active-high bias)... was that part of my issue with trying to find what reset my value, I know at the time I was still calling this (failed module load) and so maybe this was doing that?
         // if this fails, can I just ignore it? some of the guides I saw said it is not enforced? ...
         int ret = gpio_request(4, "dht22_pin"); // IIUC, dht22_pin label maps to /sys fs somewhere?
         if (ret)
