@@ -37,11 +37,11 @@ static int dht22_read(void)
 
     // Send the start signal to DHT22
     gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
-    udelay(20);                                       // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
+    udelay(20);                               // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
     gpio_direction_output(GPIO_DATA_LINE, 0); // pull low
-    msleep(18);                                       // for at least 18ms (holy crap that is a long long time)
+    msleep(18);                               // for at least 18ms (holy crap that is a long long time)
     gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
-    udelay(40);                                       // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
+    udelay(40);                               // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
 
     gpio_direction_input(GPIO_DATA_LINE); // start reading (can't I start reading right after pull high? or?)
 
