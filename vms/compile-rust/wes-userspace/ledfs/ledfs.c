@@ -12,6 +12,27 @@
 
 #define USE_GLOBAL_LINE_NUMBER RPI5_GPIO_17
 
+static int set_led_to(bool enabled)
+{
+    // probably don't need gpio_is_valid
+    if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
+    {
+        // PRN if there is overhead in set direction each time, then detect direction before setting it in case not needed...
+        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, enabled) < 0)
+        {
+            pr_err("ledfs: gpio_direction_output failed\n");
+            return -1;
+        }
+        pr_info("ledfs: LED turned %s\n", enabled ? "on" : "off");
+        return 0;
+    }
+    else
+    {
+        pr_err("ledfs: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
+        return -EINVAL;
+    }
+}
+
 static ssize_t ledfs_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
     int value = gpio_get_value(USE_GLOBAL_LINE_NUMBER);
@@ -25,7 +46,6 @@ static ssize_t ledfs_read_data(struct file *file, char __user *buf, size_t len, 
 
 static ssize_t ledfs_write_data(struct file *file, const char __user *buf, size_t len, loff_t *offset)
 {
-    // working! except I think it fails if I change direction...
     char *data = kzalloc(len + 1, GFP_KERNEL);
     if (!data)
         return -ENOMEM;
@@ -36,11 +56,10 @@ static ssize_t ledfs_write_data(struct file *file, const char __user *buf, size_
         return -EFAULT;
     }
 
-    // set GPIO pin value based on input data
     if (strncmp(data, "on", 2) == 0)
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 1);
+        set_led_to(1);
     else if (strncmp(data, "off", 3) == 0)
-        gpio_set_value(USE_GLOBAL_LINE_NUMBER, 0);
+        set_led_to(0);
 
     kfree(data);
     return len;
@@ -58,27 +77,6 @@ static struct device *ledfs_device = NULL;
 static bool do_request_gpio = false; // skip request/free methods for now
 static bool do_pin_tests = true;
 static int do_pin_tests_msdelay = 1000;
-
-static int set_led_to(bool enabled)
-{
-    // probably don't need gpio_is_valid
-    if (gpio_is_valid(USE_GLOBAL_LINE_NUMBER))
-    {
-        // any overhead to set direction every time the value is changed?
-        if (gpio_direction_output(USE_GLOBAL_LINE_NUMBER, enabled) < 0)
-        {
-            pr_err("ledfs: gpio_direction_output failed\n");
-            return -1;
-        }
-        pr_info("ledfs: LED turned %s\n", enabled ? "on" : "off");
-        return 0;
-    }
-    else
-    {
-        pr_err("ledfs: Invalid GPIO pin %d\n", USE_GLOBAL_LINE_NUMBER);
-        return -EINVAL;
-    }
-}
 
 static int __init ledfs_init(void)
 {
