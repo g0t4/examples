@@ -18,8 +18,8 @@ def send_start_signal_to_AM2302():
             consumer="dht22-output",
             config={LINE: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as request:
-        request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
-        time.sleep(0.002)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
+        # request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
+        time.sleep(0.0004)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
         request.set_value(LINE, HIGH)
         # time.sleep(40 / 1_000_000)  # keep high for 20-40us # pdf doesn't give timing here so wtf am I doing waiting 40us?!
 
@@ -65,7 +65,7 @@ def read_sensor_bits():
         # 80us low
 
         if not wait_for_edge_to(HIGH, MAX_WAIT, "initial high (s/b 80us)"):
-            # FYI I am not seeing 80us here, rather 36us 
+            # FYI I am not seeing 80us here, rather 36us
             print("Sensor didn't pull the line high.")
             return None
         # 80us high
@@ -177,3 +177,6 @@ if result:
     print(f"Temperature: {temperature:.1f}°C")
 else:
     print("Failed to read sensor data.")
+
+# TODO TO TRY:
+#   IIUC AM2302 has internal pull-up, whereas DHT22 does not (needs external pull up resistor)
