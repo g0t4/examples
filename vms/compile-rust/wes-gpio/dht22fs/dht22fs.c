@@ -33,28 +33,25 @@ static int dht22_read(void)
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
     int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
+    // TODO build array of text messages to log for debugging, like in my python code
     int i, j;
     pr_info("DHT22: Reading data\n");
 
     // Send the start signal to DHT22
-    gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
-    udelay(20);                               // for 20us (not sure this needs to be 20us? protocol says pull low for 18us to start?) // TODO does it need to be 20us?
-    gpio_direction_output(GPIO_DATA_LINE, 0); // pull low
-    msleep(18);                               // for at least 18ms (holy crap that is a long long time)
-    gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
-    udelay(40);                               // for 40us (FYI response can come after 20-40us so I guess wait 40us to be safe)
+    gpio_direction_output(GPIO_DATA_LINE, 0); // pull low signals to send reading
+    udelay(400);                              // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+    gpio_direction_output(GPIO_DATA_LINE, 1); // release (pulls high b/c of pull-up resistor too)
+    // no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
 
-    gpio_direction_input(GPIO_DATA_LINE); // start reading (can't I start reading right after pull high? or?)
-
-    // Wait for the sensor response (80us low, 80us high)
-    while (gpio_get_value(GPIO_DATA_LINE) == 1)
+    gpio_direction_input(GPIO_DATA_LINE);       // start reading right away, wait for sensor to pull low indicating it is ready to send data
+    while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (waiting for sensor to pull low)
         ;
     pr_info("DHT22: Sensor response low\n");
-    udelay(80); // once low, wait 80us // should we check every 5us instead of just skip 80?!
-    while (gpio_get_value(GPIO_DATA_LINE) == 0)
+    while (gpio_get_value(GPIO_DATA_LINE) == 0) // while still low (waiting for sensor to pull high)
         ;
     pr_info("DHT22: Sensor response high\n");
-    udelay(80); // once high, wait 80us => "get ready" for data transmission
+    while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (waiting for sensor to pull low to start first bit)
+        ;
 
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
     // up to 5ms total if all 1s, ~3ms if all 0s
@@ -64,22 +61,21 @@ static int dht22_read(void)
         for (j = 0; j < 8; j++)
         {
             // 8 bits per byte obviously
-            while (gpio_get_value(GPIO_DATA_LINE) == 0)
-                ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
+            while (gpio_get_value(GPIO_DATA_LINE) == 0) // while still low (start of bit)
+                ;                                       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
+            int start = ktime_get();
             pr_info("DHT22: Bit start high\n");
-            udelay(30); // Delay to determine if it's a '1' or '0'
-            // after 30us if it is still high, then it is a '1', otherwise it is a '0'
-            if (gpio_get_value(GPIO_DATA_LINE) == 1)
+            while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (end of bit)
+                ;                                       // Wait for the pin to go low, during this time we are in the 26-28us high state for '0' or 70us high state for '1'
+            int end = ktime_get();
+            int duration = ktime_us_delta(end, start);
+            pr_info("DHT22: Bit duration: %d\n", duration);
+            data[i] <<= 1;     // shift left to make room for new bit
+            if (duration > 40) // 26-28us for '0', 70us for '1'
             {
-                pr_info("DHT22: Bit is 1\n");
-                data[i] |= (1 << (7 - j)); // Set bit
-                while (gpio_get_value(GPIO_DATA_LINE) == 1)
-                    ; // Wait for the pin to go low // NEVER goes low in my testing :(... because I never get the next message :(...
-                pr_info("DHT22: Bit end high\n");
+                data[i] |= 1; // set last bit to 1
             }
-            else {
-                pr_info("DHT22: Bit is 0\n");
-            }
+            // else 0, already 0 after left shift by 1
         }
     }
 

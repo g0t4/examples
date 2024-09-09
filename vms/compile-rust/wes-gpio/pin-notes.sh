@@ -1,3 +1,5 @@
+# *** multimeter across DHT22 pins VCC and DATA shows => 5kOhm resistance, so it has an internal pull-up resistor... whereas to confirm... GND to DATA shows 1 (no reading) == infinite (no connection)
+
 
 # IIUC some pins are pre-allocated on the RPI5 to a specific protocol and drivers 'listen' to these pins to detect a compatible device... so if I want to use the pins as general purpose GPIO I need to disable the driver that is listening to the pin?
 lsmod | grep "i2c\|spi\|uart\|pwm" # TODO also pcm?, EEPROM?
