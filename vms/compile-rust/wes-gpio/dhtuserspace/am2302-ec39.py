@@ -19,10 +19,10 @@ def send_start_signal_to_AM2302():
             config={LINE: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as request:
         # request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
-        time.sleep(0.0004)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
+        time.sleep(0.0008)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
         # once I dropped to 400us instead of 2_000us (or even 800us)... at 400us I got valid bytes (including parity) and temp/humidity were in expected ranges!!! I thought to do this because... I figured maybe I am pulling low too long and missing the first bit(s)... once I dropped to 1_000us I started to see 77us in low response indicating I am shifting in the right direction... IIUC what I was thinking... anyways, let's just try this
         # 400us worked on sensor1 consistently, but sensor2 only works 20% of time?
-        #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it? 
+        #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it?
         #     OR MAYBE NUKE my pull up resistor externally?
         #    don't forget 2 second min between samples...
         request.set_value(LINE, HIGH)
@@ -91,6 +91,18 @@ def read_sensor_bits():
 
             if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low after"):  # Wait for the end of the bit (low)
                 print(f"Timeout waiting for bit {i} low signal after high.")
+                if i == 39:
+                    # attempt to recover from first bit being missed
+                    corrected_data = data.copy()
+                    corrected_data.insert(0, 0)  # try zero first
+                    if verify_sensor_data_checksum(bits_to_bytes(corrected_data)):
+                        print("Recovered from missed first bit.")
+                        return corrected_data
+                    corrected_data = data.copy()
+                    corrected_data.insert(0, 1)  # try one next
+                    if verify_sensor_data_checksum(bits_to_bytes(corrected_data)):
+                        print("Recovered from missed first bit.")
+                        return corrected_data
                 dump_data()
                 return None
             high_duration = time.time() - high_start_time
@@ -121,13 +133,10 @@ def bits_to_bytes(bits):
 
 def verify_sensor_data_checksum(bytes):
     humidity_high, humidity_low, temp_high, temp_low, checksum = bytes
-
     sum = humidity_high + humidity_low + temp_high + temp_low
     # last 8 bits of the sum of the first 4 bytes, IOTW ignore overflow beyond 8 bits
     calculated_checksum = sum & 0xFF
-
     print(f"Checksum: {checksum}, calculated: {calculated_checksum}, sum: {sum}")
-
     return calculated_checksum == checksum
 
 
