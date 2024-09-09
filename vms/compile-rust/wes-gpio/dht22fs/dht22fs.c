@@ -51,8 +51,7 @@ static bool wait_for_edge_to(int expected_value)
 
 static int dht22_read(void)
 {
-    // TODO lock for one read at a time?
-    // TODO fail if read too soon after last read? (IIUC 2 second probing interval minimum required)
+    // TODO port my 39 bit failure logic from python to C too
 
     // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
