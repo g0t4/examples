@@ -93,7 +93,13 @@ def bits_to_bytes(bits):
 
 def verify_sensor_data_checksum(bytes):
     humidity_high, humidity_low, temp_high, temp_low, checksum = bytes
-    calculated_checksum = (humidity_high + humidity_low + temp_high + temp_low) & 0xFF
+
+    sum = humidity_high + humidity_low + temp_high + temp_low
+    # last 8 bits of the sum of the first 4 bytes, IOTW ignore overflow beyond 8 bits
+    calculated_checksum = sum & 0xFF
+
+    print(f"Checksum: {checksum}, calculated: {calculated_checksum}, sum: {sum}")
+
     return calculated_checksum == checksum
 
 
@@ -101,12 +107,14 @@ def read_am2302():
     send_start_signal_to_AM2302()
 
     bits = read_sensor_bits()
+    print(f"bits: {bits}")
 
     if bits is None:
         print("Failed to read data from the sensor.")
         return None
 
     bytes = bits_to_bytes(bits)
+    print(f"bytes: {bytes}")
 
     if not verify_sensor_data_checksum(bytes):
         print("Checksum verification failed.")
