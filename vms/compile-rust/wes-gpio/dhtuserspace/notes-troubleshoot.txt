@@ -1,0 +1,13 @@
+4.7kOhm
+
+[  571.318923] DHT22: Driver loaded successfully, /dev/dht22 created
+[  574.497532] DHT22: Reading data
+
+
+# OK so 10kOhm gets way further... so sensor pulls low/high and then low and high for bit 1 but never finishes bit 1 it seems
+10kOhm shows:
+[   26.269641] DHT22: Reading data
+[   26.295655] DHT22: Sensor response low
+[   26.308768] DHT22: Sensor response high
+[   26.308855] DHT22: Bit start high
+[   26.308888] DHT22: Bit is 1

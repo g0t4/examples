@@ -74,7 +74,7 @@ static int dht22_read(void)
                 pr_info("DHT22: Bit is 1\n");
                 data[i] |= (1 << (7 - j)); // Set bit
                 while (gpio_get_value(GPIO_DATA_LINE) == 1)
-                    ; // Wait for the pin to go low
+                    ; // Wait for the pin to go low // NEVER goes low in my testing :(... because I never get the next message :(...
                 pr_info("DHT22: Bit end high\n");
             }
             else {
