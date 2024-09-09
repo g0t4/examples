@@ -34,6 +34,7 @@ static int dht22_read(void)
 
     int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
     int i, j;
+    pr_info("DHT22: Reading data\n");
 
     // Send the start signal to DHT22
     gpio_direction_output(GPIO_DATA_LINE, 1); // pull high
@@ -48,9 +49,11 @@ static int dht22_read(void)
     // Wait for the sensor response (80us low, 80us high)
     while (gpio_get_value(GPIO_DATA_LINE) == 1)
         ;
+    pr_info("DHT22: Sensor response low\n");
     udelay(80); // once low, wait 80us // should we check every 5us instead of just skip 80?!
     while (gpio_get_value(GPIO_DATA_LINE) == 0)
         ;
+    pr_info("DHT22: Sensor response high\n");
     udelay(80); // once high, wait 80us => "get ready" for data transmission
 
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
@@ -63,6 +66,7 @@ static int dht22_read(void)
             // 8 bits per byte obviously
             while (gpio_get_value(GPIO_DATA_LINE) == 0)
                 ;       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
+            pr_info("DHT22: Bit start high\n");
             udelay(30); // Delay to determine if it's a '1' or '0'
             // after 30us if it is still high, then it is a '1', otherwise it is a '0'
             if (gpio_get_value(GPIO_DATA_LINE) == 1)
@@ -70,6 +74,7 @@ static int dht22_read(void)
                 data[i] |= (1 << (7 - j)); // Set bit
                 while (gpio_get_value(GPIO_DATA_LINE) == 1)
                     ; // Wait for the pin to go low
+                pr_info("DHT22: Bit end high\n");
             }
         }
     }
