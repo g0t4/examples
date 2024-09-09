@@ -3,6 +3,9 @@
   "recommendations": [
     "ms-python.python",
     "donjayamanne.python-extension-pack",
-    "eeyore.yapf"
+    "eeyore.yapf",
+    "ms-vscode.makefile-tools",
+    "ms-vscode.cpptools-extension-pack",
+    "github.copilot"
   ]
 }
