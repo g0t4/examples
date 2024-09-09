@@ -61,14 +61,14 @@ static bool wait_for_edge_to(int expected_value)
 
 static int dht22_read(void)
 {
-    // TODO port my 39 bit failure logic from python to C too
+    // !! TODO port my 39 bit failure logic from python to C too (this is only other thing that really matters)
 
     // FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
     // http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
     int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
     // TODO build array of text messages to log for debugging, like in my python code
-    int i, j;
+    int byte_index, bit_index;
     PR_INFO("DHT22: Reading data\n");
 
     // Send the start signal to DHT22
@@ -101,10 +101,10 @@ static int dht22_read(void)
 
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
     // up to 5ms total if all 1s, ~3ms if all 0s
-    for (i = 0; i < 5; i++)
+    for (byte_index = 0; byte_index < 5; byte_index++)
     {
         // 5 bytes of data sent
-        for (j = 0; j < 8; j++)
+        for (bit_index = 0; bit_index < 8; bit_index++)
         {
             // 8 bits per byte obviously
             if (!wait_for_edge_to(1))
@@ -124,10 +124,10 @@ static int dht22_read(void)
             int duration = ktime_us_delta(end, start);
             PR_INFO("DHT22: Bit duration: %d\n", duration);
 
-            data[i] <<= 1;     // shift left to make room for new bit
+            data[byte_index] <<= 1;     // shift left to make room for new bit
             if (duration > 40) // 26-28us for '0', 70us for '1'
             {
-                data[i] |= 1; // set last bit to 1
+                data[byte_index] |= 1; // set last bit to 1
             }
             // else 0, already 0 after left shift by 1
             // FUCK YEAH THIS JUST WORKED!!!!!!!! though my file cat operation is hanging... Temperature: 24 C, Humidity: 70 % ... humidity seems high but temp is accurate
