@@ -173,7 +173,7 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     if (ms_since_last_read < 2000 && ms_since_last_read > 0)
     {
         PR_INFO("read_data: Data is fresh, returning cached data\n");
-        snprintf(buffer, sizeof(buffer), "Cached Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
+        snprintf(buffer, sizeof(buffer), "Cached Data: Humidity: %d %%, Temperature: %d C (%d F)\n", sensor_data.humidity, sensor_data.temperature, (sensor_data.temperature * 9 / 5) + 32);
         return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
     }
     PR_INFO("read_data: Data is stale, reading new data\n");
@@ -186,7 +186,7 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     }
     last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
-    snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
+    snprintf(buffer, sizeof(buffer), "Humidity: %d %%, Temperature: %d C (%d F)\n", sensor_data.humidity, sensor_data.temperature, (sensor_data.temperature * 9 / 5) + 32);
 
 #ifdef DEBUG_DHT22
     int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
