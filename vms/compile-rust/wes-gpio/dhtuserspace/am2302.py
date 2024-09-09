@@ -41,6 +41,15 @@ def read_sensor_bits():
         def dump_data():
             print(f"data: {data}")
 
+            num_complete_bits = len(data) // 8
+            complete_bits = data[:num_complete_bits * 8]
+            complete_bytes = bits_to_bytes(complete_bits)
+            print(f"Data so far: {complete_bytes}")
+
+            humidity = get_humidity(complete_bytes)
+            temperature = get_temperature(complete_bytes)
+            print(f"Humidity: {humidity:.1f}%, Temperature: {temperature:.1f}°C")
+
         # Wait for the sensor to pull the line low, then high (response signal)
         if not wait_for_edge_to(LOW, MAX_WAIT):
             # ~80us
@@ -105,6 +114,18 @@ def verify_sensor_data_checksum(bytes):
     return calculated_checksum == checksum
 
 
+def get_humidity(bytes):
+    if len(bytes) < 2:
+        return None
+    return ((bytes[0] << 8) + bytes[1]) / 10.0
+
+
+def get_temperature(bytes):
+    if len(bytes) < 4:
+        return None
+    return ((bytes[2] << 8) + bytes[3]) / 10.0
+
+
 def read_am2302():
     send_start_signal_to_AM2302()
 
@@ -122,11 +143,7 @@ def read_am2302():
         print("Checksum verification failed.")
         return None
 
-    # Convert the byte data to humidity and temperature values
-    humidity = ((bytes[0] << 8) + bytes[1]) / 10.0
-    temperature = ((bytes[2] << 8) + bytes[3]) / 10.0
-
-    return humidity, temperature
+    return get_humidity(bytes), get_temperature(bytes)
 
 
 result = read_am2302()
