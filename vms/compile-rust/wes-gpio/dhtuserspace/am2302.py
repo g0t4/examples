@@ -24,6 +24,7 @@ def send_start_signal_to_AM2302():
         # 400us worked on sensor1 consistently, but sensor2 only works 20% of time?
         #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it? 
         #     OR MAYBE NUKE my pull up resistor externally?
+        #    don't forget 2 second min between samples...
         request.set_value(LINE, HIGH)
         # time.sleep(40 / 1_000_000)  # keep high for 20-40us # pdf doesn't give timing here so wtf am I doing waiting 40us?!
 
