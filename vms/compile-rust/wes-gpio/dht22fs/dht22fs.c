@@ -112,8 +112,12 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     char buffer[64];
     if (*offset > 0)
     {
+        pr_info("read_data: EOF, all data returned in single read\n");
         return 0; // Indicate EOF to stop further reading
     }
+
+    // TODO add caching mechanism for 2 seconds before reading again, so people can request the reading repeatedly without causing the sensor to be read repeatedly
+    // TODO add locking for first request to read, block subsequent calls before data read first time... and fulfill them with the cached data
 
     if (dht22_read() < 0)
     {
