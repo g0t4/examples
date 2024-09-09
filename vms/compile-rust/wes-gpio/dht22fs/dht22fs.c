@@ -29,7 +29,7 @@
 struct dht22_data
 {
     int temperature;
-    int humidity;
+    int humidity_tenths;
     int fahrenheit_tenths;
 };
 
@@ -147,7 +147,7 @@ static int dht22_read(void)
         return -1;
     }
 
-    sensor_data.humidity = ((data[0] << 8) + data[1]);             // TODO store in tenths (rename later)
+    sensor_data.humidity_tenths = ((data[0] << 8) + data[1]);             // TODO store in tenths (rename later)
     sensor_data.temperature = (((data[2] & 0x7F) << 8) + data[3]); // TODO store in tenths (rename later)
     if (data[2] & 0x80)
     {
@@ -175,7 +175,7 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     if (ms_since_last_read < 2000 && ms_since_last_read > 0)
     {
         PR_INFO("read_data: Data is fresh, returning cached data\n");
-        snprintf(buffer, sizeof(buffer), "Cached Humidity: %d.%d %%, Temperature: %d.%d C (%d.%d F)\n", sensor_data.humidity / 10, sensor_data.humidity % 10, sensor_data.temperature / 10, sensor_data.temperature % 10, sensor_data.fahrenheit_tenths / 10, sensor_data.fahrenheit_tenths % 10);
+        snprintf(buffer, sizeof(buffer), "Cached Humidity: %d.%d %%, Temperature: %d.%d C (%d.%d F)\n", sensor_data.humidity_tenths / 10, sensor_data.humidity_tenths % 10, sensor_data.temperature / 10, sensor_data.temperature % 10, sensor_data.fahrenheit_tenths / 10, sensor_data.fahrenheit_tenths % 10);
         return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
     }
     PR_INFO("read_data: Data is stale, reading new data\n");
@@ -188,7 +188,7 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     }
     last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
-    snprintf(buffer, sizeof(buffer), "Humidity: %d.%d %%, Temperature: %d.%d C (%d.%d F)\n", sensor_data.humidity / 10, sensor_data.humidity % 10, sensor_data.temperature / 10, sensor_data.temperature % 10, sensor_data.fahrenheit_tenths / 10, sensor_data.fahrenheit_tenths % 10);
+    snprintf(buffer, sizeof(buffer), "Humidity: %d.%d %%, Temperature: %d.%d C (%d.%d F)\n", sensor_data.humidity_tenths / 10, sensor_data.humidity_tenths % 10, sensor_data.temperature / 10, sensor_data.temperature % 10, sensor_data.fahrenheit_tenths / 10, sensor_data.fahrenheit_tenths % 10);
 
 #ifdef DEBUG_DHT22
     int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
