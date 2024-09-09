@@ -153,7 +153,7 @@ def get_humidity(bytes):
     humidity_high = bytes[0]
     humidity_low = bytes[1]
     humidity = humidity_high << 8 | humidity_low
-    return humidity / 10.0  # reports in tenths of a percent? WTF chatgpt said this... and copilot keep suggesting it
+    return humidity / 10.0  # reports in tenths
 
 
 def get_temperature(bytes):
@@ -165,7 +165,7 @@ def get_temperature(bytes):
     temp_high = bytes[2] & 0b0111_1111
     temp_low = bytes[3]
     temperature = temp_high << 8 | temp_low
-    temperature /= 10.0  # reports in tenths of a degree C apparently, per chatgpt and copilot
+    temperature /= 10.0  # reports in tenths
     return temperature if not sign else -temperature
 
 
