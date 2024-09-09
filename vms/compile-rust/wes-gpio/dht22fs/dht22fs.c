@@ -168,7 +168,9 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
         return 0; // Indicate EOF to stop further reading
     }
 
-    if (jiffies_to_msecs(jiffies - last_read_time) < 2000)
+    int ms_since_last_read = jiffies_to_msecs(jiffies - last_read_time);
+    // handle negative for wrap around?
+    if (ms_since_last_read < 2000 && ms_since_last_read > 0)
     {
         PR_INFO("read_data: Data is fresh, returning cached data\n");
         snprintf(buffer, sizeof(buffer), "Cached Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
