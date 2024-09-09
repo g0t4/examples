@@ -31,14 +31,14 @@ def read_sensor_bits():
     # Switch the line to input mode to read data from the sensor
     with gpiod.request_lines("/dev/gpiochip4", consumer="dht22-input", config={LINE: gpiod.LineSettings(direction=Direction.INPUT)}) as request:
 
-        def wait_for_edge_to(expected_value: Value, timeout):
+        def wait_for_edge_to(expected_value: Value, timeout, label=""):
             """Wait for a change in the signal line to the expected value."""
             start_time = time.time()
             while request.get_value(LINE) != expected_value:
                 if time.time() - start_time > timeout:
                     return False
             total_us = (time.time() - start_time) * 1_000_000
-            times.append(f"{total_us:.1f} => {expected_value}")
+            times.append(f"{label}: {total_us:.1f}us ({expected_value})")
             return True
 
         def dump_data():
@@ -58,32 +58,32 @@ def read_sensor_bits():
                 print(t)
 
         # Wait for the sensor to pull the line low, then high (response signal)
-        if not wait_for_edge_to(LOW, MAX_WAIT):
+        if not wait_for_edge_to(LOW, MAX_WAIT, "initial low"):
             # ~80us
             print("Sensor didn't respond with a low signal.")
             return None
         # 80us low
 
-        if not wait_for_edge_to(HIGH, MAX_WAIT):
+        if not wait_for_edge_to(HIGH, MAX_WAIT, "initial high"):
             print("Sensor didn't pull the line high.")
             return None
         # 80us high
 
         # Sensor should now start sending 40 bits of data (5 bytes)
         for i in range(40):
-            if not wait_for_edge_to(LOW, MAX_WAIT):  # Wait for the start of the bit (low), or on a loop iteration its already low by this time
+            if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low before"):  # Wait for the start of the bit (low), or on a loop iteration its already low by this time
                 print(f"Timeout waiting for bit {i} low signal before high.")
                 dump_data()
                 return None
             # 50us
 
-            if not wait_for_edge_to(HIGH, MAX_WAIT):  # Wait for the high signal
+            if not wait_for_edge_to(HIGH, MAX_WAIT, f"bit {i} high"):  # Wait for the start of the bit (high)
                 print(f"Timeout waiting for bit {i} high signal.")
                 dump_data()
                 return None
             high_start_time = time.time()
 
-            if not wait_for_edge_to(LOW, MAX_WAIT):  # Wait for the end of the bit (low)
+            if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low after"):  # Wait for the end of the bit (low)
                 print(f"Timeout waiting for bit {i} low signal after high.")
                 dump_data()
                 return None
