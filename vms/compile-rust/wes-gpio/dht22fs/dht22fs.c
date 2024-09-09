@@ -146,8 +146,8 @@ static int dht22_read(void)
         return -1;
     }
 
-    sensor_data.humidity = ((data[0] << 8) + data[1]) / 10;
-    sensor_data.temperature = (((data[2] & 0x7F) << 8) + data[3]) / 10;
+    sensor_data.humidity = ((data[0] << 8) + data[1]);             // store in tenths (rename later)
+    sensor_data.temperature = (((data[2] & 0x7F) << 8) + data[3]); // store in tenths (rename later)
     if (data[2] & 0x80)
     {
         sensor_data.temperature = -sensor_data.temperature; // Handle negative temperature
@@ -186,7 +186,9 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     }
     last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
-    snprintf(buffer, sizeof(buffer), "Humidity: %d %%, Temperature: %d C (%d F)\n", sensor_data.humidity, sensor_data.temperature, (sensor_data.temperature * 9 / 5) + 32);
+    int fahrenheith_tenths = (sensor_data.temperature * 9 / 5) + 320;
+
+    snprintf(buffer, sizeof(buffer), "Humidity: %d.%d %%, Temperature: %d.%d C (%d.%d F)\n", sensor_data.humidity / 10, sensor_data.humidity % 10, sensor_data.temperature / 10, sensor_data.temperature % 10, fahrenheith_tenths / 10, fahrenheith_tenths % 10);
 
 #ifdef DEBUG_DHT22
     int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
