@@ -190,12 +190,10 @@ def read_am2302():
 
 result = read_am2302()
 
+print()
 if result:
     humidity, temperature = result
     print(f"Humidity: {humidity:.1f}%")
-    print(f"Temperature: {temperature:.1f}°C")
+    print(f"Temperature: {temperature:.1f}°C, {temperature * 9 / 5 + 32:.1f}°F")
 else:
     print("Failed to read sensor data.")
-
-# TODO TO TRY:
-#   IIUC AM2302 has internal pull-up, whereas DHT22 does not (needs external pull up resistor)

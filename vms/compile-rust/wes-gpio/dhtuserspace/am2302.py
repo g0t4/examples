@@ -22,7 +22,7 @@ def send_start_signal_to_AM2302():
         time.sleep(0.0004)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
         # once I dropped to 400us instead of 2_000us (or even 800us)... at 400us I got valid bytes (including parity) and temp/humidity were in expected ranges!!! I thought to do this because... I figured maybe I am pulling low too long and missing the first bit(s)... once I dropped to 1_000us I started to see 77us in low response indicating I am shifting in the right direction... IIUC what I was thinking... anyways, let's just try this
         # 400us worked on sensor1 consistently, but sensor2 only works 20% of time?
-        #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it? 
+        #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it?
         #     OR MAYBE NUKE my pull up resistor externally?
         #    don't forget 2 second min between samples...
         request.set_value(LINE, HIGH)
@@ -179,12 +179,10 @@ def read_am2302():
 
 result = read_am2302()
 
+print()
 if result:
     humidity, temperature = result
     print(f"Humidity: {humidity:.1f}%")
-    print(f"Temperature: {temperature:.1f}°C")
+    print(f"Temperature: {temperature:.1f}°C, {temperature * 9 / 5 + 32:.1f}°F")
 else:
     print("Failed to read sensor data.")
-
-# TODO TO TRY:
-#   IIUC AM2302 has internal pull-up, whereas DHT22 does not (needs external pull up resistor)
