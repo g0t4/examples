@@ -26,7 +26,7 @@ def send_start_signal_to_AM2302():
 
 def read_sensor_bits():
     data = []
-    times = []
+    times = []  # !! AWESOME TIMINGS are looking close to accurate! consistent up until those last few bits... hrm.. at least I am getting 38 bits with right patterns (43us ish for low period, 25us for 0 bit, 70us for 1 bit ... it is looking mostly good)
 
     # Switch the line to input mode to read data from the sensor
     with gpiod.request_lines("/dev/gpiochip4", consumer="dht22-input", config={LINE: gpiod.LineSettings(direction=Direction.INPUT)}) as request:
@@ -64,14 +64,14 @@ def read_sensor_bits():
             return None
         # 80us low
 
-        if not wait_for_edge_to(HIGH, MAX_WAIT, "initial high"):
+        if not wait_for_edge_to(HIGH, MAX_WAIT, "initial high (s/b 80us)"):
             print("Sensor didn't pull the line high.")
             return None
         # 80us high
 
         # Sensor should now start sending 40 bits of data (5 bytes)
         for i in range(40):
-            if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low before"):  # Wait for the start of the bit (low), or on a loop iteration its already low by this time
+            if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low before (ignore duration)"):  # Wait for the start of the bit (low), or on a loop iteration its already low by this time
                 print(f"Timeout waiting for bit {i} low signal before high.")
                 dump_data()
                 return None
@@ -95,6 +95,7 @@ def read_sensor_bits():
                 data.append(1)
             else:
                 data.append(0)
+            times.append(f"    bit {i} == {data[-1]}:   high duration => {high_duration * 1_000_000:.1f}us")
 
         return data
 
@@ -124,13 +125,25 @@ def verify_sensor_data_checksum(bytes):
 def get_humidity(bytes):
     if len(bytes) < 2:
         return None
-    return ((bytes[0] << 8) + bytes[1]) / 10.0
+    # this guide says 16 bit precision: https://www.teachmemicro.com/how-dht22-sensor-works/
+    # byte0 = humidity high byte, byte1 = humidity low byte
+    humidity_high = bytes[0]
+    humidity_low = bytes[1]
+    humidity = humidity_high << 8 | humidity_low
+    return humidity / 10.0 # reports in tenths of a percent? WTF chatgpt said this... and copilot keep suggesting it
 
 
 def get_temperature(bytes):
     if len(bytes) < 4:
         return None
-    return ((bytes[2] << 8) + bytes[3]) / 10.0
+    # byte2 = temperature high byte, byte3 = temperature low byte
+    # BUT the first bit of byte2 is the sign bit
+    sign = bytes[2] & 0b1000_0000
+    temp_high = bytes[2] & 0b0111_1111
+    temp_low = bytes[3]
+    temperature = temp_high << 8 | temp_low
+    temperature /= 10.0 # reports in tenths of a degree C apparently, per chatgpt and copilot
+    return temperature if not sign else -temperature
 
 
 def read_am2302():
