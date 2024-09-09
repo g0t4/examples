@@ -38,6 +38,9 @@ def read_sensor_bits():
                     return False
             return True
 
+        def dump_data():
+            print(f"data: {data}")
+
         # Wait for the sensor to pull the line low, then high (response signal)
         if not wait_for_edge_to(LOW, MAX_WAIT):
             # ~80us
@@ -53,17 +56,20 @@ def read_sensor_bits():
         # Sensor should now start sending 40 bits of data (5 bytes)
         for i in range(40):
             if not wait_for_edge_to(LOW, MAX_WAIT):  # Wait for the start of the bit (low), or on a loop iteration its already low by this time
-                print(f"Timeout waiting for bit {i} low signal.")
+                print(f"Timeout waiting for bit {i} low signal before high.")
+                dump_data()
                 return None
             # 50us
 
             if not wait_for_edge_to(HIGH, MAX_WAIT):  # Wait for the high signal
                 print(f"Timeout waiting for bit {i} high signal.")
+                dump_data()
                 return None
             high_start_time = time.time()
 
             if not wait_for_edge_to(LOW, MAX_WAIT):  # Wait for the end of the bit (low)
-                print(f"Timeout waiting for bit {i} low signal.")
+                print(f"Timeout waiting for bit {i} low signal after high.")
+                dump_data()
                 return None
             high_duration = time.time() - high_start_time
 
