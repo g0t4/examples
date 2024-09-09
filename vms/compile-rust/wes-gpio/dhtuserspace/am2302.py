@@ -21,6 +21,9 @@ def send_start_signal_to_AM2302():
         # request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
         time.sleep(0.0004)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
         # once I dropped to 400us instead of 2_000us (or even 800us)... at 400us I got valid bytes (including parity) and temp/humidity were in expected ranges!!! I thought to do this because... I figured maybe I am pulling low too long and missing the first bit(s)... once I dropped to 1_000us I started to see 77us in low response indicating I am shifting in the right direction... IIUC what I was thinking... anyways, let's just try this
+        # 400us worked on sensor1 consistently, but sensor2 only works 20% of time?
+        #   sensor1 is reliably working at 480us too... maybe sensor2 is dud? could explain trouble I have had with it? 
+        #     OR MAYBE NUKE my pull up resistor externally?
         request.set_value(LINE, HIGH)
         # time.sleep(40 / 1_000_000)  # keep high for 20-40us # pdf doesn't give timing here so wtf am I doing waiting 40us?!
 
