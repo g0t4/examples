@@ -11,7 +11,7 @@
 
 #include "../ledfs/pins.h"
 
-#define DEBUG_DHT22
+// #define DEBUG_DHT22
 #ifdef DEBUG_DHT22
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
 #define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
@@ -190,8 +190,10 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
 
     snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
+#ifdef DEBUG_DHT22
     int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
     PR_INFO("strlen(buffer): %d\n", buffer_len);
+#endif
 
     PR_INFO("DHT22: %s\n", buffer);
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
