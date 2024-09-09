@@ -21,7 +21,7 @@ def send_start_signal_to_AM2302():
         request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
         time.sleep(0.018)  # Wait for at least 18 ms
         request.set_value(LINE, HIGH)
-        time.sleep(40 / 1_000_000)  # keep high for 20-40us
+        time.sleep(21 / 1_000_000)  # keep high for 20-40us
 
 
 def read_sensor_bits():
