@@ -99,6 +99,9 @@ def read_sensor_bits():
                 data.append(0)
             times.append(f"    bit {i} == {data[-1]}:   high duration => {high_duration * 1_000_000:.1f}us")
 
+        print("Times:")
+        for t in times:
+            print("  ", t)
         return data
 
 
