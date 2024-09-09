@@ -3,7 +3,7 @@ import time
 from gpiod.line import Direction, Value
 
 TIMEOUT_SEC = 2  # Timeout in seconds
-MAX_WAIT = 0.1  # Maximum time to wait for signal in seconds
+MAX_WAIT = 0.2  # Maximum time to wait for signal in seconds
 
 LINE = 17
 
@@ -19,9 +19,9 @@ def send_start_signal_to_AM2302():
             config={LINE: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as request:
         request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
-        time.sleep(0.018)  # Wait for at least 18 ms
+        time.sleep(0.002)  # Wait for at least 18 ms # pdf says 800us (minimum) => how about 2ms...
         request.set_value(LINE, HIGH)
-        time.sleep(20 / 1_000_000)  # keep high for 20-40us
+        # time.sleep(40 / 1_000_000)  # keep high for 20-40us # pdf doesn't give timing here so wtf am I doing waiting 40us?!
 
 
 def read_sensor_bits():
@@ -125,12 +125,14 @@ def verify_sensor_data_checksum(bytes):
 def get_humidity(bytes):
     if len(bytes) < 2:
         return None
+    # ANOTHER SPEC SHEET ... super detailed: https://files.seeedstudio.com/wiki/Grove-Temperature_and_Humidity_Sensor_Pro/res/AM2302-EN.pdf
+    #
     # this guide says 16 bit precision: https://www.teachmemicro.com/how-dht22-sensor-works/
     # byte0 = humidity high byte, byte1 = humidity low byte
     humidity_high = bytes[0]
     humidity_low = bytes[1]
     humidity = humidity_high << 8 | humidity_low
-    return humidity / 10.0 # reports in tenths of a percent? WTF chatgpt said this... and copilot keep suggesting it
+    return humidity / 10.0  # reports in tenths of a percent? WTF chatgpt said this... and copilot keep suggesting it
 
 
 def get_temperature(bytes):
@@ -142,7 +144,7 @@ def get_temperature(bytes):
     temp_high = bytes[2] & 0b0111_1111
     temp_low = bytes[3]
     temperature = temp_high << 8 | temp_low
-    temperature /= 10.0 # reports in tenths of a degree C apparently, per chatgpt and copilot
+    temperature /= 10.0  # reports in tenths of a degree C apparently, per chatgpt and copilot
     return temperature if not sign else -temperature
 
 
