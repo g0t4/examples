@@ -76,6 +76,7 @@ static int dht22_read(void)
                 data[i] |= 1; // set last bit to 1
             }
             // else 0, already 0 after left shift by 1
+            // FUCK YEAH THIS JUST WORKED!!!!!!!! though my file cat operation is hanging... Temperature: 24 C, Humidity: 70 % ... humidity seems high but temp is accurate
         }
     }
 
@@ -107,7 +108,12 @@ static int dht22_read(void)
 
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
+    pr_info("read_data: len: %d, offset: %lld\n", (int)len, *offset);
     char buffer[64];
+    if (*offset > 0)
+    {
+        return 0; // Indicate EOF to stop further reading
+    }
 
     if (dht22_read() < 0)
     {
@@ -115,7 +121,8 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     }
 
     snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
-
+    pr_info("strlen(buffer): %d\n", strlen(buffer));
+    pr_info("DHT22: %s\n", buffer);
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
 }
 
