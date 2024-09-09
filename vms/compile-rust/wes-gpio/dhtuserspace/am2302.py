@@ -18,7 +18,7 @@ def send_start_signal_to_AM2302():
             consumer="dht22-output",
             config={LINE: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as request:
-        request.set_value(LINE, LOW) # TODO do I need this if I already set output low in the config above?
+        request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
         time.sleep(0.018)  # Wait for at least 18 ms
         request.set_value(LINE, HIGH)
         time.sleep(40 / 1_000_000)  # keep high for 20-40us
@@ -28,11 +28,7 @@ def read_sensor_bits():
     data = []
 
     # Switch the line to input mode to read data from the sensor
-    with gpiod.request_lines(
-            "/dev/gpiochip4",
-            consumer="dht22-input",
-            config={LINE: gpiod.LineSettings(direction=Direction.INPUT)}
-    ) as request:
+    with gpiod.request_lines("/dev/gpiochip4", consumer="dht22-input", config={LINE: gpiod.LineSettings(direction=Direction.INPUT)}) as request:
 
         def wait_for_edge_to(expected_value: Value, timeout):
             """Wait for a change in the signal line to the expected value."""
@@ -127,7 +123,6 @@ def read_am2302():
     return humidity, temperature
 
 
-# Read and display the data
 result = read_am2302()
 
 if result:
@@ -136,6 +131,3 @@ if result:
     print(f"Temperature: {temperature:.1f}°C")
 else:
     print("Failed to read sensor data.")
-
-# Cleanup
-chip.close()
