@@ -156,7 +156,7 @@ static int dht22_read(void)
     return 0;
 }
 
-static int last_read_time = 0;
+static int last_read_jiffies = 0;
 
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
@@ -168,8 +168,8 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
         return 0; // Indicate EOF to stop further reading
     }
 
-    int ms_since_last_read = jiffies_to_msecs(jiffies - last_read_time);
-    // handle negative for wrap around?
+    int ms_since_last_read = jiffies_to_msecs(jiffies - last_read_jiffies);
+    // handle negative for wrap around
     if (ms_since_last_read < 2000 && ms_since_last_read > 0)
     {
         PR_INFO("read_data: Data is fresh, returning cached data\n");
@@ -184,7 +184,7 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
         return -EIO; // general IO error,
         // FYI cat responds with "Bad address" if I return -EFAULT... not so useful
     }
-    last_read_time = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
+    last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
     snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
