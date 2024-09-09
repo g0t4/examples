@@ -21,11 +21,12 @@ def send_start_signal_to_AM2302():
         request.set_value(LINE, LOW)  # TODO do I need this if I already set output low in the config above?
         time.sleep(0.018)  # Wait for at least 18 ms
         request.set_value(LINE, HIGH)
-        time.sleep(21 / 1_000_000)  # keep high for 20-40us
+        time.sleep(20 / 1_000_000)  # keep high for 20-40us
 
 
 def read_sensor_bits():
     data = []
+    times = []
 
     # Switch the line to input mode to read data from the sensor
     with gpiod.request_lines("/dev/gpiochip4", consumer="dht22-input", config={LINE: gpiod.LineSettings(direction=Direction.INPUT)}) as request:
@@ -36,6 +37,8 @@ def read_sensor_bits():
             while request.get_value(LINE) != expected_value:
                 if time.time() - start_time > timeout:
                     return False
+            total_us = (time.time() - start_time) * 1_000_000
+            times.append(f"{total_us:.1f} => {expected_value}")
             return True
 
         def dump_data():
@@ -49,6 +52,10 @@ def read_sensor_bits():
             humidity = get_humidity(complete_bytes)
             temperature = get_temperature(complete_bytes)
             print(f"Humidity: {humidity:.1f}%, Temperature: {temperature:.1f}°C")
+
+            print("Times:")
+            for t in times:
+                print(t)
 
         # Wait for the sensor to pull the line low, then high (response signal)
         if not wait_for_edge_to(LOW, MAX_WAIT):
