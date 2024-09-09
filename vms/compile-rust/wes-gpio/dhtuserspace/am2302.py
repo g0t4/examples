@@ -1,9 +1,8 @@
 import gpiod
 import time
-import select
 
 # Constants for GPIO and timing
-AM2302_PIN = 4  # Change to the GPIO pin number where AM2302 is connected
+AM2302_PIN = 17 # GPIO X pin
 TIMEOUT_SEC = 2  # Timeout in seconds
 
 # Timing constants (adjusted for Raspberry Pi)
@@ -11,23 +10,23 @@ MAX_WAIT = 0.1  # Maximum time to wait for signal in seconds
 MIN_PULSE_WIDTH = 0.00005  # Minimum pulse width (50 µs)
 HIGH_PULSE_THRESHOLD = 0.00007  # Threshold between 0 and 1 bit (70 µs)
 
-# Initialize the gpiod chip and line
-chip = gpiod.Chip('gpiochip0')  # Using gpiochip0, adjust if needed
+# readability:
+LOW = 0
+HIGH = 1
+
+chip = gpiod.Chip('gpiochip4')
 line = chip.get_line(AM2302_PIN)
 
-# Request the line as output to initiate the handshake
 line.request(consumer='am2302-reader', type=gpiod.LINE_REQ_DIR_OUT)
 
-
-def send_start_signal():
-    """Send the start signal to the AM2302 sensor."""
-    line.set_value(0)  # Pull the line low
+def send_start_signal_to_AM2302():
+    line.set_value(LOW)  # Pull the line low
     time.sleep(0.018)  # Wait for at least 18 ms
-    line.set_value(1)  # Release the line (high)
-    time.sleep(0.00004)  # Wait for 40 µs (sensor will pull line low)
+    line.set_value(HIGH)  # Release the line (high)
+    time.sleep(0.00004)  # Wait for 40 µs (sensor will pull line low from 20 to 40 us later, wait max amount)
+    # TODO add a check after 20 30 40us? so we don't wait too long?
 
-
-def wait_for_edge(expected_value, timeout):
+def wait_for_edge_to(expected_value, timeout):
     """Wait for a change in the signal line to the expected value."""
     start_time = time.time()
     while line.get_value() != expected_value:
@@ -35,32 +34,30 @@ def wait_for_edge(expected_value, timeout):
             return False
     return True
 
-
 def read_sensor_data():
-    """Read the 40-bit data stream from the sensor."""
     data = []
 
     # Switch the line to input mode to read data from the sensor
     line.request(consumer='am2302-reader', type=gpiod.LINE_REQ_DIR_IN)
 
     # Wait for the sensor to pull the line low, then high (response signal)
-    if not wait_for_edge(0, MAX_WAIT):
+    if not wait_for_edge_to(LOW, MAX_WAIT):
         print("Sensor didn't respond with a low signal.")
         return None
 
-    if not wait_for_edge(1, MAX_WAIT):
+    if not wait_for_edge_to(HIGH, MAX_WAIT):
         print("Sensor didn't pull the line high.")
         return None
 
-    # Sensor should now start sending 40 bits of data
+    # Sensor should now start sending 40 bits of data (5 bytes)
     for i in range(40):
-        if not wait_for_edge(0, MAX_WAIT):  # Wait for the start of the bit (low)
+        if not wait_for_edge_to(LOW, MAX_WAIT):  # Wait for the start of the bit (low)
             print(f"Timeout waiting for bit {i} low signal.")
             return None
 
         start_time = time.time()
 
-        if not wait_for_edge(1, MAX_WAIT):  # Wait for the high signal
+        if not wait_for_edge_to(HIGH, MAX_WAIT):  # Wait for the high signal
             print(f"Timeout waiting for bit {i} high signal.")
             return None
 
@@ -95,11 +92,8 @@ def verify_checksum(data):
 
 
 def read_am2302():
-    """Main function to read from the AM2302 sensor."""
-    # Send the start signal
-    send_start_signal()
+    send_start_signal_to_AM2302()
 
-    # Read 40 bits of data from the sensor
     raw_data = read_sensor_data()
 
     if raw_data is None:
