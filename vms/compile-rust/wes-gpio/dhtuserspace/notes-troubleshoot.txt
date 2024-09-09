@@ -11,3 +11,24 @@
 [   26.308768] DHT22: Sensor response high
 [   26.308855] DHT22: Bit start high
 [   26.308888] DHT22: Bit is 1
+
+# sudo cat /dev/dht22 # a second time after first hangs, total dmesg is:
+
+[   20.011622] DHT22: Driver loaded successfully, /dev/dht22 created
+[   26.269641] DHT22: Reading data # FIRST sudo cat /dev/dht22
+[   26.295655] DHT22: Sensor response low
+[   26.308768] DHT22: Sensor response high
+[   26.308855] DHT22: Bit start high
+[   26.308888] DHT22: Bit is 1
+[  312.608263] DHT22: Reading data # SECOND sudo cat /dev/dht22
+[  312.608295] DHT22: Bit end high
+[  312.632462] DHT22: Bit start high
+[  312.632494] DHT22: Bit is 1
+[  312.632507] DHT22: Bit end high
+[  312.632512] DHT22: Sensor response low
+[  312.643397] DHT22: Bit start high
+[  312.643397] DHT22: Sensor response high
+[  312.643429] DHT22: Bit is 1
+[  312.643480] DHT22: Bit start high
+[  312.643512] DHT22: Bit is 1
+# OMG it is running the first loop and second one are overlapping and FUBARING each other.. TODO add timeout logic to the driver code
