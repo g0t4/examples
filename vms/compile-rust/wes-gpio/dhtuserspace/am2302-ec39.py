@@ -56,7 +56,8 @@ def read_sensor_bits():
 
             humidity = get_humidity(complete_bytes)
             temperature = get_temperature(complete_bytes)
-            print(f"Humidity: {humidity:.1f}%, Temperature: {temperature:.1f}°C")
+            print(f"Humidity: {humidity:.1f}%")
+            print(f"Temperature: {temperature:.1f}°C, {temperature * 9 / 5 + 32:.1f}°F")
 
             print("Times:")
             for t in times:
