@@ -91,8 +91,9 @@ def read_sensor_bits():
 
             if not wait_for_edge_to(LOW, MAX_WAIT, f"bit {i} low after"):  # Wait for the end of the bit (low)
                 print(f"Timeout waiting for bit {i} low signal after high.")
-                # TODO generalize to recover from more missed bits, if we can assume they are first missed bits then IIAC I can recover up to 7 bits?
                 if i == 39:
+                    # TODO generalize to recover from more missed bits, if we can assume they are first missed bits then IIAC I can recover up to 7 bits?
+                    # YAY this is working well on sensor2 that was only working 20% of time before...!
                     # attempt to recover from first bit being missed
                     corrected_data = data.copy()
                     corrected_data.insert(0, 0)  # try zero first
