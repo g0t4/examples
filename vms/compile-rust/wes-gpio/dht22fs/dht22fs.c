@@ -99,33 +99,29 @@ static int dht22_read(void)
         return -1;
     }
 
-    // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
-    // up to 5ms total if all 1s, ~3ms if all 0s
+    // Read the data (40 bits)
     for (byte_index = 0; byte_index < 5; byte_index++)
     {
-        // 5 bytes of data sent
         for (bit_index = 0; bit_index < 8; bit_index++)
         {
-            // 8 bits per byte obviously
             if (!wait_for_edge_to(1))
             {
-                PR_ERR("DHT22: Timeout - sensor didn't pull the line high for bit start\n");
+                PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line high for bit start\n", byte_index * 8 + bit_index);
                 return -1;
             }
             int start = ktime_get();
-            PR_INFO("DHT22: Bit start high\n");
 
             if (!wait_for_edge_to(0))
             {
-                PR_ERR("DHT22: Timeout - sensor didn't pull the line low for bit end\n");
+                PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line low for bit end\n", byte_index * 8 + bit_index);
                 return -1;
             }
             int end = ktime_get();
             int duration = ktime_us_delta(end, start);
-            PR_INFO("DHT22: Bit duration: %d\n", duration);
+            PR_INFO("DHT22: Bit (bit: %d) duration: %d\n", duration, byte_index * 8 + bit_index);
 
-            data[byte_index] <<= 1;     // shift left to make room for new bit
-            if (duration > 40) // 26-28us for '0', 70us for '1'
+            data[byte_index] <<= 1; // shift left to make room for new bit
+            if (duration > 40)      // 26-28us for '0', 70us for '1'
             {
                 data[byte_index] |= 1; // set last bit to 1
             }
