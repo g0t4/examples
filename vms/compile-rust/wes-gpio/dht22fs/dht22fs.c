@@ -24,6 +24,31 @@ struct dht22_data
 
 static struct dht22_data sensor_data;
 
+// PRN times array for history, so I can dump if smth goes wrong but not otherwise
+// #define MAX_ENTRIES 200
+// #define MAX_LENGTH 200
+// static char times[MAX_ENTRIES][MAX_LENGTH];
+
+#define TIMEOUT_US 1000000 // 1 second
+
+static bool wait_for_edge_to(int expected_value)
+{
+    ktime_t start_time = ktime_get();
+    while (gpio_get_value(GPIO_DATA_LINE) != expected_value)
+    {
+        if (ktime_us_delta(ktime_get(), start_time) > TIMEOUT_US)
+        {
+            return false;
+        }
+    }
+
+    // add back , const char *label PARAM if:
+    // int total_us = ktime_us_delta(ktime_get(), start_time);
+    // pr_info("%s: %dus (%d)\n", label, total_us, expected_value); // PRN add to times array like in python
+
+    return true;
+}
+
 static int dht22_read(void)
 {
     // TODO lock for one read at a time?
@@ -43,15 +68,27 @@ static int dht22_read(void)
     gpio_direction_output(GPIO_DATA_LINE, 1); // release (pulls high b/c of pull-up resistor too)
     // no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
 
-    gpio_direction_input(GPIO_DATA_LINE);       // start reading right away, wait for sensor to pull low indicating it is ready to send data
-    while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (waiting for sensor to pull low)
-        ;
+    gpio_direction_input(GPIO_DATA_LINE); // start reading right away, wait for sensor to pull low indicating it is ready to send data
+
+    if (!wait_for_edge_to(0))
+    {
+        pr_err("DHT22: Timeout - sensor didn't respond with initial low signal\n");
+        return -1;
+    }
     pr_info("DHT22: Sensor response low\n");
-    while (gpio_get_value(GPIO_DATA_LINE) == 0) // while still low (waiting for sensor to pull high)
-        ;
+
+    if (!wait_for_edge_to(1))
+    {
+        pr_err("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
+        return -1;
+    }
     pr_info("DHT22: Sensor response high\n");
-    while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (waiting for sensor to pull low to start first bit)
-        ;
+
+    if (!wait_for_edge_to(0))
+    {
+        pr_err("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
+        return -1;
+    }
 
     // Read the data (40 bits) // each bit is 50us low, then high for ... 26-28us => "0", 70us => "1"
     // up to 5ms total if all 1s, ~3ms if all 0s
@@ -61,15 +98,23 @@ static int dht22_read(void)
         for (j = 0; j < 8; j++)
         {
             // 8 bits per byte obviously
-            while (gpio_get_value(GPIO_DATA_LINE) == 0) // while still low (start of bit)
-                ;                                       // Wait for the pin to go high, during this time we are in the 50us low start of bit state
+            if (!wait_for_edge_to(1))
+            {
+                pr_err("DHT22: Timeout - sensor didn't pull the line high for bit start\n");
+                return -1;
+            }
             int start = ktime_get();
             pr_info("DHT22: Bit start high\n");
-            while (gpio_get_value(GPIO_DATA_LINE) == 1) // while still high (end of bit)
-                ;                                       // Wait for the pin to go low, during this time we are in the 26-28us high state for '0' or 70us high state for '1'
+
+            if (!wait_for_edge_to(0))
+            {
+                pr_err("DHT22: Timeout - sensor didn't pull the line low for bit end\n");
+                return -1;
+            }
             int end = ktime_get();
             int duration = ktime_us_delta(end, start);
             pr_info("DHT22: Bit duration: %d\n", duration);
+
             data[i] <<= 1;     // shift left to make room for new bit
             if (duration > 40) // 26-28us for '0', 70us for '1'
             {
@@ -121,11 +166,15 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
 
     if (dht22_read() < 0)
     {
-        return -EFAULT; // Error reading sensor
+        return -EIO; // general IO error,
+        // FYI cat responds with "Bad address" if I return -EFAULT... not so useful
     }
 
     snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
-    pr_info("strlen(buffer): %d\n", strlen(buffer));
+
+    int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
+    pr_info("strlen(buffer): %d\n", buffer_len);
+
     pr_info("DHT22: %s\n", buffer);
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
 }

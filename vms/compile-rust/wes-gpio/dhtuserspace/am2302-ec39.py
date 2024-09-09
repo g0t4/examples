@@ -65,13 +65,13 @@ def read_sensor_bits():
         # Wait for the sensor to pull the line low, then high (response signal)
         if not wait_for_edge_to(LOW, MAX_WAIT, "initial low"):
             # ~80us (confirmed 77us which is about right for delays in requesting the line since set high)
-            print("Sensor didn't respond with a low signal.")
+            print("Sensor didn't respond with initial low signal.")
             return None
         # 80us low
 
         if not wait_for_edge_to(HIGH, MAX_WAIT, "initial high (s/b 80us)"):
             # FYI I am not seeing 80us here, rather 36us
-            print("Sensor didn't pull the line high.")
+            print("Sensor didn't pull the line high after initial low.")
             return None
         # 80us high
 
