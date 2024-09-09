@@ -11,6 +11,15 @@
 
 #include "../ledfs/pins.h"
 
+#define DEBUG_DHT22
+#ifdef DEBUG_DHT22
+#define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
+#define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
+#else
+#define PR_INFO(fmt, ...)
+#define PR_ERR(fmt, ...)
+#endif
+
 #define GPIO_DATA_LINE RPI5_GPIO_17 // TODO what pin?
 // 1 = VCC (3.3V)
 // 2 = DATA (GPIO)
@@ -45,7 +54,7 @@ static bool wait_for_edge_to(int expected_value)
 
     // add back , const char *label PARAM if:
     // int total_us = ktime_us_delta(ktime_get(), start_time);
-    // pr_info("%s: %dus (%d)\n", label, total_us, expected_value); // PRN add to times array like in python
+    // PR_INFO("%s: %dus (%d)\n", label, total_us, expected_value); // PRN add to times array like in python
 
     return true;
 }
@@ -60,7 +69,7 @@ static int dht22_read(void)
     int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
     // TODO build array of text messages to log for debugging, like in my python code
     int i, j;
-    pr_info("DHT22: Reading data\n");
+    PR_INFO("DHT22: Reading data\n");
 
     // Send the start signal to DHT22
     gpio_direction_output(GPIO_DATA_LINE, 0); // pull low signals to send reading
@@ -72,21 +81,21 @@ static int dht22_read(void)
 
     if (!wait_for_edge_to(0))
     {
-        pr_err("DHT22: Timeout - sensor didn't respond with initial low signal\n");
+        PR_ERR("DHT22: Timeout - sensor didn't respond with initial low signal\n");
         return -1;
     }
-    pr_info("DHT22: Sensor response low\n");
+    PR_INFO("DHT22: Sensor response low\n");
 
     if (!wait_for_edge_to(1))
     {
-        pr_err("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
+        PR_ERR("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
         return -1;
     }
-    pr_info("DHT22: Sensor response high\n");
+    PR_INFO("DHT22: Sensor response high\n");
 
     if (!wait_for_edge_to(0))
     {
-        pr_err("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
+        PR_ERR("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
         return -1;
     }
 
@@ -100,20 +109,20 @@ static int dht22_read(void)
             // 8 bits per byte obviously
             if (!wait_for_edge_to(1))
             {
-                pr_err("DHT22: Timeout - sensor didn't pull the line high for bit start\n");
+                PR_ERR("DHT22: Timeout - sensor didn't pull the line high for bit start\n");
                 return -1;
             }
             int start = ktime_get();
-            pr_info("DHT22: Bit start high\n");
+            PR_INFO("DHT22: Bit start high\n");
 
             if (!wait_for_edge_to(0))
             {
-                pr_err("DHT22: Timeout - sensor didn't pull the line low for bit end\n");
+                PR_ERR("DHT22: Timeout - sensor didn't pull the line low for bit end\n");
                 return -1;
             }
             int end = ktime_get();
             int duration = ktime_us_delta(end, start);
-            pr_info("DHT22: Bit duration: %d\n", duration);
+            PR_INFO("DHT22: Bit duration: %d\n", duration);
 
             data[i] <<= 1;     // shift left to make room for new bit
             if (duration > 40) // 26-28us for '0', 70us for '1'
@@ -137,7 +146,7 @@ static int dht22_read(void)
     // check checksum // last byte (8 bits) as each byte is 8 bits (not int size)
     if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF))
     {
-        pr_err("DHT22: Data checksum error\n");
+        PR_ERR("DHT22: Data checksum error\n");
         return -1;
     }
 
@@ -155,21 +164,21 @@ static int last_read_time = 0;
 
 static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, loff_t *offset)
 {
-    pr_info("read_data: len: %d, offset: %lld\n", (int)len, *offset);
+    PR_INFO("read_data: len: %d, offset: %lld\n", (int)len, *offset);
     char buffer[64];
     if (*offset > 0)
     {
-        pr_info("read_data: EOF, all data returned in single read\n");
+        PR_INFO("read_data: EOF, all data returned in single read\n");
         return 0; // Indicate EOF to stop further reading
     }
 
     if (jiffies_to_msecs(jiffies - last_read_time) < 2000)
     {
-        pr_info("read_data: Data is fresh, returning cached data\n");
+        PR_INFO("read_data: Data is fresh, returning cached data\n");
         snprintf(buffer, sizeof(buffer), "Cached Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
         return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
     }
-    pr_info("read_data: Data is stale, reading new data\n");
+    PR_INFO("read_data: Data is stale, reading new data\n");
 
     // TODO add locking for first request to read, block subsequent calls before data read first time... and fulfill them with the cached data
     if (dht22_read() < 0)
@@ -182,9 +191,9 @@ static ssize_t dht22_read_data(struct file *file, char __user *buf, size_t len, 
     snprintf(buffer, sizeof(buffer), "Temperature: %d C, Humidity: %d %%\n", sensor_data.temperature, sensor_data.humidity);
 
     int buffer_len = strlen(buffer); // if I inline this, I get warnings about format
-    pr_info("strlen(buffer): %d\n", buffer_len);
+    PR_INFO("strlen(buffer): %d\n", buffer_len);
 
-    pr_info("DHT22: %s\n", buffer);
+    PR_INFO("DHT22: %s\n", buffer);
     return simple_read_from_buffer(buf, len, offset, buffer, strlen(buffer));
 }
 
@@ -202,7 +211,7 @@ static int __init dht22_init(void)
     major = register_chrdev(0, "dht22", &dht22_fops);
     if (major < 0)
     {
-        pr_err("DHT22: Unable to register character device\n");
+        PR_ERR("DHT22: Unable to register character device\n");
         gpio_free(GPIO_DATA_LINE);
         return major;
     }
@@ -212,7 +221,7 @@ static int __init dht22_init(void)
     if (IS_ERR(dht22_class))
     {
         unregister_chrdev(major, "dht22");
-        pr_err("DHT22: Failed to create class\n");
+        PR_ERR("DHT22: Failed to create class\n");
         return PTR_ERR(dht22_class);
     }
 
@@ -222,11 +231,11 @@ static int __init dht22_init(void)
     {
         class_destroy(dht22_class);
         unregister_chrdev(major, "dht22");
-        pr_err("DHT22: Failed to create device\n");
+        PR_ERR("DHT22: Failed to create device\n");
         return PTR_ERR(dht22_device);
     }
 
-    pr_info("DHT22: Driver loaded successfully, /dev/dht22 created\n");
+    PR_INFO("DHT22: Driver loaded successfully, /dev/dht22 created\n");
     return 0;
 }
 
@@ -240,7 +249,7 @@ static void __exit dht22_exit(void)
 
     unregister_chrdev(major, "dht22");
 
-    pr_info("DHT22: Driver unloaded\n");
+    PR_INFO("DHT22: Driver unloaded\n");
 }
 
 module_init(dht22_init);
