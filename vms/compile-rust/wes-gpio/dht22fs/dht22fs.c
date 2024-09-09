@@ -11,7 +11,7 @@
 
 #include "../ledfs/pins.h"
 
-// #define DEBUG_DHT22
+#define DEBUG_DHT22
 #ifdef DEBUG_DHT22
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
 #define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
@@ -118,7 +118,7 @@ static int dht22_read(void)
             }
             int end = ktime_get();
             int duration = ktime_us_delta(end, start);
-            PR_INFO("DHT22: Bit (bit: %d) duration: %d\n", duration, byte_index * 8 + bit_index);
+            PR_INFO("DHT22: Bit (bit: %d) duration: %d\n", byte_index * 8 + bit_index, duration);
 
             data[byte_index] <<= 1; // shift left to make room for new bit
             if (duration > 40)      // 26-28us for '0', 70us for '1'
