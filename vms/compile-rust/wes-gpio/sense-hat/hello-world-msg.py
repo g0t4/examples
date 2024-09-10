@@ -4,7 +4,12 @@ from sense_hat import SenseHat
 
 sense = SenseHat()
 
-sense.show_message("Hello world!")
+# i2c group required:
+sense.get_humidity()
+print(sense.temperature)
+
+# input and video groups required:
+sense.show_message("Hi, MOM!")
 
 # sudo python3  demo.py
 # must run as root (current permissions), or if not root:
