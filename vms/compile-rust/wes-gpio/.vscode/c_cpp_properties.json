@@ -18,6 +18,7 @@
 
       ],
       "defines": [
+        // TODO can I import kernel config from current machine's config file? instead of defining symbols here?
         "__KERNEL__",
         "MODULE",
         "KBUILD_BASENAME=\"dht22fs\"",
