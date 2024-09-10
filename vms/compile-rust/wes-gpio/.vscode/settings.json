@@ -38,7 +38,8 @@
     "module.h": "c",
     "kernel.h": "c",
     "fs.h": "c",
-    "init.h": "c"
+    "init.h": "c",
+    "uaccess.h": "c"
   },
   // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
 }
