@@ -4,6 +4,10 @@ from sense_hat import SenseHat
 
 sense = SenseHat()
 
+# pins used by sensehat:
+# https://pinout.xyz/pinout/sense_hat
+
+
 # i2c group required:
 fahrenheit = 9 / 5 * sense.get_temperature() + 32
 print(f"Temperature: {sense.get_temperature()}°C ({fahrenheit}°F)")
