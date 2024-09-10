@@ -10,8 +10,8 @@ sense = SenseHat()
 
 # i2c group required:
 fahrenheit = 9 / 5 * sense.get_temperature() + 32
-print(f"Temperature: {sense.get_temperature()}°C ({fahrenheit}°F)")
-print(f"Humidity: {sense.get_humidity()}%")
+print(f"Temperature: {sense.get_temperature():.1f}C ({fahrenheit:.1f}F)")
+print(f"Humidity: {sense.get_humidity():.1f}%")
 
 # input and video groups required:
 sense.show_message("Hi, MOM!")
