@@ -4,6 +4,9 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/**",
+
+        // FYI /lib/modules/$(uname -r)/build/Makefile points to => /usr/src/linux-headers-6.6.31+rpt-common-rpi/Makefile
+        // so do I only need the common paths or also need the rpi-2712 below too?
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi",
@@ -11,6 +14,7 @@
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux",
 
+        // are these needed or can I replace with all common includes?
         "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated",
         "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi",
         "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include",
