@@ -5,3 +5,6 @@ gpiod # works with libgpiod (IIUC works with kernel's gpiod interface)
 matplotlib # for plotting
 
 yapf
+
+# sense hat
+sense-hat # https://pythonhosted.org/sense-hat/
