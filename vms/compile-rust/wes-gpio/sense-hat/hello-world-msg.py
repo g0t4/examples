@@ -14,6 +14,7 @@ print(f"Temperature: {sense.get_temperature():.1f}C ({fahrenheit:.1f}F)")
 print(f"Humidity: {sense.get_humidity():.1f}%")
 
 # input and video groups required:
+sense.set_rotation(180)
 sense.clear()
 sense.show_message("Hi, MOM!")
 
