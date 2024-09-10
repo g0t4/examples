@@ -14,8 +14,14 @@ print(f"Temperature: {sense.get_temperature():.1f}C ({fahrenheit:.1f}F)")
 print(f"Humidity: {sense.get_humidity():.1f}%")
 
 # input and video groups required:
+sense.clear()
 sense.show_message("Hi, MOM!")
 
+
+
+
+
+# groups for permissions:
 # sudo python3  demo.py
 # must run as root (current permissions), or if not root:
 #   in .venv => ModuleNotFoundError: No module named 'RTIMU'
@@ -27,4 +33,5 @@ sense.show_message("Hi, MOM!")
 #     sudo usermod -aG video $USER
 #     PROFIT!!!!
 #        ASIDE:    sudo dmesg | grep fb0  =>  fb0: RPi-Sense FB frame buffer device
-#
+# "i2c" group for temp/humidity
+# "spi" => for "Atmel chip can be reprogrammed via the SPI interface" (IIAC not configured out of box for this)
