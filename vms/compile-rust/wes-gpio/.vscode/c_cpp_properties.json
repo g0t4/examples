@@ -1,0 +1,72 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include/uapi",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux",
+
+        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated",
+        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi",
+        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include",
+        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include"
+
+      ],
+      "defines": [
+        "__KERNEL__",
+        "MODULE",
+        "KBUILD_BASENAME=\"dht22fs\"",
+        "KBUILD_MODNAME=\"dht22fs\"",
+        "CC_USING_PATCHABLE_FUNCTION_ENTRY",
+        "ARM64_ASM_ARCH=\"armv8.5-a\"",
+        "CONFIG_CC_HAS_K_CONSTRAINT=1"
+      ],
+      "compilerPath": "/usr/bin/gcc-12",
+      "cStandard": "gnu11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "linux-gcc-arm64",
+      "compilerArgs": [
+        "-nostdinc",
+        "-mlittle-endian",
+        "-fmacro-prefix-map=/usr/src/linux-headers-6.6.31+rpt-common-rpi/=",
+        "-fshort-wchar",
+        "-funsigned-char",
+        "-fno-common",
+        "-fno-PIE",
+        "-fno-strict-aliasing",
+        "-mgeneral-regs-only",
+        "-Wno-psabi",
+        "-mabi=lp64",
+        "-fno-asynchronous-unwind-tables",
+        "-fno-unwind-tables",
+        "-mbranch-protection=pac-ret",
+        "-Wa,-march=armv8.5-a",
+        "-fstack-protector-strong",
+        "-fno-omit-frame-pointer",
+        "-O2",
+        "-Wall",
+        "-Wundef",
+        "-Werror=implicit-function-declaration",
+        "-Werror=implicit-int",
+        "-Werror=return-type",
+        "-Werror=strict-prototypes",
+        "-Wno-format-security",
+        "-Wno-trigraphs",
+        "-Wno-unused-but-set-variable",
+        "-Wno-unused-const-variable",
+        "-Wframe-larger-than=2048",
+        "-Wno-pointer-sign",
+        "-Wcast-function-type",
+        "-mstack-protector-guard=sysreg",
+        "-mstack-protector-guard-reg=sp_el0",
+        "-mstack-protector-guard-offset=1408"
+      ]
+    }
+  ],
+  "version": 4
+}
