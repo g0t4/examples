@@ -34,7 +34,11 @@
     "unordered_map": "c",
     "vector": "c",
     "string_view": "c",
-    "initializer_list": "c"
+    "initializer_list": "c",
+    "module.h": "c",
+    "kernel.h": "c",
+    "fs.h": "c",
+    "init.h": "c"
   },
   // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
 }
