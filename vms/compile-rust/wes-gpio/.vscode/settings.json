@@ -22,24 +22,9 @@
     "*.officeUI": "xml",
     "ignore": "ignore",
     "**/.grc/**/conf.*": "ini",
-    "pins.h": "c",
-    "system_error": "c",
-    "array": "c",
-    "functional": "c",
-    "tuple": "c",
-    "type_traits": "c",
-    "utility": "c",
-    "deque": "c",
-    "string": "c",
-    "unordered_map": "c",
-    "vector": "c",
-    "string_view": "c",
-    "initializer_list": "c",
-    "module.h": "c",
-    "kernel.h": "c",
-    "fs.h": "c",
-    "init.h": "c",
-    "uaccess.h": "c"
+    // project specific, linux headers treat as c code:
+    "/usr/src/linux-headers-6.6.31+rpt-common-rpi/**/*.h": "c",
+    "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/**/*.h": "c",
   },
   // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
 }
