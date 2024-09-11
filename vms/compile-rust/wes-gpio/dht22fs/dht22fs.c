@@ -11,6 +11,26 @@
 
 #include "../ledfs/pins.h"
 
+// FYI /boot/overlays/dht11.dtbo*
+// 
+// rpi-linux kernel:
+//  drivers/iio/humidity/dht11.c
+//     =>  * DHT11/DHT22 bit banging GPIO driver
+//  arch/arm/boot/dts/overlays/dht11-overlay.dts
+//  Documentation/devicetree/bindings/iio/humidity/dht11.yaml
+
+// dht11 driver:
+//   see `dht11_read_raw`
+//   uses IRQs to detect edges
+//   uses gpiod_* functions
+//   has timeout (naturally)
+//   dump edges => CONFIG_DYNAMIC_DEBUG
+//   seems to compute values * 1000 (dht22 * 10 (tenths already) * 100, dht11 * 1000), IIAC this is because the kernel does not support floating point numbers and so *1000 gives three decimal places for subsequent calculations (i.e. with other sensors that have more precision beyond DHT22's tenths and DTH11's whole numbers)... so I assume this is a common convention for sensor readings to capture 3 digits of precision?
+//   instead of file_operations, it uses iio_info (struct iio_info) and iio_read_raw (iio_read_raw) to read data... similar to what I am doing with file_operations and read_data below, but specific to IIO (Industrial I/O) subsystem/devices
+
+// TODO dht22_iio => reimpl this as a iio_dev driver (keep this impl as ref, since it is called fs it mirrors how _iio is using iio instead of filesystem-operations)
+// bit banging => manually toggles GPIO pins to communicate with the sensor, and reads responses (timing, edges, high/low)... aka no hardware protocol support like i2c, spi, uart, etc
+
 #define DEBUG_DHT22
 #ifdef DEBUG_DHT22
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
