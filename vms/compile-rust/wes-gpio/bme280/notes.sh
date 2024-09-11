@@ -9,3 +9,7 @@
 #
 #    IIUC impl'd in driver: drivers/iio/pressure/bmp280-i2c.c
 #            or bmp280-spi.c
+
+# depmod generates modules.alias file to map devices to drivers (in kernel drivers)
+cat /lib/modules/$(uname -r)/modules.alias | grep -i bme280
+

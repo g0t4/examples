@@ -16,7 +16,7 @@ print(f"Humidity: {sense.get_humidity():.1f}%")
 # input and video groups required:
 sense.set_rotation(180)
 sense.clear()
-sense.show_message("Hi, MOM!")
+sense.show_message("Hi, MOM!", text_colour=[0,255,0])
 
 
 
