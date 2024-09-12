@@ -2,10 +2,11 @@ CompileFlags:
   Add:
     - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include
     - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi
     - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include/uapi
     - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi
     - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux
     - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated
     - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi
     - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include
+
+    # - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi

@@ -8,7 +8,7 @@
         // FYI /lib/modules/$(uname -r)/build/Makefile points to => /usr/src/linux-headers-6.6.31+rpt-common-rpi/Makefile
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include",
-        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi",
+        "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi", // maybe not needed? not for dht22fs anyways?
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include/uapi",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi",
         "/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux",
