@@ -93,6 +93,7 @@ static int dht22_read(void)
     PR_INFO("DHT22: Reading data\n");
 
     struct gpio_desc *desc = gpio_to_desc(GPIO_DATA_LINE);
+    // FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
 
     // Send the start signal to DHT22
     gpiod_direction_output(desc, 0); // pull low signals to send reading
