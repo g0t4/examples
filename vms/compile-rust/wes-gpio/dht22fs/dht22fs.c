@@ -12,7 +12,7 @@
 #include "../ledfs/pins.h"
 
 // FYI /boot/overlays/dht11.dtbo*
-// 
+//
 // rpi-linux kernel:
 //  drivers/iio/humidity/dht11.c
 //     =>  * DHT11/DHT22 bit banging GPIO driver

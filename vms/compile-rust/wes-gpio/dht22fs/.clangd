@@ -1,12 +1,15 @@
 CompileFlags:
   Add:
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include/uapi
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi
-    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux
-    - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated
-    - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi
-    - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include
+    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include # <linux/init.h>
+    - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include # asm/rwonce.h
+    # - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm64/include/uapi
+    # - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/uapi
+    # - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/include/linux
+    - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated # asm/cpucaps.h
+    # - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi
+    # - -I/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include
+    # TODO review rest of includes and fix things up, need to get clangd to work like using make/gcc at CLI
 
     # - -I/usr/src/linux-headers-6.6.31+rpt-common-rpi/arch/arm/include/uapi
+    - -D__KERNEL__
+    - -DMODULE
