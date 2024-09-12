@@ -41,5 +41,6 @@ sudo dmesg # shows:
 
 # NEXT UP try to use pin 17
 sudo vim /boot/firmware/config.txt
-# add:
+# add: # wtf my config.txt didn't have dtoverlay=dht11 in it? AFTER REBOOT it is removed?!
 #     dtoverlay=dht11,gpiopin=17
+#   failed to work :(... switched back to pin 4 and that one works (live switch w/o reboot)
