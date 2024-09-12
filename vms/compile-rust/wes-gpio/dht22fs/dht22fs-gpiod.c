@@ -65,7 +65,7 @@ static struct dht22_data sensor_data;
 static bool wait_for_edge_to(int expected_value)
 {
     ktime_t start_time = ktime_get();
-    while (gpio_get_value(GPIO_DATA_LINE) != expected_value)
+    while (gpiod_get_raw_value(gpio_to_desc(GPIO_DATA_LINE)) != expected_value)
     {
         if (ktime_us_delta(ktime_get(), start_time) > TIMEOUT_US)
         {
