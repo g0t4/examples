@@ -40,7 +40,7 @@
 #define PR_ERR(fmt, ...)
 #endif
 
-#define GPIO_DATA_LINE RPI5_GPIO_17 // works well, FYI does not conflict with pins used by sense-hat
+#define GPIO_DATA_LINE RPI5_GPIO_4 // works well, FYI does not conflict with pins used by sense-hat
 // 1 = VCC (3.3V)
 // 2 = DATA (GPIO)
 // 3 = NC (not connected)
