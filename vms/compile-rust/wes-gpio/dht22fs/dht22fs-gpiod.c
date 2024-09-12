@@ -92,13 +92,17 @@ static int dht22_read(void)
     int byte_index, bit_index;
     PR_INFO("DHT22: Reading data\n");
 
+
+    // cache descriptor:
+    struct gpio_desc *desc = gpio_to_desc(GPIO_DATA_LINE);
+
     // Send the start signal to DHT22
-    gpiod_direction_output(gpio_to_desc(GPIO_DATA_LINE), 0); // pull low signals to send reading
+    gpiod_direction_output(desc, 0); // pull low signals to send reading
     udelay(400);                              // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
-    gpiod_direction_output(gpio_to_desc(GPIO_DATA_LINE), 1); // release (pulls high b/c of pull-up resistor too)
+    gpiod_direction_output(desc, 1); // release (pulls high b/c of pull-up resistor too)
     // no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
 
-    gpiod_direction_input(gpio_to_desc(GPIO_DATA_LINE)); // start reading right away, wait for sensor to pull low indicating it is ready to send data
+    gpiod_direction_input(desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
 
     if (!wait_for_edge_to(0))
     {
