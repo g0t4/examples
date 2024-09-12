@@ -54,3 +54,7 @@ cat /boot/firmware/overlays/README # which has info on drivers!!, including:
 #                                 (default 4)
 #
 # so this confirms my suspicion from looking at the dts! COOL now I can build my own dts for my driver and compile it an maybe include it!
+
+# FYI vscode has an extension that colors dts files: microhobby.linuxkerneldev
+
+# boot/firmware/config.txt... I have race condition on nvme drive (nvme0n1p1) vs mmc (mmcblk0p1) (sd card) booting the device... that explains the diff config.txt I encountered
