@@ -43,4 +43,14 @@ sudo dmesg # shows:
 sudo vim /boot/firmware/config.txt
 # add: # wtf my config.txt didn't have dtoverlay=dht11 in it? AFTER REBOOT it is removed?!
 #     dtoverlay=dht11,gpiopin=17
-#   failed to work :(... switched back to pin 4 and that one works (live switch w/o reboot)
+# WAIT IT WORKED... smth was funky with my /boot/firmware/config.txt (like it was cycling diff versions on reboots?) oh well it works now
+# FYI I found
+cat /boot/firmware/overlays/README # which has info on drivers!!, including:
+# Name:   dht11
+# Info:   Overlay for the DHT11/DHT21/DHT22 humidity/temperature sensors
+#         Also sometimes found with the part number(s) AM230x.
+# Load:   dtoverlay=dht11,<param>=<val>
+# Params: gpiopin                 GPIO connected to the sensor's DATA output.
+#                                 (default 4)
+#
+# so this confirms my suspicion from looking at the dts! COOL now I can build my own dts for my driver and compile it an maybe include it!
