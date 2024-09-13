@@ -53,7 +53,6 @@ static const struct of_device_id dht22_dt_ids[] = {
 	{ .compatible = "dht22", },
 	{ }
 };
-
 MODULE_DEVICE_TABLE(of, dht22_dt_ids);
 
 #define DRIVER_NAME	"dht22"
@@ -66,7 +65,8 @@ static struct platform_driver dht22_driver = {
 	.probe  = dht22_probe,
 };
 
-module_platform_driver(dht22_driver);
+module_platform_driver(dht22_driver); // instead of module_init and module_exit, for simple drivers
+// __init/__exit via this macro =>  https://github.com/raspberrypi/linux/blob/rpi-6.8.y/include/linux/device/driver.h#L257-L268
 
 MODULE_LICENSE("GPL"); // IF incompatible with other used modules, then compile fails! i.e. MIT here fails compile!
 MODULE_AUTHOR("Wes Higbee");
