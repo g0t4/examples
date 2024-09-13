@@ -18,6 +18,13 @@ yes 0 | head -n 130 | tr -d '\n' | xxd -r -p | sudo tee /dev/fb0
 yes 1 | head -n 257 | tr -d '\n' | xxd -r -p | sudo tee /dev/fb0 # works
 yes 1 | head -n 261 | tr -d '\n' | xxd -r -p | sudo tee /dev/fb0 # too many subseequent times... todo why?
 
+# don't forget:
+fbset -s
+# mode "8x8"
+#     geometry 8 8 8 8 16
+#     timings 0 0 0 0 0 0 0
+#     rgba 5/11,6/5,5/0,0/0
+# endmode
 
 # 8x8 grid, color depth 4 hex digits => 65K color? (16 bits)
 # https://www.raspberrypi.com/documentation/accessories/sense-hat.html
