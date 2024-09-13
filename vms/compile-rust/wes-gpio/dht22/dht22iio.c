@@ -15,6 +15,7 @@
 
 #define DEBUG_DHT22
 #ifdef DEBUG_DHT22
+// TODO are logs prefixed with MODULE_NAME? or? if not add something for that
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
 #define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
 #else
