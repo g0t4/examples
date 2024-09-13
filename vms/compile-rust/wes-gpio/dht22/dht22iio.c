@@ -24,6 +24,8 @@
 
 #define GPIO_DATA_LINE RPI5_GPIO_4 // works well, FYI does not conflict with pins used by sense-hat
 
+#define TIMEOUT_US 1000000 // 1 second
+
 // IIO overview: https://wiki.analog.com/software/linux/docs/iio/iio
 // use iio-tri-sysfs to trigger sample aquisition https://wiki.analog.com/software/linux/docs/iio/iio-trig-sysfs
 //    use this to combine triggering and ring buffer (in software):
@@ -35,15 +37,46 @@
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
 
-static int read_raw(struct iio_dev *indio_dev,
+static int read_raw(struct iio_dev *iio_dev,
                     struct iio_chan_spec const *chan,
                     int *val,
                     int *val2,
                     long mask)
 {
-  // read data from sensor
-  // return data
-  return 0;
+	PR_INFO("read_data: %d\n", chan->type); 
+	
+	struct dht22 *dht22 = iio_priv(iio_dev);	// IIO interface, so if you want other device info, have to look it up
+
+	int ms_since_last_read = jiffies_to_msecs(jiffies - dht22->last_read_jiffies);
+	if (ms_since_last_read < 2000 && ms_since_last_read > 0)
+	{
+		PR_INFO("read_data: returning cached data\n");
+		if (chan->type == IIO_TEMP)
+			*val = dht22->celsius_tenths; // value is integer instead of string/buffer like I did with dht22fs, much nicer!
+		else if (chan->type == IIO_HUMIDITYRELATIVE)
+			*val = dht22->humidity_tenths;
+		else
+			return -EINVAL;
+
+		return IIO_VAL_INT; // report back its an integer?
+	}
+	PR_INFO("read_data: Data is stale, reading new data\n");
+
+	// mutex_lock(&dht11->lock); // TODO
+	
+	// TODO USE: dht22->gpio_desc
+
+	// mutex_unlock(&dht11->lock); // TODO (also goto err: ... like dht11 does)
+
+	// PRN use val as integer and val2 as decimal? dht11 doesn't do this
+	if (chan->type == IIO_TEMP)
+		*val = dht22->celsius_tenths; // value is integer instead of string/buffer like I did with dht22fs, much nicer!
+	else if (chan->type == IIO_HUMIDITYRELATIVE)
+		*val = dht22->humidity_tenths;
+	else
+		return -EINVAL;
+
+	return IIO_VAL_INT; 
 }
 
 static const struct iio_info dht22_iio_info = {
@@ -51,6 +84,7 @@ static const struct iio_info dht22_iio_info = {
 };
 
 
+// each channel => /sys/bus/iio/devices/iio:deviceX/in_<type>_raw
 static const struct iio_chan_spec dht22_chan_spec[] = {
 	{ .type = IIO_TEMP,
 		.info_mask_separate = BIT(IIO_CHAN_INFO_PROCESSED), },
@@ -63,6 +97,11 @@ struct dht22 {
   struct device *dev;
   struct gpio_desc *gpio_desc;
   int irq;
+
+	int celsius_tenths;
+	int humidity_tenths;
+	int fahrenheit_tenths;
+	int last_read_jiffies;
 };
 
 static int dht22_probe(struct platform_device *pdev)
@@ -71,13 +110,13 @@ static int dht22_probe(struct platform_device *pdev)
 	struct dht22 *dht22;
 	struct iio_dev *iio;
 
-	iio = devm_iio_device_alloc(dev, sizeof(*dht22));
+	iio = devm_iio_device_alloc(dev, sizeof(*dht22)); // also links dht22 to iio device, can retrieve later on in read (above)
 	if (!iio) {
 		dev_err(dev, "Failed to allocate IIO device\n");
 		return -ENOMEM;
 	}
 
-  dht22 = iio_priv(iio); // access (custom) private data
+  dht22 = iio_priv(iio); // retrieve allocated memory for private data (dht22) from call to devm_iio_device_alloc (above)
   dht22->dev = dev; // store platform device pointer
   dht22->gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN); // get GPIO descriptor from device tree (i.e. /boot/firmware/config.txt on rpi)
 	if (IS_ERR(dht22->gpio_desc))
