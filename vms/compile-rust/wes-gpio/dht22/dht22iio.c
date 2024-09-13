@@ -36,6 +36,126 @@
 // https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/intro.rst#L8
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
+static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
+{
+	ktime_t start_time = ktime_get();
+	while (gpiod_get_raw_value(desc) != expected_value)
+	{
+		if (ktime_us_delta(ktime_get(), start_time) > TIMEOUT_US)
+		{
+			return false;
+		}
+	}
+
+	// add back , const char *label PARAM if:
+	// int total_us = ktime_us_delta(ktime_get(), start_time);
+	// PR_INFO("%s: %dus (%d)\n", label, total_us, expected_value); // PRN add to times array like in python
+
+	return true;
+}
+
+static int dht22_read(void)
+{
+	// !! TODO port my 39 bit failure logic from python to C too (this is only other thing that really matters)
+
+	// FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
+	// http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
+
+	int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
+	// TODO build array of text messages to log for debugging, like in my python code
+	int byte_index, bit_index;
+	PR_INFO("DHT22: Reading data\n");
+
+	struct gpio_desc *desc = gpio_to_desc(GPIO_DATA_LINE);
+	// FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
+
+	// Send the start signal to DHT22
+	gpiod_direction_output(desc, 0); // pull low signals to send reading
+	udelay(400);										 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	gpiod_direction_output(desc, 1); // release (pulls high b/c of pull-up resistor too)
+	// no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
+
+	gpiod_direction_input(desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
+
+	if (!wait_for_edge_to(0, desc))
+	{
+		PR_ERR("DHT22: Timeout - sensor didn't respond with initial low signal\n");
+		return -1;
+	}
+	PR_INFO("DHT22: Sensor response low\n");
+
+	if (!wait_for_edge_to(1, desc))
+	{
+		PR_ERR("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
+		return -1;
+	}
+	PR_INFO("DHT22: Sensor response high\n");
+
+	if (!wait_for_edge_to(0, desc))
+	{
+		PR_ERR("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
+		return -1;
+	}
+
+	// Read the data (40 bits)
+	for (byte_index = 0; byte_index < 5; byte_index++)
+	{
+		for (bit_index = 0; bit_index < 8; bit_index++)
+		{
+			if (!wait_for_edge_to(1, desc))
+			{
+				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line high for bit start\n", byte_index * 8 + bit_index);
+				return -1;
+			}
+			int start = ktime_get();
+
+			if (!wait_for_edge_to(0, desc))
+			{
+				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line low for bit end\n", byte_index * 8 + bit_index);
+				return -1;
+			}
+			int end = ktime_get();
+			int duration = ktime_us_delta(end, start);
+			PR_INFO("DHT22: Bit (bit: %d) duration: %d\n", byte_index * 8 + bit_index, duration);
+
+			data[byte_index] <<= 1; // shift left to make room for new bit
+			if (duration > 40)			// 26-28us for '0', 70us for '1'
+			{
+				data[byte_index] |= 1; // set last bit to 1
+			}
+			// else 0, already 0 after left shift by 1
+			// FUCK YEAH THIS JUST WORKED!!!!!!!! though my file cat operation is hanging... Temperature: 24 C, Humidity: 70 % ... humidity seems high but temp is accurate
+		}
+	}
+
+	// MSB sent first
+	// 40bits of data is divided into 5 bytes
+	// Convert data to temperature and humidity
+	// 1st Byte: Relative Humidity Integral Data in % (Integer Part)
+	// 2nd Byte: Relative Humidity Decimal Data in % (Fractional Part) – Zero for DHT11
+	// 3rd Byte: Temperature Integral in Degree Celsius (Integer Part)
+	// 4th Byte: Temperature in Decimal Data in % (Fractional Part) – Zero for DHT11
+	// 5th Byte: Checksum (Last 8 bits of {1st Byte + 2nd Byte + 3rd Byte+ 4th Byte})
+
+	// check checksum // last byte (8 bits) as each byte is 8 bits (not int size)
+	if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF))
+	{
+		PR_ERR("DHT22: Data checksum error\n");
+		return -1;
+	}
+
+	// SENSOR returns TENTHS (/10 for value)... keep in tenths so I can show decimal place easily in format strings
+	sensor_data.humidity_tenths = ((data[0] << 8) + data[1]);
+	sensor_data.celsius_tenths = (((data[2] & 0x7F) << 8) + data[3]);
+	if (data[2] & 0x80)
+	{
+		sensor_data.celsius_tenths = -sensor_data.celsius_tenths; // Handle negative temperature
+	}
+	sensor_data.fahrenheit_tenths = (sensor_data.celsius_tenths * 9 / 5) + 320;
+
+	return 0;
+}
+
 static int read_raw(struct iio_dev *iio_dev,
 										struct iio_chan_spec const *chan,
 										int *val,
@@ -50,6 +170,7 @@ static int read_raw(struct iio_dev *iio_dev,
 	if (ms_since_last_read < 2000 && ms_since_last_read > 0)
 	{
 		PR_INFO("read_data: returning cached data\n");
+		// PRN consolidate with logic below to return data
 		if (chan->type == IIO_TEMP)
 			*val = dht22->celsius_tenths; // value is integer instead of string/buffer like I did with dht22fs, much nicer!
 		else if (chan->type == IIO_HUMIDITYRELATIVE)
@@ -63,7 +184,12 @@ static int read_raw(struct iio_dev *iio_dev,
 
 	// mutex_lock(&dht11->lock); // TODO
 
-	// TODO USE: dht22->gpio_desc
+	if (dht22_read(dht22) < 0)
+	{
+		return -EIO; // general IO error,
+		// FYI cat responds with "Bad address" if I return -EFAULT... not so useful
+	}
+	dht22->last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
 	// mutex_unlock(&dht11->lock); // TODO (also goto err: ... like dht11 does)
 
