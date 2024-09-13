@@ -26,3 +26,4 @@ static const struct iio_info dht11_iio_info = {
     .read_raw = read_raw,
 };
 
+MODULE_LICENSE("GPL");
