@@ -13,6 +13,16 @@
 #include <linux/platform_device.h>
 #include "../ledfs/pins.h"
 
+#define DEBUG_DHT22
+#ifdef DEBUG_DHT22
+#define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
+#define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
+#else
+#define PR_INFO(fmt, ...)
+#define PR_ERR(fmt, ...)
+#endif
+
+#define GPIO_DATA_LINE RPI5_GPIO_4 // works well, FYI does not conflict with pins used by sense-hat
 
 // IIO overview: https://wiki.analog.com/software/linux/docs/iio/iio
 // use iio-tri-sysfs to trigger sample aquisition https://wiki.analog.com/software/linux/docs/iio/iio-trig-sysfs
@@ -48,6 +58,51 @@ static const struct iio_chan_spec dht22_chan_spec[] = {
 		.info_mask_separate = BIT(IIO_CHAN_INFO_PROCESSED), }
 };
 
+struct dht22 {
+  struct iio_dev *indio_dev;
+  struct device *dev;
+  struct gpio_desc *gpio_desc;
+  int irq;
+};
+
+static int dht22_probe(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct dht22 *dht22;
+	struct iio_dev *iio;
+
+	iio = devm_iio_device_alloc(dev, sizeof(*dht22));
+	if (!iio) {
+		dev_err(dev, "Failed to allocate IIO device\n");
+		return -ENOMEM;
+	}
+
+  dht22 = iio_priv(iio); // access (custom) private data
+  dht22->dev = dev; // store platform device pointer
+  dht22->gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN); // get GPIO descriptor from device tree (i.e. /boot/firmware/config.txt on rpi)
+	if (IS_ERR(dht22->gpio_desc))
+		return PTR_ERR(dht22->gpio_desc);
+
+  // TODO rewrite to be IRQ triggered later on (after port to IIO)
+  // dht22->irq = gpiod_to_irq(dht22->gpio_desc);
+  // if (dht22->irq < 0) {
+  //   dev_err(dev, "GPIO %d has no interrupt\n", desc_to_gpio(dht22->gpio_desc));
+  //   return -EINVAL;
+  // }
+
+  // TODO, I don't think this is needed:
+  // platform_set_drvdata(pdev, iio);
+
+	// init_completion(&dht22->completion); // 
+	// mutex_init(&dht22->lock); // TODO lock on read (one at a time)
+	iio->name = pdev->name;
+	iio->info = &dht22_iio_info;
+	iio->modes = INDIO_DIRECT_MODE;
+	iio->channels = dht22_chan_spec;
+	iio->num_channels = ARRAY_SIZE(dht22_chan_spec);
+
+	return devm_iio_device_register(dev, iio); // link lifetime of iio device to platform device, thus when platform device is removed, iio device is removed (freeing resources of both)
+}
 
 static const struct of_device_id dht22_dt_ids[] = {
 	{ .compatible = "dht22", },
