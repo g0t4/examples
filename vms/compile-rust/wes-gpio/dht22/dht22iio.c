@@ -1,4 +1,18 @@
 #include <linux/iio/iio.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/mod_devicetable.h>
+#include <linux/kernel.h>
+#include <linux/fs.h>
+#include <linux/device.h>
+#include <linux/cdev.h>
+#include <linux/uaccess.h>
+#include <linux/gpio.h>
+#include <linux/delay.h>
+#include <linux/interrupt.h>
+#include <linux/platform_device.h>
+#include "../ledfs/pins.h"
+
 
 // IIO overview: https://wiki.analog.com/software/linux/docs/iio/iio
 // use iio-tri-sysfs to trigger sample aquisition https://wiki.analog.com/software/linux/docs/iio/iio-trig-sysfs
@@ -22,9 +36,37 @@ static int read_raw(struct iio_dev *indio_dev,
   return 0;
 }
 
-static const struct iio_info dht11_iio_info = {
+static const struct iio_info dht22_iio_info = {
     .read_raw = read_raw,
 };
+
+
+static const struct iio_chan_spec dht22_chan_spec[] = {
+	{ .type = IIO_TEMP,
+		.info_mask_separate = BIT(IIO_CHAN_INFO_PROCESSED), },
+	{ .type = IIO_HUMIDITYRELATIVE,
+		.info_mask_separate = BIT(IIO_CHAN_INFO_PROCESSED), }
+};
+
+
+static const struct of_device_id dht22_dt_ids[] = {
+	{ .compatible = "dht22", },
+	{ }
+};
+
+MODULE_DEVICE_TABLE(of, dht22_dt_ids);
+
+#define DRIVER_NAME	"dht22"
+
+static struct platform_driver dht22_driver = {
+	.driver = {
+		.name	= DRIVER_NAME,
+		.of_match_table = dht22_dt_ids,
+	},
+	.probe  = dht22_probe,
+};
+
+module_platform_driver(dht22_driver);
 
 MODULE_LICENSE("GPL"); // IF incompatible with other used modules, then compile fails! i.e. MIT here fails compile!
 MODULE_AUTHOR("Wes Higbee");
