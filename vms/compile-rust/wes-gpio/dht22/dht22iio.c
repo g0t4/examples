@@ -145,13 +145,13 @@ static int dht22_read(struct dht22 *dht22)
 	}
 
 	// SENSOR returns TENTHS (/10 for value)... keep in tenths so I can show decimal place easily in format strings
-	sensor_data.humidity_tenths = ((data[0] << 8) + data[1]);
-	sensor_data.celsius_tenths = (((data[2] & 0x7F) << 8) + data[3]);
+	dht22->humidity_tenths = ((data[0] << 8) + data[1]);
+	dht22->celsius_tenths = (((data[2] & 0x7F) << 8) + data[3]);
 	if (data[2] & 0x80)
 	{
-		sensor_data.celsius_tenths = -sensor_data.celsius_tenths; // Handle negative temperature
+		dht22->celsius_tenths = -dht22->celsius_tenths; // Handle negative temperature
 	}
-	sensor_data.fahrenheit_tenths = (sensor_data.celsius_tenths * 9 / 5) + 320;
+	dht22->fahrenheit_tenths = (dht22->celsius_tenths * 9 / 5) + 320;
 
 	return 0;
 }
@@ -187,7 +187,7 @@ static int read_raw(struct iio_dev *iio_dev,
 	if (dht22_read(dht22) < 0)
 	{
 		return -EIO; // general IO error,
-		// FYI cat responds with "Bad address" if I return -EFAULT... not so useful
+								 // FYI cat responds with "Bad address" if I return -EFAULT... not so useful
 	}
 	dht22->last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
