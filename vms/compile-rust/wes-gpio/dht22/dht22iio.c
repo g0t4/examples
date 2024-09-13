@@ -39,6 +39,7 @@
 // https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/intro.rst#L8
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
+// wait_for_edge_to_or_timeout
 static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 {
 	ktime_t start_time = ktime_get();
@@ -84,21 +85,21 @@ static int dht22_read(struct dht22 *dht22)
 	if (!wait_for_edge_to(0, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't respond with initial low signal\n");
-		return -1;
+		return -ETIMEDOUT;
 	}
 	PR_INFO("DHT22: Sensor response low\n");
 
 	if (!wait_for_edge_to(1, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
-		return -1;
+		return -ETIMEDOUT;
 	}
 	PR_INFO("DHT22: Sensor response high\n");
 
 	if (!wait_for_edge_to(0, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
-		return -1;
+		return -ETIMEDOUT;
 	}
 
 	// Read the data (40 bits)
@@ -109,14 +110,14 @@ static int dht22_read(struct dht22 *dht22)
 			if (!wait_for_edge_to(1, dht22->gpio_desc))
 			{
 				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line high for bit start\n", byte_index * 8 + bit_index);
-				return -1;
+				return -ETIMEDOUT;
 			}
 			int start = ktime_get();
 
 			if (!wait_for_edge_to(0, dht22->gpio_desc))
 			{
 				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line low for bit end\n", byte_index * 8 + bit_index);
-				return -1;
+				return -ETIMEDOUT;
 			}
 			int end = ktime_get();
 			int duration = ktime_us_delta(end, start);
@@ -144,7 +145,7 @@ static int dht22_read(struct dht22 *dht22)
 	if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF))
 	{
 		PR_ERR("DHT22: Data checksum error\n");
-		return -1;
+		return -EBADMSG;
 	}
 
 	// SENSOR returns TENTHS (/10 for value)... keep in tenths so I can show decimal place easily in format strings
@@ -187,10 +188,10 @@ static int read_raw(struct iio_dev *iio_dev,
 
 	// mutex_lock(&dht11->lock); // TODO
 
-	if (dht22_read(dht22) < 0)
+	int ret = dht22_read(dht22);
+	if (ret != 0)
 	{
-		return -EIO; // general IO error,
-								 // FYI cat responds with "Bad address" if I return -EFAULT... not so useful
+		return -EIO;
 	}
 	dht22->last_read_jiffies = jiffies; // start counter AFTER successful read, ms precision is good enough for what I am doing so jiffies is fine (don't need ktime_get which is ns precision)
 
