@@ -1,4 +1,4 @@
-obj-m += dht22fs-gpiod.o
+# obj-m += dht22fs-gpiod.o
 obj-m += dht22iio.o
 
 all:
