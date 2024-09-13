@@ -10,13 +10,15 @@ sense = SenseHat()
 
 # i2c group required:
 fahrenheit = 9 / 5 * sense.get_temperature() + 32
+
 print(f"Temperature: {sense.get_temperature():.1f}C ({fahrenheit:.1f}F)")
 print(f"Humidity: {sense.get_humidity():.1f}%")
+print(f"Acceleration: {sense.accelerometer_raw}")
 
 # input and video groups required:
 sense.set_rotation(180)
 sense.clear()
-sense.show_message("Hi, MOM!", text_colour=[0,255,0])
+sense.show_message("zed!", text_colour=[0,255,0])
 
 
 
