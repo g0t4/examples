@@ -35,19 +35,52 @@ int main()
   printf("  smem_len: %d\n", finfo.smem_len);
   printf("  line_length: %d\n", finfo.line_length);
 
+
+
+  // get color map
   struct fb_cmap cmap;
-  if (ioctl(fbfd, FBIOGETCMAP, &cmap))
+  unsigned short *red, *green, *blue, *transp;
+  int size = 128; // Assuming 256 colors (can vary)
+
+  // Allocate memory for the color arrays
+  red = (unsigned short *)malloc(sizeof(unsigned short) * size);
+  green = (unsigned short *)malloc(sizeof(unsigned short) * size);
+  blue = (unsigned short *)malloc(sizeof(unsigned short) * size);
+  transp = (unsigned short *)malloc(sizeof(unsigned short) * size);
+
+  if (!red || !green || !blue || !transp)
   {
-    perror("Error reading cmap information");
+    perror("Error allocating memory for colormap");
+    close(fb_fd);
     return -1;
   }
-  printf("\ncmap:\n");
-  printf("  start: %d\n", cmap.start);
-  printf("  len: %d\n", cmap.len);
-  for (int i = 0; i < cmap.len; i++)
+
+  cmap.start = 0;  // Start at color 0
+  cmap.len = size; // Number of colors
+  cmap.red = red;
+  cmap.green = green;
+  cmap.blue = blue;
+  cmap.transp = transp;
+
+  // Retrieve the color map with ioctl
+  if (ioctl(fb_fd, FBIOGETCMAP, &cmap) == -1)
   {
-    printf("  red: %d, green: %d, blue: %d, transp: %d\n", cmap.red[i], cmap.green[i], cmap.blue[i], cmap.transp[i]);
+    perror("Error getting colormap");
+    free(red);
+    free(green);
+    free(blue);
+    free(transp);
+    close(fb_fd);
+    return -1;
   }
+  for (int i = 0; i < size; i++)
+  {
+    printf("Color %d: R=%u G=%u B=%u T=%u\n", i, cmap.red[i], cmap.green[i], cmap.blue[i], cmap.transp[i]);
+  }
+  free(red);
+  free(green);
+  free(blue);
+  free(transp);
 
   close(fbfd);
   return 0;
