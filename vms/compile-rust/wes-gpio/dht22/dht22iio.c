@@ -15,9 +15,11 @@
 
 #define DEBUG_DHT22
 #ifdef DEBUG_DHT22
-// TODO are logs prefixed with MODULE_NAME? or? if not add something for that
+// TODO are logs prefixed with DRIVER_NAME or MODULE_NAME? also cleanup format strings below that prepend DHT22: ...
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
+//#define PR_INFO(fmt, ...) pr_info(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
 #define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
+//#define PR_ERR(fmt, ...) pr_err(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
 #else
 #define PR_INFO(fmt, ...)
 #define PR_ERR(fmt, ...)
@@ -126,7 +128,6 @@ static int dht22_read(struct dht22 *dht22)
 				data[byte_index] |= 1; // set last bit to 1
 			}
 			// else 0, already 0 after left shift by 1
-			// FUCK YEAH THIS JUST WORKED!!!!!!!! though my file cat operation is hanging... Temperature: 24 C, Humidity: 70 % ... humidity seems high but temp is accurate
 		}
 	}
 
