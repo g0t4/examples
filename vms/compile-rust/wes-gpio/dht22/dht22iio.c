@@ -54,7 +54,7 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 	return true;
 }
 
-static int dht22_read(void)
+static int dht22_read(struct dht22 *dht22)
 {
 	// !! TODO port my 39 bit failure logic from python to C too (this is only other thing that really matters)
 
