@@ -17,9 +17,9 @@
 #ifdef DEBUG_DHT22
 // TODO are logs prefixed with DRIVER_NAME or MODULE_NAME? also cleanup format strings below that prepend DHT22: ...
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
-//#define PR_INFO(fmt, ...) pr_info(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
+// #define PR_INFO(fmt, ...) pr_info(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
 #define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
-//#define PR_ERR(fmt, ...) pr_err(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
+// #define PR_ERR(fmt, ...) pr_err(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
 #else
 #define PR_INFO(fmt, ...)
 #define PR_ERR(fmt, ...)
@@ -165,14 +165,14 @@ static int read_raw(struct iio_dev *iio_dev,
 										int *val2,
 										long mask)
 {
-	PR_INFO("read_data: %d\n", chan->type);
+	PR_INFO("read_raw channel %d\n", chan->type);
 
 	struct dht22 *dht22 = iio_priv(iio_dev); // IIO interface, so if you want other device info, have to look it up
 
 	int ms_since_last_read = jiffies_to_msecs(jiffies - dht22->last_read_jiffies);
 	if (ms_since_last_read < 2000 && ms_since_last_read > 0)
 	{
-		PR_INFO("read_data: returning cached data\n");
+		PR_INFO("read_raw: returning cached data\n");
 		// PRN consolidate with logic below to return data
 		if (chan->type == IIO_TEMP)
 			*val = dht22->celsius_tenths; // value is integer instead of string/buffer like I did with dht22fs, much nicer!
@@ -183,7 +183,7 @@ static int read_raw(struct iio_dev *iio_dev,
 
 		return IIO_VAL_INT; // report back its an integer?
 	}
-	PR_INFO("read_data: Data is stale, reading new data\n");
+	PR_INFO("read_raw: Data is stale, reading new data\n");
 
 	// mutex_lock(&dht11->lock); // TODO
 
@@ -204,6 +204,7 @@ static int read_raw(struct iio_dev *iio_dev,
 	else
 		return -EINVAL;
 
+	PR_INFO("DHT22: channel %d, value: %d\n", chan->type, *val);
 	return IIO_VAL_INT;
 }
 
