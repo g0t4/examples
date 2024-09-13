@@ -29,6 +29,19 @@
 
 #define TIMEOUT_US 1000000 // 1 second
 
+struct dht22
+{
+	struct iio_dev *indio_dev;
+	struct device *dev;
+	struct gpio_desc *gpio_desc;
+	int irq;
+
+	int celsius_tenths;
+	int humidity_tenths;
+	int fahrenheit_tenths;
+	int last_read_jiffies;
+};
+
 // IIO overview: https://wiki.analog.com/software/linux/docs/iio/iio
 // use iio-tri-sysfs to trigger sample aquisition https://wiki.analog.com/software/linux/docs/iio/iio-trig-sysfs
 //    use this to combine triggering and ring buffer (in software):
@@ -223,19 +236,6 @@ static const struct iio_chan_spec dht22_chan_spec[] = {
 				.type = IIO_HUMIDITYRELATIVE,
 				.info_mask_separate = BIT(IIO_CHAN_INFO_PROCESSED),
 		}};
-
-struct dht22
-{
-	struct iio_dev *indio_dev;
-	struct device *dev;
-	struct gpio_desc *gpio_desc;
-	int irq;
-
-	int celsius_tenths;
-	int humidity_tenths;
-	int fahrenheit_tenths;
-	int last_read_jiffies;
-};
 
 static int dht22_probe(struct platform_device *pdev)
 {
