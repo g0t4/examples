@@ -3,6 +3,7 @@
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 int main()
 {
@@ -51,7 +52,7 @@ int main()
   if (!red || !green || !blue || !transp)
   {
     perror("Error allocating memory for colormap");
-    close(fb_fd);
+    close(fbfd);
     return -1;
   }
 
@@ -63,14 +64,14 @@ int main()
   cmap.transp = transp;
 
   // Retrieve the color map with ioctl
-  if (ioctl(fb_fd, FBIOGETCMAP, &cmap) == -1)
+  if (ioctl(fbfd, FBIOGETCMAP, &cmap) == -1)
   {
     perror("Error getting colormap");
     free(red);
     free(green);
     free(blue);
     free(transp);
-    close(fb_fd);
+    close(fbfd);
     return -1;
   }
   for (int i = 0; i < size; i++)
