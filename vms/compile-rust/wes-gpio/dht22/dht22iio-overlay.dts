@@ -1,0 +1,19 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";  // For Raspberry Pi or relevant SoC
+
+    fragment@0 {
+        // target = <&gpio>; // can modify existing gpio overlay
+        target-path = "/"; // create new overlay at root of the device tree
+        __overlay__ {
+            dht22iio: dht22iio@4 {
+                compatible = "dht22iio";  // Your sensor's compatible string
+                gpios = <&gpio 17 0>;        // GPIO 17 (replace with actual GPIO pin number)
+                status = "okay";
+            };
+            // iio: iio-hwmon  // TODO is this needed? (see dht11 overlay)
+        };
+    };
+};

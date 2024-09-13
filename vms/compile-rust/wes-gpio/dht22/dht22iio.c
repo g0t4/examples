@@ -279,12 +279,12 @@ static int dht22_probe(struct platform_device *pdev)
 
 static const struct of_device_id dht22_dt_ids[] = {
 		{
-				.compatible = "dht22",
+				.compatible = "dht22iio",
 		},
 		{}};
 MODULE_DEVICE_TABLE(of, dht22_dt_ids);
 
-#define DRIVER_NAME "dht22"
+#define DRIVER_NAME "dht22iio"
 
 static struct platform_driver dht22_driver = {
 		.driver = {
