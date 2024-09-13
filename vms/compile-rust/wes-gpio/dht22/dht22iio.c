@@ -66,32 +66,33 @@ static int dht22_read(struct dht22 *dht22)
 	int byte_index, bit_index;
 	PR_INFO("DHT22: Reading data\n");
 
-	struct gpio_desc *desc = gpio_to_desc(GPIO_DATA_LINE);
+	// FYI gpio_desc ... now comes via device tree => platform device => iio device
+
 	// FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
 
 	// Send the start signal to DHT22
-	gpiod_direction_output(desc, 0); // pull low signals to send reading
-	udelay(400);										 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
-	gpiod_direction_output(desc, 1); // release (pulls high b/c of pull-up resistor too)
+	gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
+	udelay(400);																 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
 	// no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
 
-	gpiod_direction_input(desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
+	gpiod_direction_input(dht22->gpio_desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
 
-	if (!wait_for_edge_to(0, desc))
+	if (!wait_for_edge_to(0, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't respond with initial low signal\n");
 		return -1;
 	}
 	PR_INFO("DHT22: Sensor response low\n");
 
-	if (!wait_for_edge_to(1, desc))
+	if (!wait_for_edge_to(1, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
 		return -1;
 	}
 	PR_INFO("DHT22: Sensor response high\n");
 
-	if (!wait_for_edge_to(0, desc))
+	if (!wait_for_edge_to(0, dht22->gpio_desc))
 	{
 		PR_ERR("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
 		return -1;
@@ -102,14 +103,14 @@ static int dht22_read(struct dht22 *dht22)
 	{
 		for (bit_index = 0; bit_index < 8; bit_index++)
 		{
-			if (!wait_for_edge_to(1, desc))
+			if (!wait_for_edge_to(1, dht22->gpio_desc))
 			{
 				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line high for bit start\n", byte_index * 8 + bit_index);
 				return -1;
 			}
 			int start = ktime_get();
 
-			if (!wait_for_edge_to(0, desc))
+			if (!wait_for_edge_to(0, dht22->gpio_desc))
 			{
 				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line low for bit end\n", byte_index * 8 + bit_index);
 				return -1;
