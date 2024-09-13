@@ -26,4 +26,7 @@ static const struct iio_info dht11_iio_info = {
     .read_raw = read_raw,
 };
 
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL"); // IF incompatible with other used modules, then compile fails! i.e. MIT here fails compile!
+MODULE_AUTHOR("Wes Higbee");
+MODULE_DESCRIPTION("dht22iio driver");
+MODULE_VERSION("0.1");
