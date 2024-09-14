@@ -67,16 +67,14 @@ static int touch_sensor_probe(struct platform_device *pdev)
 
   touch_sensor = devm_kzalloc(dev, sizeof(struct touch_sensor_struct), GFP_KERNEL);
 
-  // PRN do I want this: (only if helps for error handling)
-  // if (!gpio_is_valid(GPIO_PIN_NUMBER)) {
-  //     dev_err(&pdev->dev, "Invalid GPIO\n");
-  //     return -ENODEV;
-  // }
-
-  touch_sensor->gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN); // input mode
-  //  get desc should fail if its an invalid pin, right? would it be useful to check if valid though for error messages purpose?
+  touch_sensor->gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN);
   if (IS_ERR(touch_sensor->gpio_desc))
+  {
+    dev_err(dev, "Failed to get GPIO descriptor for %s\n", get_pin_info(touch_sensor));
+    input_free_device(inputdev);
+    kfree(touch_sensor);
     return PTR_ERR(touch_sensor->gpio_desc);
+  }
 
   touch_sensor->gpio_pin = desc_to_gpio(touch_sensor->gpio_desc);
   dev_info(&pdev->dev, "probing %s\n", get_pin_info(touch_sensor));
