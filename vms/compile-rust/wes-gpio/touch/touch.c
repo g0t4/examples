@@ -29,16 +29,18 @@ static struct input_dev *inputdev;
 
 static irqreturn_t touch_irq_handler(int irq, void *dev_id)
 {
+  // IRQ handler for touch sensor's GPIO pin (edge triggered IRQs)... so now we generate input events (for keyboard or otherwise)
+
   int value = gpiod_get_value(touch_sensor.gpio_desc); // get current high/low
   if (value == 0)
   {
-    // pressed
-    input_report_key(inputdev, KEY_ENTER, 1);
+    // just pressed
+    input_report_key(inputdev, KEY_ENTER, 1); // ENTER?! do I really want that?
     input_sync(inputdev);
   }
   else
   {
-    // depressed
+    // just depressed
     input_report_key(inputdev, KEY_ENTER, 0);
     input_sync(inputdev);
   }
