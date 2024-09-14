@@ -16,7 +16,9 @@
     };
 
     __overrides__ {
-        gpio_pin = <&touch_sensor_unified>,"gpios:4";  // Reference the 'gpios' property correctly
+        gpio_pin = <&touch_sensor_unified>,"gpios:4";  // why does "gpios:4" work.. shouldn't it be "gpios:0"?
     };
 
 };
+
+// !!! TODO NOT WORKING => can't load this twice with diff pin numbers... maybe that is not even a thing you are supposed to be able to do?
