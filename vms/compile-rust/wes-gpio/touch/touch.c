@@ -18,9 +18,18 @@
 struct touch_sensor_struct
 {
   struct gpio_desc *gpio_desc;
+  int gpio_pin;
   int irq;
   struct input_dev *input_dev;
 };
+
+static char *get_pin_info(struct touch_sensor_struct *touch_sensor)
+{
+  int main_gpio_pin = touch_sensor->gpio_pin - RPI5_GPIO_BASE;
+  char *msg = kzalloc(200, GFP_KERNEL);
+  snprintf(msg, 200, "GPIO pin %d (irq %d)", main_gpio_pin, touch_sensor->irq);
+  return msg;
+}
 
 static irqreturn_t touch_irq_handler(int irq, void *dev_id)
 {
@@ -69,6 +78,9 @@ static int touch_sensor_probe(struct platform_device *pdev)
   if (IS_ERR(touch_sensor->gpio_desc))
     return PTR_ERR(touch_sensor->gpio_desc);
 
+  touch_sensor->gpio_pin = desc_to_gpio(touch_sensor->gpio_desc);
+  dev_info(&pdev->dev, "probing %s\n", get_pin_info(touch_sensor));
+
   inputdev->name = pdev->name;                                 // todo do I want smth else? did this from dht22iio driver
   inputdev->evbit[0] = BIT_MASK(EV_KEY);                       // todo what is this, chatgpt suggested
   inputdev->keybit[BIT_WORD(KEY_ENTER)] = BIT_MASK(KEY_ENTER); // TODO what is this chatgpt
@@ -90,7 +102,7 @@ static int touch_sensor_probe(struct platform_device *pdev)
     return ret;
   }
 
-  dev_info(&pdev->dev, "touch_sensor driver initialized\n");
+  dev_info(&pdev->dev, "probed %s\n", touch_sensor->irq, get_pin_info(touch_sensor));
 
   platform_set_drvdata(pdev, touch_sensor);
   return 0;
@@ -99,6 +111,7 @@ static int touch_sensor_probe(struct platform_device *pdev)
 static int touch_sensor_remove(struct platform_device *pdev)
 {
   struct touch_sensor_struct *touch_sensor = platform_get_drvdata(pdev);
+  dev_info(&pdev->dev, "removing %s\n", get_pin_info(touch_sensor));
 
   free_irq(touch_sensor->irq, NULL);
   input_unregister_device(touch_sensor->input_dev);
