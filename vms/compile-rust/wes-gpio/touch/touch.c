@@ -77,32 +77,44 @@ static int touch_sensor_probe(struct platform_device *pdev)
   }
 
   touch_sensor->gpio_pin = desc_to_gpio(touch_sensor->gpio_desc);
-  dev_info(&pdev->dev, "probing %s\n", get_pin_info(touch_sensor));
+  dev_info(dev, "probing %s\n", get_pin_info(touch_sensor));
 
   inputdev->name = pdev->name;                                 // todo do I want smth else? did this from dht22iio driver
   inputdev->evbit[0] = BIT_MASK(EV_KEY);                       // todo what is this, chatgpt suggested
   inputdev->keybit[BIT_WORD(KEY_ENTER)] = BIT_MASK(KEY_ENTER); // TODO what is this chatgpt
 
   int ret = input_register_device(inputdev);
-  if (ret != 0) // TODO what is expected return on this? != 0 right == error, right? chatgpt suggested if(ret).. yuck.. .as if ret was an error
+  if (ret)
   {
+    dev_err(dev, "Failed to register input device (ret=%d) for %s\n", ret, get_pin_info(touch_sensor));
     input_free_device(inputdev);
+    kfree(touch_sensor);
     return ret;
   }
 
+  // ! TODO switch to devm_request_irq (should auto free up irq on driver unload), right before that need to get irq_num:
+  // int irq_num = platform_get_irq(pdev, 0);  // Get IRQ from platform device
+  // if (irq_num < 0) {
+  //     dev_err(&pdev->dev, "Failed to get IRQ\n");
+  //     return irq_num;
+  // }
+  // ! INSTEAD OF gpiod_to_irq + request_irq.. oh is it possible I am using wrong irq from GPIO and not for my device itself?!
   // IRQ handler
   touch_sensor->irq = gpiod_to_irq(touch_sensor->gpio_desc);
   touch_sensor->input_dev = inputdev;
   ret = request_irq(touch_sensor->irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", touch_sensor);
-  if (ret != 0)
+  if (ret) // success => ret == 0 (odd part of request_irq)
   {
+    dev_err(dev, "request_irq FAILED (ret=%d) for %s\n", ret, get_pin_info(touch_sensor));
     input_unregister_device(inputdev);
+    kfree(touch_sensor);
     return ret;
   }
 
-  dev_info(&pdev->dev, "probed %s\n", touch_sensor->irq, get_pin_info(touch_sensor));
+  dev_info(dev, "probed %s\n", get_pin_info(touch_sensor));
 
   platform_set_drvdata(pdev, touch_sensor);
+
   return 0;
 }
 
