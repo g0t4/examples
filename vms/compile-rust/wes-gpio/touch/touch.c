@@ -122,6 +122,13 @@ static int touch_sensor_remove(struct platform_device *pdev)
   return 0;
 }
 
+static const struct of_device_id touch_sensor_dt_ids[] = {
+    {
+        .compatible = "touch_sensor",
+    },
+    {}};
+MODULE_DEVICE_TABLE(of, touch_sensor_dt_ids);
+
 #define DRIVER_NAME "touch_sensor"
 static struct platform_driver touch_sensor_driver = {
     .probe = touch_sensor_probe,
@@ -129,6 +136,7 @@ static struct platform_driver touch_sensor_driver = {
     .driver = {
         .name = DRIVER_NAME,
         .owner = THIS_MODULE,
+        .of_match_table = touch_sensor_dt_ids,
     },
 };
 
