@@ -67,7 +67,15 @@ sudo dtoverlay -l
 #
 # TLDR overriding "reg:0" also replaces the node@address
 #
-# "reg" is also a separate property that can be set on the node, like a bus 
+# "reg" is also a separate property that can be set on the node, like a bus
 
-
-
+# PRN address these warnings? BTW dht11-overlay.dts has same warnings so for now I am gonna skip this unless I have an issue that necessitates addressing this...
+#
+dtc -O dtb -o touch-sensor-unified.dtbo touch-sensor-unified.dts
+# touch-sensor-unified.dts:10.58-14.15: Warning (unit_address_vs_reg): /fragment@0/__overlay__/touch_sensor_unified@4: node has a unit name, but no reg or ranges property
+#
+dtc -I fs /proc/device-tree 2>&1 | grep touch_sensor
+# <stdout>: Warning (unit_address_vs_reg): /touch_sensor_unified@1a: node has a unit name, but no reg or ranges property
+# <stdout>: Warning (unit_address_vs_reg): /touch_sensor_unified@10: node has a unit name, but no reg or ranges property
+# <stdout>: Warning (gpios_property): /touch_sensor_unified@1a:gpios: cell 0 is not a phandle reference
+# <stdout>: Warning (gpios_property): /touch_sensor_unified@10:gpios: cell 0 is not a phandle reference

@@ -5,10 +5,10 @@
     compatible = "brcm,bcm2835";  // For Raspberry Pi or relevant SoC
 
     fragment@0 {
-        target-path = "/"; // create new overlay at root of the device tree
+        target-path = "/";
         __overlay__ {
             touch_sensor_unified: touch_sensor_unified@4 {
-                compatible = "touch_sensor";  // Your sensor's compatible string
+                compatible = "touch_sensor";
                 gpios = <&gpio 4 0>;
                 status = "okay";
             };
@@ -17,7 +17,7 @@
 
     __overrides__ {
         gpio_pin = <&touch_sensor_unified>,"gpios:4", // IIUC 4 is a byte offset, like the second word? // TODO lookup how that works again
-                <&touch_sensor_unified>,"reg:0"; // IIGC this will change the sensor's @address to be touch_sensor_unified@gpio_pin
+                <&touch_sensor_unified>,"reg:0"; // changes @address => touch_sensor_unified@gpio_pin
     };
 
     // PRN address this warning (though I tested dht11-overlay.dts and it has the same warning and yet it works still)
