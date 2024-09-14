@@ -92,17 +92,10 @@ static int touch_sensor_probe(struct platform_device *pdev)
     return ret;
   }
 
-  // ! TODO switch to devm_request_irq (should auto free up irq on driver unload), right before that need to get irq_num:
-  // int irq_num = platform_get_irq(pdev, 0);  // Get IRQ from platform device
-  // if (irq_num < 0) {
-  //     dev_err(&pdev->dev, "Failed to get IRQ\n");
-  //     return irq_num;
-  // }
-  // ! INSTEAD OF gpiod_to_irq + request_irq.. oh is it possible I am using wrong irq from GPIO and not for my device itself?!
   // IRQ handler
   touch_sensor->irq = gpiod_to_irq(touch_sensor->gpio_desc);
   touch_sensor->input_dev = inputdev;
-  ret = request_irq(touch_sensor->irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", touch_sensor);
+  ret = devm_request_irq(dev, touch_sensor->irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", touch_sensor);
   if (ret) // success => ret == 0 (odd part of request_irq)
   {
     dev_err(dev, "request_irq FAILED (ret=%d) for %s\n", ret, get_pin_info(touch_sensor));
@@ -123,8 +116,9 @@ static int touch_sensor_remove(struct platform_device *pdev)
   struct touch_sensor_struct *touch_sensor = platform_get_drvdata(pdev);
   dev_info(&pdev->dev, "removing %s\n", get_pin_info(touch_sensor));
 
-  free_irq(touch_sensor->irq, NULL);
+  // free_irq(touch_sensor->irq, NULL); // not needed with devm_request_irq (also was geteting already freed warning in dmesg when using request_irq in probe).. so maybe neither need it?
   input_unregister_device(touch_sensor->input_dev);
+  kfree(touch_sensor);
   return 0;
 }
 
