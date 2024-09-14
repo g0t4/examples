@@ -7,13 +7,16 @@
     fragment@0 {
         target-path = "/"; // create new overlay at root of the device tree
         __overlay__ {
-            touch_sensor_uni: touch_sensor_uni {
+            touch_sensor_unified: touch_sensor_unified {
                 compatible = "touch_sensor";  // Your sensor's compatible string
-                gpios = <&gpio 16 0>;
+                gpios = <&gpio 4 0>;
                 status = "okay";
             };
         };
     };
 
-    // __overrides__ { // TODO for gpiopin
+    __overrides__ {
+        gpio_pin = <&touch_sensor_unified>,"gpios:0";  // Reference the 'gpios' property correctly
+    };
+
 };
