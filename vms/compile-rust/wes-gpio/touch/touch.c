@@ -100,13 +100,14 @@ static int touch_sensor_remove(struct platform_device *pdev)
   input_unregister_device(inputdev);
   return 0;
 }
-
+#define DRIVER_NAME "touch_sensor"
 static struct platform_driver touch_sensor_driver = {
     .probe = touch_sensor_probe,
     .remove = touch_sensor_remove,
     .driver = {
-        .name = "touch_sensor",
+        .name = DRIVER_NAME,
         .owner = THIS_MODULE,
+        // TODO do I need .of_match_table? like I used in dht22iio.c? or does compatible match on driver name too?
     },
 };
 
