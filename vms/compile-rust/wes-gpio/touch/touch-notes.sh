@@ -33,3 +33,4 @@ evtest /dev/input/event6 # then touch sensor => keys printed:
 # Event: time 1726273934.107229, -------------- SYN_REPORT ------------
 #
 # FYI those 4 lines are from one press/release of the touch sensor
+

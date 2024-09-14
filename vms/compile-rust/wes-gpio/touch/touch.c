@@ -19,30 +19,26 @@ struct touch_sensor_struct
 {
   struct gpio_desc *gpio_desc;
   int irq;
-
-  bool pressed; // TODO do I need/want this, to read its current depressed state? like holding a key down vs released?
+  struct input_dev *input_dev;
 };
-
-static struct touch_sensor_struct touch_sensor;
-// todo can I link my static structs to platform_device somehow? and use that arg in various methods?
-static struct input_dev *inputdev;
 
 static irqreturn_t touch_irq_handler(int irq, void *dev_id)
 {
+  struct touch_sensor_struct *touch_sensor = dev_id;
   // IRQ handler for touch sensor's GPIO pin (edge triggered IRQs)... so now we generate input events (for keyboard or otherwise)
 
-  int value = gpiod_get_value(touch_sensor.gpio_desc); // get current high/low
+  int value = gpiod_get_value(touch_sensor->gpio_desc); // get current high/low
   if (value == 0)
   {
     // just pressed
-    input_report_key(inputdev, KEY_ENTER, 1); // ENTER?! do I really want that?
-    input_sync(inputdev);
+    input_report_key(touch_sensor->input_dev, KEY_ENTER, 1); // ENTER?! do I really want that?
+    input_sync(touch_sensor->input_dev);
   }
   else
   {
     // just depressed
-    input_report_key(inputdev, KEY_ENTER, 0);
-    input_sync(inputdev);
+    input_report_key(touch_sensor->input_dev, KEY_ENTER, 0);
+    input_sync(touch_sensor->input_dev);
   }
   return IRQ_HANDLED;
 }
@@ -50,6 +46,8 @@ static irqreturn_t touch_irq_handler(int irq, void *dev_id)
 static int touch_sensor_probe(struct platform_device *pdev)
 {
   struct device *dev = &pdev->dev;
+  struct touch_sensor_struct *touch_sensor;
+  struct input_dev *inputdev;
 
   inputdev = devm_input_allocate_device(dev); // todo chatgpt didn't use devm, used input_allocate_device() alone (no ref to pdev/dev... that can't work? how would it link devices?)
   if (!inputdev)
@@ -58,16 +56,18 @@ static int touch_sensor_probe(struct platform_device *pdev)
     return -ENOMEM;
   }
 
+  touch_sensor = devm_kzalloc(dev, sizeof(struct touch_sensor_struct), GFP_KERNEL);
+
   // PRN do I want this: (only if helps for error handling)
   // if (!gpio_is_valid(GPIO_PIN_NUMBER)) {
   //     dev_err(&pdev->dev, "Invalid GPIO\n");
   //     return -ENODEV;
   // }
 
-  touch_sensor.gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN); // input mode
+  touch_sensor->gpio_desc = devm_gpiod_get(dev, NULL, GPIOD_IN); // input mode
   //  get desc should fail if its an invalid pin, right? would it be useful to check if valid though for error messages purpose?
-  if (IS_ERR(touch_sensor.gpio_desc))
-    return PTR_ERR(touch_sensor.gpio_desc);
+  if (IS_ERR(touch_sensor->gpio_desc))
+    return PTR_ERR(touch_sensor->gpio_desc);
 
   inputdev->name = pdev->name;                                 // todo do I want smth else? did this from dht22iio driver
   inputdev->evbit[0] = BIT_MASK(EV_KEY);                       // todo what is this, chatgpt suggested
@@ -77,13 +77,13 @@ static int touch_sensor_probe(struct platform_device *pdev)
   if (ret != 0) // TODO what is expected return on this? != 0 right == error, right? chatgpt suggested if(ret).. yuck.. .as if ret was an error
   {
     input_free_device(inputdev);
-
     return ret;
   }
 
   // IRQ handler
-  touch_sensor.irq = gpiod_to_irq(touch_sensor.gpio_desc);
-  ret = request_irq(touch_sensor.irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", NULL);
+  touch_sensor->irq = gpiod_to_irq(touch_sensor->gpio_desc);
+  touch_sensor->input_dev = inputdev;
+  ret = request_irq(touch_sensor->irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", touch_sensor);
   if (ret != 0)
   {
     input_unregister_device(inputdev);
@@ -91,15 +91,20 @@ static int touch_sensor_probe(struct platform_device *pdev)
   }
 
   dev_info(&pdev->dev, "touch_sensor driver initialized\n");
+
+  platform_set_drvdata(pdev, touch_sensor);
   return 0;
 }
 
 static int touch_sensor_remove(struct platform_device *pdev)
 {
-  free_irq(touch_sensor.irq, NULL);
-  input_unregister_device(inputdev);
+  struct touch_sensor_struct *touch_sensor = platform_get_drvdata(pdev);
+
+  free_irq(touch_sensor->irq, NULL);
+  input_unregister_device(touch_sensor->input_dev);
   return 0;
 }
+
 #define DRIVER_NAME "touch_sensor"
 static struct platform_driver touch_sensor_driver = {
     .probe = touch_sensor_probe,
@@ -107,7 +112,6 @@ static struct platform_driver touch_sensor_driver = {
     .driver = {
         .name = DRIVER_NAME,
         .owner = THIS_MODULE,
-        // TODO do I need .of_match_table? like I used in dht22iio.c? or does compatible match on driver name too?
     },
 };
 
