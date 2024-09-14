@@ -16,7 +16,7 @@
     };
 
     __overrides__ {
-        gpio_pin = <&touch_sensor_unified>,"gpios:0";  // Reference the 'gpios' property correctly
+        gpio_pin = <&touch_sensor_unified>,"gpios:4";  // Reference the 'gpios' property correctly
     };
 
 };
