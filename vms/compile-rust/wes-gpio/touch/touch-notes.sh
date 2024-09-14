@@ -34,3 +34,8 @@ evtest /dev/input/event6 # then touch sensor => keys printed:
 #
 # FYI those 4 lines are from one press/release of the touch sensor
 
+# BTW use by-path for paths that don't change
+evtest /dev/input/by-path/platform-touch_sensor_16-event
+evtest /dev/input/by-path/platform-touch_sensor_26-event
+# that way when input device is removed then the /dev/input/event* number changes don't mess up which one you are working with...
+# also don't `dtoverlay -r touch_sensor_26` when you are `evtest ...` on it :).. that might have caused ssh instability I randomly had
