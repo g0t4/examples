@@ -7,7 +7,7 @@
     fragment@0 {
         target-path = "/"; // create new overlay at root of the device tree
         __overlay__ {
-            touch_sensor_unified: touch_sensor_unified {
+            touch_sensor_unified: touch_sensor_unified@4 {
                 compatible = "touch_sensor";  // Your sensor's compatible string
                 gpios = <&gpio 4 0>;
                 status = "okay";
@@ -16,9 +16,11 @@
     };
 
     __overrides__ {
-        gpio_pin = <&touch_sensor_unified>,"gpios:4";  // why does "gpios:4" work.. shouldn't it be "gpios:0"?
+        gpio_pin = <&touch_sensor_unified>,"gpios:4", // IIUC 4 is a byte offset, like the second word? // TODO lookup how that works again
+                <&touch_sensor_unified>,"reg:0"; // IIGC this will change the sensor's @address to be touch_sensor_unified@gpio_pin
     };
 
-};
+    // PRN address this warning (though I tested dht11-overlay.dts and it has the same warning and yet it works still)
+    // touch-sensor-unified.dts:10.58-14.15: Warning (unit_address_vs_reg): /fragment@0/__overlay__/touch_sensor_unified@4: node has a unit name, but no reg or ranges property
 
-// !!! TODO NOT WORKING => can't load this twice with diff pin numbers... maybe that is not even a thing you are supposed to be able to do?
+};

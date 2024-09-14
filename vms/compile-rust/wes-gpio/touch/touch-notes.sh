@@ -1,4 +1,3 @@
-
 # testing:
 make
 sudo dmesg --clear
@@ -39,3 +38,36 @@ evtest /dev/input/by-path/platform-touch_sensor_16-event
 evtest /dev/input/by-path/platform-touch_sensor_26-event
 # that way when input device is removed then the /dev/input/event* number changes don't mess up which one you are working with...
 # also don't `dtoverlay -r touch_sensor_26` when you are `evtest ...` on it :).. that might have caused ssh instability I randomly had
+
+# ** OMG... unified dht11 might be working after I added "reg:0" to be updated too (the node@address)
+sudo dtoverlay touch-sensor-unified.dtbo gpio_pin=26
+ls /dev/input/by-path/*unified*
+# platform-touch_sensor_unified@1a-event    # YAY has 0x1a == 26
+evtest /dev/input/by-path/platform-touch_sensor_unified@1a-event # works!
+#
+sudo dtoverlay touch-sensor-unified.dtbo  gpio_pin=16
+# sudo dmesg # loaded, no errors!!!
+ls /dev/input/by-path/*unified*
+# also has: # platform-touch_sensor_unified@10-event # YAY
+evtest /dev/input/by-path/platform-touch_sensor_unified@10-event # works!
+# F YES! it worked... I knew chatgpt was just wrong when said cannot do this repeatedly in several threads last night...
+
+sudo dtoverlay -l
+# Overlays (in load order):
+# 0:  dht11  gpiopin=17
+# 1:  dht11  gpiopin=27
+# 2:  touch-sensor-unified  gpio_pin=26
+# 3:  touch-sensor-unified  gpio_pin=16
+
+# look at docs to confirm reg override...
+# https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/configuration/device-tree.adoc
+#
+# When assigning to the reg property, the address portion of the parent node name will be replaced with the assigned value.
+# This can be used to prevent a node name clash when using the same overlay multiple times - a technique used by the i2c-gpio overlay.
+#
+# TLDR overriding "reg:0" also replaces the node@address
+#
+# "reg" is also a separate property that can be set on the node, like a bus 
+
+
+
