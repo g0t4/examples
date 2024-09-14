@@ -47,7 +47,7 @@ static irqreturn_t touch_irq_handler(int irq, void *dev_id)
   return IRQ_HANDLED;
 }
 
-static int ttp223_probe(struct platform_device *pdev)
+static int touch_sensor_probe(struct platform_device *pdev)
 {
   struct device *dev = &pdev->dev;
 
@@ -59,7 +59,7 @@ static int ttp223_probe(struct platform_device *pdev)
   }
 
   // PRN do I want this: (only if helps for error handling)
-  // if (!gpio_is_valid(TTP223_GPIO_PIN)) {
+  // if (!gpio_is_valid(GPIO_PIN_NUMBER)) {
   //     dev_err(&pdev->dev, "Invalid GPIO\n");
   //     return -ENODEV;
   // }
@@ -90,30 +90,27 @@ static int ttp223_probe(struct platform_device *pdev)
     return ret;
   }
 
-  dev_info(&pdev->dev, "TTP223 driver initialized\n");
+  dev_info(&pdev->dev, "touch_sensor driver initialized\n");
   return 0;
 }
 
-static int ttp223_remove(struct platform_device *pdev)
+static int touch_sensor_remove(struct platform_device *pdev)
 {
-  int irq_number = 0; // TODO pdev=>touch_sensor
-
-  free_irq(irq_number, NULL);
+  free_irq(touch_sensor.irq, NULL);
   input_unregister_device(inputdev);
-  // gpio_free(TTP223_GPIO_PIN); // do I care to do this? can't I just use it w/o requesting/locking it?
   return 0;
 }
 
-static struct platform_driver ttp223_driver = {
-    .probe = ttp223_probe,
-    .remove = ttp223_remove,
+static struct platform_driver touch_sensor_driver = {
+    .probe = touch_sensor_probe,
+    .remove = touch_sensor_remove,
     .driver = {
-        .name = "ttp223",
+        .name = "touch_sensor",
         .owner = THIS_MODULE,
     },
 };
 
-module_platform_driver(ttp223_driver); // wires up to init/exit functions
+module_platform_driver(touch_sensor_driver); // wires up to init/exit functions
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Capacitive Touch Driver");
