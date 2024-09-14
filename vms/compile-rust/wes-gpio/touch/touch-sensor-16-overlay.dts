@@ -1,0 +1,19 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";  // For Raspberry Pi or relevant SoC
+
+    fragment@0 {
+        target-path = "/"; // create new overlay at root of the device tree
+        __overlay__ {
+            touch_sensor16: touch_sensor16 {
+                compatible = "touch_sensor";  // Your sensor's compatible string
+                gpios = <&gpio 16 0>;
+                status = "okay";
+            };
+        };
+    };
+
+    // __overrides__ { // TODO for gpiopin
+};
