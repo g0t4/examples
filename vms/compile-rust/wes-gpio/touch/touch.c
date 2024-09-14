@@ -27,6 +27,24 @@ static struct touch_sensor_struct touch_sensor;
 // todo can I link my static structs to platform_device somehow? and use that arg in various methods?
 static struct input_dev *inputdev;
 
+static irqreturn_t touch_irq_handler(int irq, void *dev_id)
+{
+  int value = gpiod_get_value(touch_sensor.gpio_desc); // get current high/low
+  if (value == 0)
+  {
+    // pressed
+    input_report_key(inputdev, KEY_ENTER, 1);
+    input_sync(inputdev);
+  }
+  else
+  {
+    // depressed
+    input_report_key(inputdev, KEY_ENTER, 0);
+    input_sync(inputdev);
+  }
+  return IRQ_HANDLED;
+}
+
 static int ttp223_probe(struct platform_device *pdev)
 {
   struct device *dev = &pdev->dev;
@@ -54,14 +72,23 @@ static int ttp223_probe(struct platform_device *pdev)
   inputdev->keybit[BIT_WORD(KEY_ENTER)] = BIT_MASK(KEY_ENTER); // TODO what is this chatgpt
 
   int ret = input_register_device(inputdev);
-  if (ret)
+  if (ret != 0) // TODO what is expected return on this? != 0 right == error, right? chatgpt suggested if(ret).. yuck.. .as if ret was an error
   {
     input_free_device(inputdev);
 
     return ret;
   }
 
-  // IRG
+  // IRQ handler
+  touch_sensor.irq = gpiod_to_irq(touch_sensor.gpio_desc);
+  ret = request_irq(touch_sensor.irq, touch_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "touch_sensor_irq", NULL);
+  if (ret != 0)
+  {
+    input_unregister_device(inputdev);
+    return ret;
+  }
+
+  dev_info(&pdev->dev, "TTP223 driver initialized\n");
   return 0;
 }
 
