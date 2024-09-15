@@ -114,8 +114,8 @@ static int dht22_read(struct dht22 *dht22)
 		PR_ERR("DHT22: Failed to set GPIO direction and pull low\n");
 		return ret;
 	}
-	// TODO change duration here???
-	udelay(400);																			 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	// TODO 18000 works here... does 400 still work?! can also do 1ms as that was suggested to be ok too... how did this matter for my polling driver?!
+	udelay(18000);																		 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
 	ret = gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
 	if (ret)
 	{
