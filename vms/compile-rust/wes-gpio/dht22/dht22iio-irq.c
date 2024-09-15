@@ -27,8 +27,9 @@
 
 #define DRIVER_NAME "dht22iio-irq"
 
-#define TIMEOUT_US 1000000										// 1 second
-#define NUM_EDGES_PER_SAMPLE (40 * 2 + 2 + 1) // 83 edges
+#define TIMEOUT_US 1000000								// 1 second
+#define NUM_EDGES_PER_SAMPLE (41 * 2 + 1) //  83 total edges (2 unique edges per bit, start bit too, and then initial drop low at start... bit has low and high periods, so initial drop to low is the 1 extra before low/high preamble bit, low/high bit 1, low/high bit 2, etc
+// 41 bits total with preamble bit and we also have extra edge to drop low before preamble bit
 struct dht22
 {
 	struct iio_dev *indio_dev;
@@ -93,7 +94,10 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	u64 time = ktime_get_boottime_ns(); // TODO is this safe to use for time? could it wrap?  would lose a reading..NBD really but could likely be avoided
 	int time_us = time / 1000;
 
-	PR_INFO("  DHT22: edge#: %d, value: %d, time: %d us\n", dht22->num_edges, current_value, time_us);
+	int current_bit = (dht22->num_edges - 3) / 2; // so bit 0 == edges 3&4, bit 1 == edges 5&6, etc
+	// bit 0 == first data bit, bit -1 == sensor preamble bit, bit -2 == host preamble bit
+	// TODO make sure bit definition here matches to below just to avoid confusing myself when looking at logs
+	PR_INFO("  DHT22: bit:%d, edge: %d, value: %d, time: %d us\n", current_bit, dht22->num_edges, current_value, time_us);
 	if (dht22->last_level == current_value)
 	{
 		// warning for now to see if it even occurs, I don't think dht11 driver tracked this at all
@@ -180,7 +184,7 @@ static int dht22_read(struct dht22 *dht22)
 		{
 			// skip first two edges... skip edge low and go for edge high (literally #3)
 			int bit_num = byte_index * 8 + bit_index;
-			int up_edge_num = (bit_num + 1) * 3;
+			int up_edge_num = (bit_num + 1) * 2 + 1; // add start bit
 			int down_edge_num = up_edge_num + 1;
 			u64 up_time_ns = dht22->edges[up_edge_num]; // TODO rename edges_ns for nanoseconds reminder
 			u64 down_time_ns = dht22->edges[down_edge_num];
