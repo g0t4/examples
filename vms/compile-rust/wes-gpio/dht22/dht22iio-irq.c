@@ -236,7 +236,7 @@ static int read_raw(struct iio_dev *iio_dev,
 	struct dht22 *dht22 = iio_priv(iio_dev); // IIO interface, so if you want other device info, have to look it up
 
 	int ms_since_last_read = jiffies_to_msecs(jiffies - dht22->last_read_jiffies);
-	if (ms_since_last_read < 2000 && ms_since_last_read > 0)
+	if (ms_since_last_read < 2000 && ms_since_last_read >= 0)
 	{
 		PR_INFO("read_raw: returning cached data\n");
 		// PRN consolidate with logic below to return data
@@ -249,7 +249,7 @@ static int read_raw(struct iio_dev *iio_dev,
 
 		return IIO_VAL_INT; // report back its an integer?
 	}
-	PR_INFO("read_raw: Data is stale, reading new data\n");
+	PR_INFO("read_raw: stale data: %d ms since last read, %lu	 jiffies, %d last read jiffies\n", ms_since_last_read, jiffies, dht22->last_read_jiffies);
 
 	// mutex_lock(&dht11->lock); // TODO
 
