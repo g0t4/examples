@@ -27,8 +27,6 @@
 
 #define DRIVER_NAME "dht22iio-irq"
 
-#define GPIO_DATA_LINE RPI5_GPIO_4 // works well, FYI does not conflict with pins used by sense-hat
-
 #define TIMEOUT_US 1000000 // 1 second
 
 struct dht22
@@ -122,6 +120,12 @@ static int dht22_read(struct dht22 *dht22)
 	if (ret)
 	{
 		PR_ERR("DHT22: Failed to set GPIO direction and release (pull high)\n");
+		return ret;
+	}
+	ret = gpiod_direction_input(dht22->gpio_desc);
+	if (ret)
+	{
+		PR_ERR("DHT22: Failed to set GPIO direction to input after my preamble\n");
 		return ret;
 	}
 
