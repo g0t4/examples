@@ -27,7 +27,8 @@
 
     __overrides__ {
         gpio_pin = <&dht22iio>,"gpios: 4", // overwrite gpios pin (starting at 4th byte, IIUC 2nd word)
-                   <&dht22iio>,"reg: 0"; // changes @address => touch_sensor_unified@gpio_pin
+                   <&dht22iio>,"reg: 0", // changes @address => touch_sensor_unified@gpio_pin
+                   <&iio>,"reg: 0"; // also update address for hwmon interface!!! yay worked
     };
 
 };
