@@ -115,3 +115,18 @@ sudo apt install --reinstall linux-image-6.6.31+rpt-rpi-2712  # put kernel/ back
 # dtoverlay touch-sensor-unified,gpio_pin=16
 # dtoverlay touch-sensor-unified,gpio_pin=26
 # ...
+# FYI I accidentally put " " after dtoverlay instead of "="... and it worked!
+# variations that worked:
+#
+#   WORKED:
+#     dtoverlay touch-sensor-unified,gpio_pin=16
+#     dtoverlay=touch-sensor-unified,gpio_pin=16
+#
+#   FAILED:
+#     dtoverlay touch-sensor-unified gpio_pin=16 # darn...  this would make the line the same as calling the command :(
+#     dtoverlay=touch-sensor-unified gpio_pin=16 # so comma is required
+#
+#   TLDR =/" " interchangeable, but comma required between args
+#
+
+

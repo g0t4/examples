@@ -1,7 +1,6 @@
-
 ## *** TODO try dtoverlay=dht22iio in /boot/firmware/config.txt + copy dtbo and ko to search paths
 
-## *** NOTES MANUALLY LOADING overlay and module/driver... 
+## *** NOTES MANUALLY LOADING overlay and module/driver...
 
 # luck has it when I first tested this... I still had dht11 module loaded (from config.txt) so my dep just worked, but on reboot I found out that was an issue :)
 # so I used:
@@ -34,10 +33,13 @@ sudo insmod dht22iio.ko # worked this time!... so I have some dependency issue t
 # b/c of dependency issue:
 sudo modinfo dht22iio.ko # see "depends: industrialio" ... so I need to load industrialio module first
 
-
 # so here issue: I depend on industrialio module but its not loaded and when I use insmod it won't load it for me (unlike modprobe)
 sudo modprobe industrialio # modprobe has search paths to load deps
 sudo insmod dht22iio.ko # now, this works ... remember insmod literally just loads the module you pass, no search paths
 
-# FYI => if you put dht22iio.ko into /lib/modules/$(uname -r)/kernel/drivers/iio/humidity/ then modprobe will handle the dependencies...
-# better yet put dtoverlay=dht22iio in /boot/firmware/config.txt and it will all just work automaticaly!
+## put in /boot/firmeware/config.txt:
+# dtoverlay=dht22iio,gpiopin=17
+# dtoverlay=dht22iio,gpiopin=27
+#
+# seems to ignore if overlay not found as I rebooted before `make install_driver`
+# TODO TESTING
