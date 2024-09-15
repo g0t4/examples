@@ -33,4 +33,6 @@ remove_driver:
 
 # i.e. when invoking the nested kernel build system, if shit goes sideways and it starts redoing config or otherwise... this can put things back the way they should be:
 fix_kernel_and_headers:
-	sudo apt install --reinstall linux-headers-6.6.31+rpt-rpi-2712  linux-image-6.6.31+rpt-rpi-2712
+	# reinstall packages for current kernel:
+	sudo apt install --reinstall "linux-headers-$(shell uname -r)" \
+	   "linux-image-$(shell uname -r)"
