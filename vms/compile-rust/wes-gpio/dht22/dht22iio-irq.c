@@ -171,55 +171,39 @@ static int dht22_read(struct dht22 *dht22)
 	int byte_index, bit_index;
 	for (byte_index = 0; byte_index < 5; byte_index++)
 	{
+		int this_byte = 0; // FYI I could use data[x] along the way below but this is more readable IMO
 		for (bit_index = 0; bit_index < 8; bit_index++)
 		{
 			// skip first two edges... skip edge low and go for edge high (literally #3)
 			int up_edge_num = (byte_index * 8 + bit_index + 1) * 3;
 			int down_edge_num = up_edge_num + 1;
+			u64 up_time_ns = dht22->edges[up_edge_num]; // TODO rename edges_ns for nanoseconds reminder
+			u64 down_time_ns = dht22->edges[down_edge_num];
+			u64 diff_ns = down_time_ns - up_time_ns;
+			int diff_us = diff_ns / 1000;
+			PR_INFO("DHT22: Bit (bit: %d) duration: %d us\n", byte_index * 8 + bit_index, diff_us);
+			if (diff_ns < 0)
+			{
+				int down_time_us = down_time_ns / 1000;
+				int up_time_us = up_time_ns / 1000;
+				PR_ERR("DHT22: Negative diff_us: %d (high -> low) - %d (low -> high) = %d (diff_us)\n", down_time_us, up_time_us, diff_us);
+				return -EINVAL; // TODO what error code?
+			}
+			this_byte = this_byte << 1; // shift current value to left to make room for new bit
+			// shift before so last bit is not shifted too
+			if (diff_ns > 39 * 1000) // <= 39us == low, > 39us == high
+			{
+				// only have to set bit high if it is set, already zero'd entire array
+				this_byte = this_byte | 1; // set high (current bit (last one))
+			}
 		}
+		data[byte_index] = this_byte;
 	}
 	// todo compute value from data, do that later, lets see if this works
-
-	return 0;
-
-	// FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
-	// http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
-
-	// OLD:
-	/*
 
 	// FYI gpio_desc ... now comes via device tree => platform device => iio device
 
 	// FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
-
-	for (byte_index = 0; byte_index < 5; byte_index++)
-	{
-		for (bit_index = 0; bit_index < 8; bit_index++)
-		{
-			if (!wait_for_edge_to(1, dht22->gpio_desc))
-			{
-				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line high for bit start\n", byte_index * 8 + bit_index);
-				return -ETIMEDOUT;
-			}
-			int start = ktime_get();
-
-			if (!wait_for_edge_to(0, dht22->gpio_desc))
-			{
-				PR_ERR("DHT22: Timeout (bit: %d) - sensor didn't pull the line low for bit end\n", byte_index * 8 + bit_index);
-				return -ETIMEDOUT;
-			}
-			int end = ktime_get();
-			int duration = ktime_us_delta(end, start);
-			PR_INFO("DHT22: Bit (bit: %d) duration: %d\n", byte_index * 8 + bit_index, duration);
-
-			data[byte_index] <<= 1; // shift left to make room for new bit
-			if (duration > 40)			// 26-28us for '0', 70us for '1'
-			{
-				data[byte_index] |= 1; // set last bit to 1
-			}
-			// else 0, already 0 after left shift by 1
-		}
-	}
 
 	// MSB sent first
 	// 40bits of data is divided into 5 bytes
@@ -246,7 +230,10 @@ static int dht22_read(struct dht22 *dht22)
 	}
 	dht22->fahrenheit_tenths = (dht22->celsius_tenths * 9 / 5) + 320;
 
-	return 0;*/
+	return 0;
+
+	// FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
+	// http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 }
 
 static int read_raw(struct iio_dev *iio_dev,
