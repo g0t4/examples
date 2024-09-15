@@ -106,4 +106,5 @@ dpkg -S /lib/modules/6.6.31+rpt-rpi-2712/kernel
 sudo apt install --reinstall linux-image-6.6.31+rpt-rpi-2712  # put kernel/ back
 
 # gonna put mine with humidity sensors (i.e. next to dht11)
-sudo cp touch.ko /lib/modules/$(uname -r)/kernel/drivers/iio/humidity/
+# TODO see `make install` target I added
+
