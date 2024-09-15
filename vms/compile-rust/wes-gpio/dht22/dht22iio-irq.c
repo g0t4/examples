@@ -25,6 +25,8 @@
 #define PR_ERR(fmt, ...)
 #endif
 
+#define DRIVER_NAME "dht22iio-irq"
+
 #define GPIO_DATA_LINE RPI5_GPIO_4 // works well, FYI does not conflict with pins used by sense-hat
 
 #define TIMEOUT_US 1000000 // 1 second
@@ -52,7 +54,6 @@ struct dht22
 // https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/intro.rst#L8
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
-
 /*
 // wait_for_edge_to_or_timeout
 static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
@@ -73,21 +74,39 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 	return true;
 }
 */
+static int dht22_handle_irq(int irq, void *dev_id)
+{
+	struct dht22 *dht22 = dev_id;
+	PR_INFO("DHT22: IRQ %d\n", irq);
+}
 
 static int dht22_read(struct dht22 *dht22)
 {
 	PR_INFO("DHT22: Reading data\n");
+	// ! safe to assume only one reader here... b/c I have code setup for mutex in read_raw (below)
 
-	// TODO safe to assume only one reader here... b/c I have code setup for mutex in read_raw (below)
+	// tell sensor to start sending data
+	gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
+	udelay(400);																 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
+	// sensor pulls low here to respond that it is ready and then it releases and then sends first bit (low 50ms, low/high ~28us, high ~70us (use >40us))
+
+	// setup IRQ handler, dht11 uses request_irq, but I had trouble with that with touch sensor
+	int ret = devm_request_irq(dht22->dev, dht22->irq, dht22_handle_irq,
+														 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
+														 DRIVER_NAME, dht22);
+	if (ret)
+	{
+		PR_ERR("DHT22: Failed to request IRQ %d\n", dht22->irq);
+		return ret;
+	}
+
 	return 0;
 
 	// FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
 	// http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
-
-
-
-	//OLD:
+	// OLD:
 	/*
 	int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
 	int byte_index, bit_index;
@@ -97,9 +116,6 @@ static int dht22_read(struct dht22 *dht22)
 	// FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
 
 	// Send the start signal to DHT22
-	gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
-	udelay(400);																 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
-	gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
 	// no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
 
 	gpiod_direction_input(dht22->gpio_desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
@@ -265,14 +281,14 @@ static int dht22_probe(struct platform_device *pdev)
 	if (IS_ERR(dht22->gpio_desc))
 		return PTR_ERR(dht22->gpio_desc);
 
-	// TODO rewrite to be IRQ triggered later on (after port to IIO)
-	// dht22->irq = gpiod_to_irq(dht22->gpio_desc);
-	// if (dht22->irq < 0) {
-	//   dev_err(dev, "GPIO %d has no interrupt\n", desc_to_gpio(dht22->gpio_desc));
-	//   return -EINVAL;
-	// }
+	dht22->irq = gpiod_to_irq(dht22->gpio_desc);
+	if (dht22->irq < 0)
+	{
+		dev_err(dev, "GPIO %d has no interrupt\n", desc_to_gpio(dht22->gpio_desc));
+		return -EINVAL;
+	}
 
-	// TODO, I don't think this is needed:
+	// TODO, I don't think this is needed: // isn't devm_iio_device_alloc already setting this relationship... dont add unless I need it
 	// platform_set_drvdata(pdev, iio);
 
 	// init_completion(&dht22->completion); //
@@ -292,8 +308,6 @@ static const struct of_device_id dht22_dt_ids[] = {
 		},
 		{}};
 MODULE_DEVICE_TABLE(of, dht22_dt_ids);
-
-#define DRIVER_NAME "dht22iio-irq"
 
 static struct platform_driver dht22_driver = {
 		.driver = {
