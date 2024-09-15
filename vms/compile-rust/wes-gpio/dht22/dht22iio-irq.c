@@ -62,32 +62,8 @@ struct dht22
 // https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/intro.rst#L8
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
-/*
-// wait_for_edge_to_or_timeout
-static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
-{
-	ktime_t start_time = ktime_get();
-	while (gpiod_get_raw_value(desc) != expected_value)
-	{
-		if (ktime_us_delta(ktime_get(), start_time) > TIMEOUT_US)
-		{
-			return false;
-		}
-	}
-
-	// add back , const char *label PARAM if:
-	// int total_us = ktime_us_delta(ktime_get(), start_time);
-	// PR_INFO("%s: %dus (%d)\n", label, total_us, expected_value); // PRN add to times array like in python
-
-	return true;
-}
-*/
-
 static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 {
-	// struct iio_dev *iio = data;
-	// struct dht11 *dht11 = iio_priv(iio);
-
 	struct dht22 *dht22 = dev_id;
 
 	int current_value = gpiod_get_value(dht22->gpio_desc);
@@ -109,8 +85,7 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 
 	dht22->num_edges++;
 
-	// if exceed stop condition, then stop with completion
-	if (dht22->num_edges >= NUM_EDGES_PER_SAMPLE) // TODO WRONG... // 2 (low/high response) + 40*2 bits + final release (high)
+	if (dht22->num_edges >= NUM_EDGES_PER_SAMPLE)
 		complete(&dht22->completion);
 
 	return IRQ_HANDLED;
@@ -142,7 +117,7 @@ static int dht22_read(struct dht22 *dht22)
 	}
 	dht22->last_level = 1; // was high, will be pulled low next by sensor
 	dht22->num_edges = 0;
-	ret = gpiod_direction_input(dht22->gpio_desc);
+	ret = gpiod_direction_input(dht22->gpio_desc); // TODO move after irq request so we don't miss the first edge?
 	if (ret)
 	{
 		PR_ERR("DHT22: Failed to set GPIO direction to input after my preamble\n");
@@ -163,13 +138,12 @@ static int dht22_read(struct dht22 *dht22)
 
 	reinit_completion(&dht22->completion); // this spot s/b fine so its used next:
 
-	// wait for all data to be sent (or timeout)
+	// wait for all data to be sent (completion completed in IRQ handler) or timeout (after 1 second)
 	wait_for_completion_killable_timeout(&dht22->completion, usecs_to_jiffies(TIMEOUT_US));
 
-	// stop irq handler:
 	devm_free_irq(dht22->dev, dht22->irq, dht22);
 
-	if (dht22->num_edges < NUM_EDGES_PER_SAMPLE) // TODO this is wrong...
+	if (dht22->num_edges < NUM_EDGES_PER_SAMPLE)
 	{
 		PR_ERR("DHT22: num_edges < %d: actual=%d\n", NUM_EDGES_PER_SAMPLE, dht22->num_edges);
 		return -ETIMEDOUT;
