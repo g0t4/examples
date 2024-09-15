@@ -20,11 +20,13 @@ install_driver: all
 status_driver:
 	lsmod | grep touch || true
 	#
-	dtoverlay -l | grep touch || true
+	dtoverlay -l | grep touch || true # IIUC loaded after boot w/ dtoverlay cmd
 	#
-	ls /boot/firmware/overlays/touch*.dtbo || true
+	dtoverlay -a | grep touch || true # all overlays (loaded and/or not loaded but in search path [boot/firmware/overlays])
 	#
-	ls "/lib/modules/$(shell uname -r)/kernel/drivers/input/touch" || true
+	ls -al /boot/firmware/overlays/touch*.dtbo || true
+	#
+	ls -al "/lib/modules/$(shell uname -r)/kernel/drivers/input/touch" || true
 
 remove_driver:
 	sudo rm /boot/firmware/overlays/touch-sensor-unified.dtbo || true
