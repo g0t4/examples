@@ -45,6 +45,10 @@ struct dht22
 
 	struct mutex lock;
 
+	int last_level; // 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
+	// TODO what about validating high/low alternation?
+	u64 edges[45]; // just in case I mess up an edge case //  TODO put to 43 once all else works
+
 	int num_edges;
 };
 
@@ -91,8 +95,15 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	int current_value = gpiod_get_value(dht22->gpio_desc);
 	u64 time = ktime_get_boottime_ns();
 	PR_INFO("  DHT22: value: %d, time: %llu\n", current_value, time);
+	if (dht22->last_level == current_value)
+	{
+		// warning for now to see if it even occurs, I don't think dht11 driver tracked this at all
+		PR_INFO("DHT22: last_level=%d == current_value=%d\n", dht22->last_level, current_value);
+	}
+	dht22->last_level = current_value;
 
-	// TODO store edges for later calculations
+	dht22->edges[dht22->num_edges] = time;
+
 	dht22->num_edges++;
 
 	// if exceed stop condition, then stop with completion
@@ -122,6 +133,8 @@ static int dht22_read(struct dht22 *dht22)
 		PR_ERR("DHT22: Failed to set GPIO direction and release (pull high)\n");
 		return ret;
 	}
+	dht22->last_level = 1; // was high, will be pulled low next by sensor
+	dht22->num_edges = 0;
 	ret = gpiod_direction_input(dht22->gpio_desc);
 	if (ret)
 	{
