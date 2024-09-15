@@ -1,6 +1,7 @@
 # obj-m += dht22fs.o # first impl
 # obj-m += dht22fs-gpiod.o # second impl (gpio_ => gpiod_)
 obj-m += dht22iio.o # third impl (filesystem char dev => iio_)
+obj-m += dht22iio-irq.o
 # obj-m += dht22iio-irq.o # fourth impl (iio_ => iio-irq_) MAYBE
 
 .PHONY: all clean copy_driver remove_driver fix_kernel_and_headers dtbo
