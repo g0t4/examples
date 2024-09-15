@@ -52,6 +52,8 @@ struct dht22
 // https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/intro.rst#L8
 // legacy absolute GPIO numbering API => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/Documentation/driver-api/gpio/legacy.rst#L1
 
+
+/*
 // wait_for_edge_to_or_timeout
 static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 {
@@ -70,18 +72,25 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 
 	return true;
 }
+*/
 
 static int dht22_read(struct dht22 *dht22)
 {
-	// !! TODO port my 39 bit failure logic from python to C too (this is only other thing that really matters)
+	PR_INFO("DHT22: Reading data\n");
+
+	// TODO safe to assume only one reader here... b/c I have code setup for mutex in read_raw (below)
+	return 0;
 
 	// FYI protocol http://www.ocfreaks.com/basics-interfacing-dht11-dht22-humidity-temperature-sensor-mcu/
 	// http://www.ocfreaks.com/imgs/embedded/dht/dhtxx_protocol.png
 
+
+
+
+	//OLD:
+	/*
 	int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
-	// TODO build array of text messages to log for debugging, like in my python code
 	int byte_index, bit_index;
-	PR_INFO("DHT22: Reading data\n");
 
 	// FYI gpio_desc ... now comes via device tree => platform device => iio device
 
@@ -170,7 +179,7 @@ static int dht22_read(struct dht22 *dht22)
 	}
 	dht22->fahrenheit_tenths = (dht22->celsius_tenths * 9 / 5) + 320;
 
-	return 0;
+	return 0;*/
 }
 
 static int read_raw(struct iio_dev *iio_dev,
