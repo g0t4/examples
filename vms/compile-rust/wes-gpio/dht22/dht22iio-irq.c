@@ -14,16 +14,19 @@
 #include "../ledfs/pins.h"
 
 #define DEBUG_DHT22
+#ifdef TRACE_DHT22
+#define PR_TRACE(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
+#else
+#define PR_TRACE(fmt, ...)
+#endif
+
 #ifdef DEBUG_DHT22
-// TODO are logs prefixed with DRIVER_NAME or MODULE_NAME? also cleanup format strings below that prepend DHT22: ...
 #define PR_INFO(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
-// #define PR_INFO(fmt, ...) pr_info(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
-#define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
-// #define PR_ERR(fmt, ...) pr_err(DRIVER_NAME ": " fmt, ##__VA_ARGS__) // TODO ???
 #else
 #define PR_INFO(fmt, ...)
-#define PR_ERR(fmt, ...)
 #endif
+
+#define PR_ERR(fmt, ...) pr_err(fmt, ##__VA_ARGS__)
 
 #define DRIVER_NAME "dht22iio-irq"
 
