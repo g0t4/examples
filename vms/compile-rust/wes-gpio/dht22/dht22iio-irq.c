@@ -207,6 +207,7 @@ static int dht22_read(struct dht22 *dht22)
 		data[byte_index] = this_byte;
 	}
 	// todo compute value from data, do that later, lets see if this works
+	PR_INFO("DHT22: humid: %d - %d   temp: %d - %d   checksum: %d\n", data[0], data[1], data[2], data[3], data[4]);
 
 	// FYI gpio_desc ... now comes via device tree => platform device => iio device
 
