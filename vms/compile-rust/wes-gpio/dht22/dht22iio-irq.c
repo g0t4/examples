@@ -42,6 +42,12 @@ struct dht22
 	int humidity_tenths;
 	int fahrenheit_tenths;
 	int last_read_jiffies;
+
+	struct completion completion;
+
+	struct mutex lock;
+
+	int num_edges;
 };
 
 // IIO overview: https://wiki.analog.com/software/linux/docs/iio/iio
@@ -74,10 +80,24 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 	return true;
 }
 */
-static int dht22_handle_irq(int irq, void *dev_id)
+
+static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 {
 	struct dht22 *dht22 = dev_id;
 	PR_INFO("DHT22: IRQ %d\n", irq);
+
+	int current_value = gpiod_get_value(dht22->gpio_desc);
+	u64 time = ktime_get_boottime_ns();
+	PR_INFO("  DHT22: value: %d, time: %llu\n", current_value, time);
+
+	// TODO store edges for later calculations
+	dht22->num_edges++;
+
+	// if exceed stop condition, then stop with completion
+	if (dht22->num_edges >= 43) // 2 (low/high response) + 40*2 bits + final release (high)
+		complete(&dht22->completion);
+
+	return IRQ_HANDLED;
 }
 
 static int dht22_read(struct dht22 *dht22)
@@ -86,20 +106,42 @@ static int dht22_read(struct dht22 *dht22)
 	// ! safe to assume only one reader here... b/c I have code setup for mutex in read_raw (below)
 
 	// tell sensor to start sending data
-	gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
-	udelay(400);																 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
-	gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
+	int ret = gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
+	if (ret)
+	{
+		PR_ERR("DHT22: Failed to set GPIO direction and pull low\n");
+		return ret;
+	}
+	// TODO change duration here???
+	udelay(400);																			 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	ret = gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
+	if (ret)
+	{
+		PR_ERR("DHT22: Failed to set GPIO direction and release (pull high)\n");
+		return ret;
+	}
+
 	// sensor pulls low here to respond that it is ready and then it releases and then sends first bit (low 50ms, low/high ~28us, high ~70us (use >40us))
 
-	// setup IRQ handler, dht11 uses request_irq, but I had trouble with that with touch sensor
-	int ret = devm_request_irq(dht22->dev, dht22->irq, dht22_handle_irq,
-														 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-														 DRIVER_NAME, dht22);
+	// immediately register irq after releasing line
+	ret = devm_request_irq(dht22->dev, dht22->irq, dht22_handle_irq,
+												 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
+												 DRIVER_NAME, dht22); // devm also lets me pass my custom struct for last arg, whereas IIUC request_irq requires it be iio_dev?
 	if (ret)
 	{
 		PR_ERR("DHT22: Failed to request IRQ %d\n", dht22->irq);
 		return ret;
 	}
+
+	reinit_completion(&dht22->completion); // this spot s/b fine so its used next:
+
+	// wait for all data to be sent (or timeout)
+	wait_for_completion_killable_timeout(&dht22->completion, usecs_to_jiffies(TIMEOUT_US));
+
+	// stop irq handler:
+	devm_free_irq(dht22->dev, dht22->irq, dht22);
+
+	// todo compute value from data, do that later, lets see if this works
 
 	return 0;
 
