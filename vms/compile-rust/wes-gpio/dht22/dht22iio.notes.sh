@@ -63,3 +63,14 @@ ls /sys/bus/iio/devices/iio:device*/in_temp_input # w00h00
 cat /sys/bus/iio/devices/iio:device0/in_temp_input # yay!
 sudo reboot
 # YAYAYAYA they are both there after reboot
+
+
+# hwmon interface!
+# hwmon loads an immediatley reads values from both channels...and it has retry logic b/c first channel failed and it read again... cool!
+#
+ls /sys/class/hwmon/
+bat /sys/class/hwmon/*/name
+# iio_hwmon@4  # ok that is where this node goes! lets give it a meaningful name then... I get it... second name is whatever I want so I can also override this if loading multiple, right?
+cat /sys/class/hwmon/hwmon5/humidity1_input
+cat /sys/class/hwmon/hwmon5/temp1_input
+# yay! just a new set of file interfaces via the hwmon subsystem

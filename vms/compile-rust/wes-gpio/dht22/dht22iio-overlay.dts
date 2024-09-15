@@ -12,8 +12,16 @@
                 compatible = "dht22iio";
                 gpios = <&gpio 4 0>; // default pin 4
                 status = "okay";
+                #io-channel-cells = <1>;
             };
-            // iio: iio-hwmon  // TODO is this needed? (see dht11 overlay)
+
+
+     		iio: dht22iio-hwmon@4 { // second name is whatever I want, I should update addy too but lets break it before I do that
+				compatible = "iio-hwmon";
+				status = "okay";
+				io-channels = <&dht22iio 0>, <&dht22iio 1>;
+			};
+
         };
     };
 
