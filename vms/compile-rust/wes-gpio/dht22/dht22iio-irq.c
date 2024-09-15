@@ -47,7 +47,7 @@ struct dht22
 	struct mutex lock;
 
 	int last_level;												// TODO - 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
-	u64 edges[NUM_EDGES_PER_SAMPLE + 10]; // 10 is a safe buffer for now // TODO REMOVE EXTRA when mostly done
+	u64 edge_times_ns[NUM_EDGES_PER_SAMPLE + 10]; // 10 is a safe buffer for now // TODO REMOVE EXTRA when mostly done
 
 	int num_edges;
 };
@@ -105,7 +105,7 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	}
 	dht22->last_level = current_value;
 
-	dht22->edges[dht22->num_edges] = time;
+	dht22->edge_times_ns[dht22->num_edges] = time;
 
 	dht22->num_edges++;
 
@@ -186,8 +186,8 @@ static int dht22_read(struct dht22 *dht22)
 			int bit_num = byte_index * 8 + bit_index;
 			int up_edge_num = (bit_num + 1) * 2 + 1; // add start bit
 			int down_edge_num = up_edge_num + 1;
-			u64 up_time_ns = dht22->edges[up_edge_num]; // TODO rename edges_ns for nanoseconds reminder
-			u64 down_time_ns = dht22->edges[down_edge_num];
+			u64 up_time_ns = dht22->edge_times_ns[up_edge_num];
+			u64 down_time_ns = dht22->edge_times_ns[down_edge_num];
 			// FYI this is the time from low->high (up) and high->low (down) only... ignoring initial low period
 			u64 diff_ns = down_time_ns - up_time_ns;
 			int diff_us = diff_ns / 1000;
