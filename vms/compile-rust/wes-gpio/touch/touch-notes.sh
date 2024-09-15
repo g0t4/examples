@@ -80,7 +80,6 @@ dtc -I fs /proc/device-tree 2>&1 | grep touch_sensor
 # <stdout>: Warning (gpios_property): /touch_sensor_unified@1a:gpios: cell 0 is not a phandle reference
 # <stdout>: Warning (gpios_property): /touch_sensor_unified@10:gpios: cell 0 is not a phandle reference
 
-
 ## FYI testing dtoverlay in /boot/firmware/config.txt
 sudo vim /boot/firmware/config.txt
 # # enable dht11:
@@ -106,5 +105,13 @@ dpkg -S /lib/modules/6.6.31+rpt-rpi-2712/kernel
 sudo apt install --reinstall linux-image-6.6.31+rpt-rpi-2712  # put kernel/ back
 
 # gonna put mine with humidity sensors (i.e. next to dht11)
-# TODO see `make install` target I added
-
+# FYI see `make install_driver/remove_driver/status_driver` targets
+#
+# FYI:
+# sudo cat /boot/firmware/config.txt | grep -i dtover
+# ...
+# dtoverlay=dht11,gpiopin=17
+# dtoverlay=dht11,gpiopin=27
+# dtoverlay touch-sensor-unified,gpio_pin=16
+# dtoverlay touch-sensor-unified,gpio_pin=26
+# ...
