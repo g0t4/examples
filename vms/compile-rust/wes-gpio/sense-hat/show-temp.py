@@ -7,7 +7,8 @@ with open("/sys/bus/iio/devices/iio:device0/name") as f:
 
 with open("/sys/bus/iio/devices/iio:device0/in_temp_input") as f:
     temp = float(f.read()) / 10
-    print(f"  Temperature: {temp}C")
+    temp_str = f"{temp:.1f}C ({9 / 5 * temp + 32:.1f}F)"
+    print(f"  Temperature: {temp_str}")
 
 with open("/sys/bus/iio/devices/iio:device0/in_humidityrelative_input") as f:
     humidity = float(f.read()) / 10
@@ -24,5 +25,4 @@ print()
 
 sense.set_rotation(180)
 sense.clear()
-temp_str = f"{temp:.1f}C"
 sense.show_message(temp_str, text_colour=[0, 255, 0])
