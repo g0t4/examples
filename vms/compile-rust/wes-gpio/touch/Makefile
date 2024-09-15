@@ -15,7 +15,7 @@ install_driver: all
 	sudo cp touch-sensor-unified.dtbo /boot/firmware/overlays/
 	sudo mkdir -p "/lib/modules/$(shell uname -r)/kernel/drivers/input/touch/"
 	sudo cp touch.ko "/lib/modules/$(shell uname -r)/kernel/drivers/input/touch/"
-	# depmod -a
+	sudo depmod -a # confirm this is needed, I had to do this after install_driver for dht22iio (didn't have to do this on touch.ko but I was reinstalling packages (fix_ below) and I wonder if that triggers depmod -a and picked it up b/c I ran that fix after the first install)
 
 status_driver:
 	lsmod | grep touch || true
@@ -31,7 +31,7 @@ status_driver:
 remove_driver:
 	sudo rm /boot/firmware/overlays/touch-sensor-unified.dtbo || true
 	sudo rm "/lib/modules/$(shell uname -r)/kernel/drivers/input/touch/touch.ko" || true
-	# sudo depmod -a
+	sudo depmod -a
 
 # i.e. when invoking the nested kernel build system, if shit goes sideways and it starts redoing config or otherwise... this can put things back the way they should be:
 fix_kernel_and_headers:

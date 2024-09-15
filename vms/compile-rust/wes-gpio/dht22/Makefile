@@ -18,7 +18,7 @@ install_driver: all
 	sudo cp dht22iio.dtbo /boot/firmware/overlays/
 	sudo mkdir -p "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/"
 	sudo cp dht22iio.ko "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/"
-	# depmod -a
+	sudo depmod -a
 
 status_driver:
 	lsmod | grep touch || true
@@ -34,7 +34,7 @@ status_driver:
 remove_driver:
 	sudo rm /boot/firmware/overlays/dht22iio.dtbo || true
 	sudo rm "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/dht22iio.ko" || true
-	# sudo depmod -a
+	sudo depmod -a
 
 # i.e. when invoking the nested kernel build system, if shit goes sideways and it starts redoing config or otherwise... this can put things back the way they should be:
 fix_kernel_and_headers:
