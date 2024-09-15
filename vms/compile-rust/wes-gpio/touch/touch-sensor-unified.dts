@@ -19,3 +19,5 @@
         gpio_pin = <&touch_sensor_unified>,"gpios:4", // IIUC 4 is a byte offset, like the second word? // TODO lookup how that works again
                 <&touch_sensor_unified>,"reg:0"; // changes @address => touch_sensor_unified@gpio_pin
     };
+
+};
