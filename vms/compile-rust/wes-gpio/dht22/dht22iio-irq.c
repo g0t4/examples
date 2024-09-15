@@ -84,8 +84,6 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 
 static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 {
-	PR_INFO("DHT22: IRQ %d\n", irq);
-
 	// struct iio_dev *iio = data;
 	// struct dht11 *dht11 = iio_priv(iio);
 
@@ -93,7 +91,9 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 
 	int current_value = gpiod_get_value(dht22->gpio_desc);
 	u64 time = ktime_get_boottime_ns(); // TODO is this safe to use for time? could it wrap?  would lose a reading..NBD really but could likely be avoided
-	PR_INFO("  DHT22: value: %d, time: %llu\n", current_value, time);
+	int time_us = time / 1000;
+
+	PR_INFO("  DHT22: edge#: %d, value: %d, time: %d us\n", dht22->num_edges, current_value, time_us);
 	if (dht22->last_level == current_value)
 	{
 		// warning for now to see if it even occurs, I don't think dht11 driver tracked this at all
