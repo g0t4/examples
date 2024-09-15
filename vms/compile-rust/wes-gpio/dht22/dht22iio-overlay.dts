@@ -6,16 +6,20 @@
 
     fragment@0 {
         // target = <&gpio>; // can modify existing gpio overlay
-        target-path = "/"; // create new overlay at root of the device tree
+        target-path = "/";
         __overlay__ {
-            dht22iio: dht22iio {
-                compatible = "dht22iio";  // Your sensor's compatible string
-                gpios = <&gpio 17 0>;        // GPIO 17 (replace with actual GPIO pin number)
+            dht22iio: dht22iio@4 { // hex of default pin # 0x4 == 4
+                compatible = "dht22iio";
+                gpios = <&gpio 4 0>; // default pin 4
                 status = "okay";
             };
             // iio: iio-hwmon  // TODO is this needed? (see dht11 overlay)
         };
     };
 
-    // __overrides__ { // TODO see dht11 overlay
+    __overrides__ {
+        gpio_pin = <&dht22iio>,"gpios: 4", // overwrite gpios pin (starting at 4th byte, IIUC 2nd word)
+                   <&dht22iio>,"reg: 0"; // changes @address => touch_sensor_unified@gpio_pin
+    }
+
 };
