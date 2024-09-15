@@ -16,19 +16,21 @@
             };
 
 
-     		iio: dht22iio_irq_hwmon@4 { // second name is whatever I want, I should update addy too but lets break it before I do that
-				compatible = "iio-hwmon";
-				status = "okay";
-				io-channels = <&dht22iio_irq 0>, <&dht22iio_irq 1>;
-			};
+            // // TODO REENABLE later:
+     		// iio: dht22iio_irq_hwmon@4 { // second name is whatever I want, I should update addy too but lets break it before I do that
+			// 	compatible = "iio-hwmon";
+			// 	status = "okay";
+			// 	io-channels = <&dht22iio_irq 0>, <&dht22iio_irq 1>;
+			// };
 
         };
     };
 
     __overrides__ {
         gpio_pin = <&dht22iio_irq>,"gpios: 4", // overwrite gpios pin (starting at 4th byte, IIUC 2nd word)
-                   <&dht22iio_irq>,"reg: 0", // changes @address => touch_sensor_unified@gpio_pin
-                   <&iio>,"reg: 0"; // also update address for hwmon interface!!! yay worked
+                   <&dht22iio_irq>,"reg: 0"; // changes @address => touch_sensor_unified@gpio_pin
+                   //<&iio>,"reg: 0"; // also update address for hwmon interface!!! yay worked
+                   // TODO REENABLE
     };
 
 };
