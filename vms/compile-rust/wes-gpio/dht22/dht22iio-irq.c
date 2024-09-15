@@ -46,7 +46,7 @@ struct dht22
 
 	struct mutex lock;
 
-	int last_level;												// TODO - 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
+	int last_level;																// TODO - 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
 	u64 edge_times_ns[NUM_EDGES_PER_SAMPLE + 10]; // 10 is a safe buffer for now // TODO REMOVE EXTRA when mostly done
 
 	int num_edges;
@@ -182,9 +182,8 @@ static int dht22_read(struct dht22 *dht22)
 		int this_byte = 0; // FYI I could use data[x] along the way below but this is more readable IMO
 		for (bit_index = 0; bit_index < 8; bit_index++)
 		{
-			// skip first two edges... skip edge low and go for edge high (literally #3)
 			int bit_num = byte_index * 8 + bit_index;
-			int up_edge_num = (bit_num + 1) * 2 + 1; // add start bit
+			int up_edge_num = (bit_num + 1) * 2 + 1; // edge 0 is drop low, edge 1/2 are sensor pre-amble bit, edge 3/4 for bit 0, edge 5/6 for bit 1, edge 7/8 for bit 2, etc
 			int down_edge_num = up_edge_num + 1;
 			u64 up_time_ns = dht22->edge_times_ns[up_edge_num];
 			u64 down_time_ns = dht22->edge_times_ns[down_edge_num];
