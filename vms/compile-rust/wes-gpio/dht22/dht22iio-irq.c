@@ -92,7 +92,7 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	struct dht22 *dht22 = dev_id;
 
 	int current_value = gpiod_get_value(dht22->gpio_desc);
-	u64 time = ktime_get_boottime_ns();
+	u64 time = ktime_get_boottime_ns(); // TODO is this safe to use for time? could it wrap?  would lose a reading..NBD really but could likely be avoided
 	PR_INFO("  DHT22: value: %d, time: %llu\n", current_value, time);
 	if (dht22->last_level == current_value)
 	{
@@ -112,10 +112,14 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+#define HIGH_THRESHOLD_NS 40000 // 40us
+
 static int dht22_read(struct dht22 *dht22)
 {
 	PR_INFO("DHT22: Reading data\n");
 	// ! safe to assume only one reader here... b/c I have code setup for mutex in read_raw (below)
+
+	// TODO check ambiguous resolution of sensor data (see dht11 code)
 
 	// tell sensor to start sending data
 	int ret = gpiod_direction_output(dht22->gpio_desc, 0); // pull low signals to send reading
@@ -175,23 +179,26 @@ static int dht22_read(struct dht22 *dht22)
 		for (bit_index = 0; bit_index < 8; bit_index++)
 		{
 			// skip first two edges... skip edge low and go for edge high (literally #3)
-			int up_edge_num = (byte_index * 8 + bit_index + 1) * 3;
+			int bit_num = byte_index * 8 + bit_index;
+			int up_edge_num = (bit_num + 1) * 3;
 			int down_edge_num = up_edge_num + 1;
 			u64 up_time_ns = dht22->edges[up_edge_num]; // TODO rename edges_ns for nanoseconds reminder
 			u64 down_time_ns = dht22->edges[down_edge_num];
+			// FYI this is the time from low->high (up) and high->low (down) only... ignoring initial low period
 			u64 diff_ns = down_time_ns - up_time_ns;
 			int diff_us = diff_ns / 1000;
-			PR_INFO("DHT22: Bit (bit: %d) duration: %d us\n", byte_index * 8 + bit_index, diff_us);
+			PR_INFO("DHT22: Bit (bit: %d) duration: %d us\n", bit_num, diff_us);
 			if (diff_ns < 0)
 			{
-				int down_time_us = down_time_ns / 1000;
+				// only would happen if irqs out of order OR wrap around in kernel time
 				int up_time_us = up_time_ns / 1000;
-				PR_ERR("DHT22: Negative diff_us: %d (high -> low) - %d (low -> high) = %d (diff_us)\n", down_time_us, up_time_us, diff_us);
+				int down_time_us = down_time_ns / 1000;
+				PR_ERR("DHT22: Negative diff_us: %d (high -> low [down]) - %d (low -> high [up]) = %d (diff_us)\n", down_time_us, up_time_us, diff_us);
 				return -EINVAL; // TODO what error code?
 			}
 			this_byte = this_byte << 1; // shift current value to left to make room for new bit
 			// shift before so last bit is not shifted too
-			if (diff_ns > 39 * 1000) // <= 39us == low, > 39us == high
+			if (diff_ns > HIGH_THRESHOLD_NS)
 			{
 				// only have to set bit high if it is set, already zero'd entire array
 				this_byte = this_byte | 1; // set high (current bit (last one))
