@@ -7,9 +7,9 @@
     fragment@0 {
         target-path = "/";
         __overlay__ {
-            touch_sensor_unified: touch_sensor_unified@4 {
+            touch_sensor_unified: touch_sensor_unified@4 { // hex of default pin # 0x4 == 4
                 compatible = "touch_sensor";
-                gpios = <&gpio 4 0>;
+                gpios = <&gpio 4 0>; // default pin 4
                 status = "okay";
             };
         };
@@ -19,8 +19,3 @@
         gpio_pin = <&touch_sensor_unified>,"gpios:4", // IIUC 4 is a byte offset, like the second word? // TODO lookup how that works again
                 <&touch_sensor_unified>,"reg:0"; // changes @address => touch_sensor_unified@gpio_pin
     };
-
-    // PRN address this warning (though I tested dht11-overlay.dts and it has the same warning and yet it works still)
-    // touch-sensor-unified.dts:10.58-14.15: Warning (unit_address_vs_reg): /fragment@0/__overlay__/touch_sensor_unified@4: node has a unit name, but no reg or ranges property
-
-};
