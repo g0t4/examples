@@ -11,14 +11,20 @@ all: dtbo
 
 dtbo: dht22iio-overlay.dts
 	dtc -O dtb -o dht22iio.dtbo dht22iio-overlay.dts
+	dtc -O dtb -o dht22iio-irq.dtbo dht22iio-irq-overlay.dts
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 install_driver: all
-	sudo cp dht22iio.dtbo /boot/firmware/overlays/
 	sudo mkdir -p "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/"
+
+	sudo cp dht22iio.dtbo /boot/firmware/overlays/
 	sudo cp dht22iio.ko "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/"
+
+	sudo cp dht22iio-irq.dtbo /boot/firmware/overlays/
+	sudo cp dht22iio-irq.ko "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/"
+
 	sudo depmod -a
 
 status_driver:
@@ -33,8 +39,8 @@ status_driver:
 	ls -al "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/dht22"* || true
 
 remove_driver:
-	sudo rm /boot/firmware/overlays/dht22iio.dtbo || true
-	sudo rm "/lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/dht22iio.ko" || true
+	sudo rm /boot/firmware/overlays/dht22iio*.dtbo || true
+	sudo rm /lib/modules/$(shell uname -r)/kernel/drivers/iio/humidity/dht22iio*.ko || true
 	sudo depmod -a
 
 # i.e. when invoking the nested kernel build system, if shit goes sideways and it starts redoing config or otherwise... this can put things back the way they should be:

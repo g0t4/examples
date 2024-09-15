@@ -279,12 +279,12 @@ static int dht22_probe(struct platform_device *pdev)
 
 static const struct of_device_id dht22_dt_ids[] = {
 		{
-				.compatible = "dht22iio",
+				.compatible = "dht22iio-irq",
 		},
 		{}};
 MODULE_DEVICE_TABLE(of, dht22_dt_ids);
 
-#define DRIVER_NAME "dht22iio"
+#define DRIVER_NAME "dht22iio-irq"
 
 static struct platform_driver dht22_driver = {
 		.driver = {
@@ -299,5 +299,5 @@ module_platform_driver(dht22_driver); // instead of module_init and module_exit,
 
 MODULE_LICENSE("GPL"); // IF incompatible with other used modules, then compile fails! i.e. MIT here fails compile!
 MODULE_AUTHOR("Wes Higbee");
-MODULE_DESCRIPTION("dht22iio driver");
+MODULE_DESCRIPTION("dht22iio-irq driver");
 MODULE_VERSION("0.1");
