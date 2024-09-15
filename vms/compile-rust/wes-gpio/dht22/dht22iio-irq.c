@@ -27,8 +27,8 @@
 
 #define DRIVER_NAME "dht22iio-irq"
 
-#define TIMEOUT_US 1000000 // 1 second
-
+#define TIMEOUT_US 1000000										// 1 second
+#define NUM_EDGES_PER_SAMPLE (40 * 2 + 2 + 1) // 83 edges
 struct dht22
 {
 	struct iio_dev *indio_dev;
@@ -45,9 +45,8 @@ struct dht22
 
 	struct mutex lock;
 
-	int last_level; // 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
-	// TODO what about validating high/low alternation?
-	u64 edges[45]; // just in case I mess up an edge case //  TODO put to 43 once all else works
+	int last_level;												// TODO - 0 or 1 for VALIDATING edges aren't missed... THIS IS ICING ON CAKE, SKIP FOR NOW?
+	u64 edges[NUM_EDGES_PER_SAMPLE + 10]; // 10 is a safe buffer for now // TODO REMOVE EXTRA when mostly done
 
 	int num_edges;
 };
@@ -107,7 +106,7 @@ static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 	dht22->num_edges++;
 
 	// if exceed stop condition, then stop with completion
-	if (dht22->num_edges >= 43) // 2 (low/high response) + 40*2 bits + final release (high)
+	if (dht22->num_edges >= NUM_EDGES_PER_SAMPLE) // TODO WRONG... // 2 (low/high response) + 40*2 bits + final release (high)
 		complete(&dht22->completion);
 
 	return IRQ_HANDLED;
@@ -162,6 +161,23 @@ static int dht22_read(struct dht22 *dht22)
 	// stop irq handler:
 	devm_free_irq(dht22->dev, dht22->irq, dht22);
 
+	if (dht22->num_edges < NUM_EDGES_PER_SAMPLE) // TODO this is wrong...
+	{
+		PR_ERR("DHT22: num_edges < %d: actual=%d\n", NUM_EDGES_PER_SAMPLE, dht22->num_edges);
+		return -ETIMEDOUT;
+	}
+
+	int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
+	int byte_index, bit_index;
+	for (byte_index = 0; byte_index < 5; byte_index++)
+	{
+		for (bit_index = 0; bit_index < 8; bit_index++)
+		{
+			// skip first two edges... skip edge low and go for edge high (literally #3)
+			int up_edge_num = (byte_index * 8 + bit_index + 1) * 3;
+			int down_edge_num = up_edge_num + 1;
+		}
+	}
 	// todo compute value from data, do that later, lets see if this works
 
 	return 0;
@@ -171,39 +187,11 @@ static int dht22_read(struct dht22 *dht22)
 
 	// OLD:
 	/*
-	int data[5] = {0}; // 5 bytes (8 bits) of data (humidity and temperature) => can use short instead of int
-	int byte_index, bit_index;
 
 	// FYI gpio_desc ... now comes via device tree => platform device => iio device
 
 	// FYI gpio_desc => https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/gpio/gpiolib.h#L157-L187
 
-	// Send the start signal to DHT22
-	// no delays, just go right to waiting for the sensor to respond, if I add delay I tend to miss first bit on my good sensor1 at least
-
-	gpiod_direction_input(dht22->gpio_desc); // start reading right away, wait for sensor to pull low indicating it is ready to send data
-
-	if (!wait_for_edge_to(0, dht22->gpio_desc))
-	{
-		PR_ERR("DHT22: Timeout - sensor didn't respond with initial low signal\n");
-		return -ETIMEDOUT;
-	}
-	PR_INFO("DHT22: Sensor response low\n");
-
-	if (!wait_for_edge_to(1, dht22->gpio_desc))
-	{
-		PR_ERR("DHT22: Timeout - sensor didn't pull the line high (after initial low)\n");
-		return -ETIMEDOUT;
-	}
-	PR_INFO("DHT22: Sensor response high\n");
-
-	if (!wait_for_edge_to(0, dht22->gpio_desc))
-	{
-		PR_ERR("DHT22: Timeout - sensor didn't pull the line low for first byte \n");
-		return -ETIMEDOUT;
-	}
-
-	// Read the data (40 bits)
 	for (byte_index = 0; byte_index < 5; byte_index++)
 	{
 		for (bit_index = 0; bit_index < 8; bit_index++)
