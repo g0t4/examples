@@ -79,3 +79,31 @@ dtc -I fs /proc/device-tree 2>&1 | grep touch_sensor
 # <stdout>: Warning (unit_address_vs_reg): /touch_sensor_unified@10: node has a unit name, but no reg or ranges property
 # <stdout>: Warning (gpios_property): /touch_sensor_unified@1a:gpios: cell 0 is not a phandle reference
 # <stdout>: Warning (gpios_property): /touch_sensor_unified@10:gpios: cell 0 is not a phandle reference
+
+
+## FYI testing dtoverlay in /boot/firmware/config.txt
+sudo vim /boot/firmware/config.txt
+# # enable dht11:
+# dtoverlay=dht11,gpiopin=17
+# dtoverlay=dht11,gpiopin=27
+bat --style=header /sys/bus/iio/devices/iio:device*/in_*_input
+
+# ok b/c of two boot partititons... if /boot/firmware => nvme0n1p1 (still before that was mmcblk0p1 b/c it is picking up my dtoverlay's... its like it remounts to nvme0n1p1 sometimes and must be after mmcp1 b/c my config.txt from mmc is still used)
+sudo mkdir -p /mount/mmc-boot
+sudo mount /dev/mmcblk0p1 /mount/mmc-boot/
+sudo vim /mount/mmc-boot/config.txt # odd in this case its not firmware/config.txt ... what is this odd behavior...
+# TODO fix booting off one predictable spot... preferrably not the SD card (maybe remove sd card to be sure, does nvme boot alone)
+
+# copy overlay and driver to be discoverable on boot
+# ls "/lib/modules/$(uname -r)/kernel/drivers/iio/humidity" # dht11.ko.xz here
+#
+# foo tried to add modules_install to Makefile and ended up wiping out: /lib/modules/6.6.31+rpt-rpi-2712/build
+dpkg -S /lib/modules/6.6.31+rpt-rpi-2712/build
+sudo apt install  --reinstall linux-headers-6.6.31+rpt-rpi-2712 # PHEW this put back /build!
+# kernel/ dir gone too
+dpkg -S /lib/modules/6.6.31+rpt-rpi-2712/kernel
+# linux-image-6.6.31+rpt-rpi-2712: /lib/modules/6.6.31+rpt-rpi-2712/kernel
+sudo apt install --reinstall linux-image-6.6.31+rpt-rpi-2712  # put kernel/ back
+
+# gonna put mine with humidity sensors (i.e. next to dht11)
+sudo cp touch.ko /lib/modules/$(uname -r)/kernel/drivers/iio/humidity/
