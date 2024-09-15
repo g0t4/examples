@@ -27,7 +27,9 @@
 
 #define DRIVER_NAME "dht22iio-irq"
 
-#define TIMEOUT_US 1000000								// 1 second
+#define TIMEOUT_US 1000000		// us == 1 sec
+#define HOST_PREAMBLE_US 2000 // us == 2 ms
+
 #define NUM_EDGES_PER_SAMPLE (41 * 2 + 1) //  83 total edges (2 unique edges per bit, start bit too, and then initial drop low at start... bit has low and high periods, so initial drop to low is the 1 extra before low/high preamble bit, low/high bit 1, low/high bit 2, etc
 // 41 bits total with preamble bit and we also have extra edge to drop low before preamble bit
 struct dht22
@@ -107,8 +109,7 @@ static int dht22_read(struct dht22 *dht22)
 		PR_ERR("DHT22: Failed to set GPIO direction and pull low\n");
 		return ret;
 	}
-	// TODO 18000 works here... does 400 still work?! can also do 1ms as that was suggested to be ok too... how did this matter for my polling driver?!
-	udelay(18000);																		 // much more reliable with my current sensors, though sensor2 needs 480us to start working and ECC for 39th bith most of the time
+	udelay(HOST_PREAMBLE_US);
 	ret = gpiod_direction_output(dht22->gpio_desc, 1); // release (pulls high b/c of pull-up resistor too)
 	if (ret)
 	{
