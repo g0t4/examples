@@ -83,8 +83,12 @@ static bool wait_for_edge_to(int expected_value, struct gpio_desc *desc)
 
 static irqreturn_t dht22_handle_irq(int irq, void *dev_id)
 {
-	struct dht22 *dht22 = dev_id;
 	PR_INFO("DHT22: IRQ %d\n", irq);
+
+	// struct iio_dev *iio = data;
+	// struct dht11 *dht11 = iio_priv(iio);
+
+	struct dht22 *dht22 = dev_id;
 
 	int current_value = gpiod_get_value(dht22->gpio_desc);
 	u64 time = ktime_get_boottime_ns();
@@ -340,6 +344,9 @@ static int dht22_probe(struct platform_device *pdev)
 	iio->modes = INDIO_DIRECT_MODE;
 	iio->channels = dht22_chan_spec;
 	iio->num_channels = ARRAY_SIZE(dht22_chan_spec);
+
+	// platform_set_drvdata(pdev, iio); ! TODO do I need to switch request_irq mechanism, I don't think so yet... my null was on completion is my guess
+	init_completion(&dht22->completion);
 
 	return devm_iio_device_register(dev, iio); // link lifetime of iio device to platform device, thus when platform device is removed, iio device is removed (freeing resources of both)
 }
