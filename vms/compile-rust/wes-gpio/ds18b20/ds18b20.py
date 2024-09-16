@@ -276,9 +276,27 @@ def read_scratchpad_response(line) -> bool:
         return False
 
     # TODO parse the scratchpad data for temp! IIUC first two or last two bytes are 16 bits of temp data but only 12 bit default precision + 1 sign bit (MSB)
+    # MEMORY LAYOUT:
+    #   0: Temp LSB
+    #   1: Temp MSB
+    #   2: Temp Alarm High
+    #   3: Temp Alarm Low
+    #   4: Configuration register
+    #   5: Reserved
+    #   6: Reserved
+    #   7: Reserved
+    #   8: CRC
+    temp_lsb = all_bytes[0]
+    temp_msb = all_bytes[1]
+    temp_raw = (temp_msb << 8) | temp_lsb
+    temp_celsius = temp_raw / 16  # 12-bit precision
+    print(f"Temp: {temp_celsius:.2f}°C")
+    temp_fahrenheit = temp_celsius * 9 / 5 + 32
+    print(f"Temp: {temp_fahrenheit:.2f}°F")
 
 
 def wait_for_temp_conversion_to_complete(line):
+    # ! TODO dont hard code delay, use read ... why is it finnicky to the reset?!
     time.sleep(1)
     return True
 
