@@ -137,6 +137,91 @@ def send_command(line, command):
     print(f"sent command: {command:08b} ({command})")  # timing NBD (past end of command)
 
 
+def read_rom_response(line):
+
+    response_bits = []
+
+    def read_bit():
+        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
+        line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
+
+        # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
+        line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+        start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
+        precise_delay_us(1)  # min time 1 us
+
+        # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
+        line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
+        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
+
+        while line.get_value(DS1820B_PIN) == LOW:
+            if time.time() - start_time > 1:
+                print("timeout - held low indefinitely - s/b NOT POSSIBLE")
+                return False
+        end_time = time.time()
+        seconds_low = end_time - start_time
+        if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
+            response_bits.append(0)
+            # print(f"low - {seconds_low*1_000_000} us")
+        elif seconds_low < 0.000_002:
+            # looks like sensor never held it low past me so this is invalid
+            print("timeout - sensor not holding low after I release - it is not responding to read request")
+            return False
+        else:
+            response_bits.append(1)
+            # print(f"high - {seconds_low*1_000_000} us")
+        while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
+            # all read slots must be 60us (min)
+            pass
+        wait_for_recovery_between_bits()
+        return True
+
+    for i in range(64):
+        if (not read_bit()):
+            print(f"Failed to read bit {i}, aborting...")
+            return False
+
+    print(f"bits read: {response_bits}")
+    all_bytes = []
+    for i in range(0, 64, 8):
+        byte = 0
+        for j in range(8):
+            byte = byte | (response_bits[i + j] << j)
+        all_bytes.append(byte)
+
+    # *** see data sheet:
+    #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
+    #     are bits in reverse order within each byte?
+    #
+    #     | 8-BIT CRC CODE |  48-BIT SERIAL NUMBER | 8-BIT FAMILY CODE |
+    #     |                |                       |       (28h)       |
+    #     | MSB        LSB |  MSB              LSB | MSB           LSB |
+    #
+    print("bytes:")
+    for byte in all_bytes:
+        print(f"  {byte:08b} ({byte})")
+        # YAY often I am seeing the same bits in each byte... 1st and 5th sometimes vary...
+
+    print("check crc:")
+    import crcmod
+    ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)
+    # Define the CRC-8 function using the polynomial 0x131 (x^8 + x^5 + x^4 + 1)
+    crc_all = ds18b20_crc8(bytes(all_bytes))  # if include last byte then it should come out to 0, no need to know CRC computed vs actual if they don't match anyways
+    if crc_all != 0:
+        print(f"Failed CRC check: {crc_all}")
+        return False
+
+    family_code = all_bytes[0]  # 8 bits (1 byte)
+    serial_number = all_bytes[1:7]  # 48 bits (6 bytes)
+    crc = all_bytes[7]  # 8 bits (1 byte)
+    print(f"Family code: {family_code}")
+    print(f"Serial number: {serial_number}")
+    print(f"CRC: {crc}")
+    if family_code != 0x28:
+        print("Invalid family code")
+        return False
+
+
 def write_command_todo_split_read(command: int) -> bool:
 
     with gpiod.request_lines(
@@ -146,90 +231,7 @@ def write_command_todo_split_read(command: int) -> bool:
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         send_command(line, command)
-
-        response_bits = []
-
-        def read_bit():
-            # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
-            line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
-
-            # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
-            line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
-            start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
-            precise_delay_us(1)  # min time 1 us
-
-            # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
-            line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
-            # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
-
-            while line.get_value(DS1820B_PIN) == LOW:
-                if time.time() - start_time > 1:
-                    print("timeout - held low indefinitely - s/b NOT POSSIBLE")
-                    return False
-            end_time = time.time()
-            seconds_low = end_time - start_time
-            if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
-                response_bits.append(0)
-                # print(f"low - {seconds_low*1_000_000} us")
-            elif seconds_low < 0.000_002:
-                # looks like sensor never held it low past me so this is invalid
-                print("timeout - sensor not holding low after I release - it is not responding to read request")
-                return False
-            else:
-                response_bits.append(1)
-                # print(f"high - {seconds_low*1_000_000} us")
-            while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
-                # all read slots must be 60us (min)
-                pass
-            wait_for_recovery_between_bits()
-            return True
-
-        for i in range(64):
-            if (not read_bit()):
-                print(f"Failed to read bit {i}, aborting...")
-                return False
-
-        print(f"bits read: {response_bits}")
-        all_bytes = []
-        for i in range(0, 64, 8):
-            byte = 0
-            for j in range(8):
-                byte = byte | (response_bits[i + j] << j)
-            all_bytes.append(byte)
-
-        # *** see data sheet:
-        #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
-        #     are bits in reverse order within each byte?
-        #
-        #     | 8-BIT CRC CODE |  48-BIT SERIAL NUMBER | 8-BIT FAMILY CODE |
-        #     |                |                       |       (28h)       |
-        #     | MSB        LSB |  MSB              LSB | MSB           LSB |
-        #
-        print("bytes:")
-        for byte in all_bytes:
-            print(f"  {byte:08b} ({byte})")
-            # YAY often I am seeing the same bits in each byte... 1st and 5th sometimes vary...
-
-        print("check crc:")
-        import crcmod
-        ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)
-        # Define the CRC-8 function using the polynomial 0x131 (x^8 + x^5 + x^4 + 1)
-        crc_all = ds18b20_crc8(bytes(all_bytes))  # if include last byte then it should come out to 0, no need to know CRC computed vs actual if they don't match anyways
-        if crc_all != 0:
-            print(f"Failed CRC check: {crc_all}")
-            return False
-
-        family_code = all_bytes[0]  # 8 bits (1 byte)
-        serial_number = all_bytes[1:7]  # 48 bits (6 bytes)
-        crc = all_bytes[7]  # 8 bits (1 byte)
-        print(f"Family code: {family_code}")
-        print(f"Serial number: {serial_number}")
-        print(f"CRC: {crc}")
-        if family_code != 0x28:
-            print("Invalid family code")
-            return False
-
-    # ** wait/read_edge_events => my first attempt didn't work?!
+        read_rom_response(line)
 
     # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
     # precise_delay_us(13)
@@ -239,49 +241,6 @@ def write_command_todo_split_read(command: int) -> bool:
     #help(line)
 
     return True
-
-
-# def read_bits(num_bits: int) -> bytes:
-#     # read 0: 15us-60us low
-#     # read 1: 1us-15us low
-#     # recovery time: min 1us (high, released)
-
-#     with gpiod.request_lines(
-#             "/dev/gpiochip4",
-#             consumer="read-bits",
-#             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT)},
-#     ) as input:
-#         bits = []
-#         for i in range(num_bits):
-#             # host has to trigger the read
-
-#             # # wait for start of bit (low)
-#             # timeout_start_time = time.time()
-#             # while input.get_value(DS1820B_PIN) != LOW:
-#             #     if time.time() - timeout_start_time > 1:
-#             #         print(f"Timeout waiting for bit {i} low signal before high.")
-#             #         return None
-
-#             # start_time = time.time()
-
-#             # timeout_start_time = time.time()
-#             # while input.get_value(DS1820B_PIN) == LOW:
-#             #     if time.time() - timeout_start_time > 1:
-#             #         print(f"Timeout waiting for bit {i} high signal.")
-#             #         return None
-
-#             # # wait for end of bit (low)
-#             # timeout_start_time = time.time()
-#             # while input.get_value(DS1820B_PIN) != LOW:
-#             #     if time.time() - timeout_start_time > 1:
-#             #         print(f"Timeout waiting for bit {i} low signal after high.")
-#             #         return None
-
-#             # end_time = time.time()
-#             # duration = end_time - start_time
-#             # bits.append(1 if duration < 0.000015 else 0)
-
-#         return bytes(bits)
 
 
 def read_rom() -> bool:
@@ -307,3 +266,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# NOTES
+# ** wait/read_edge_events => my first attempt didn't work?! are these a superior interface?
