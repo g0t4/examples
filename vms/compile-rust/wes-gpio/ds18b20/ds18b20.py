@@ -123,7 +123,6 @@ def send_command(line, command) -> bool:
                 precise_delay_us(2)  # 0 => 1 needs less time to pull low again by not as high above threshold
             else:
                 precise_delay_us(5)  # 1 => 1 needs more time to pull low b/c way above threshold
-            # TODO tweak delay based on previous bit (current line status before set low) 1 => 1 needs more delay (pull down) whereas 0 => 1 needs less delay as its not fully pulled back up most likely so it pulls below threshold faster
             line.set_value(DS1820B_PIN, HIGH)
             precise_delay_us(60)  # 60 us total window (min)
             prev_bit = 1
