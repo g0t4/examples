@@ -77,8 +77,9 @@ def initialize_bus_line(line):
     #   wait 15-60us for presence signal from sensor(s)
     #   presence signal (low) lasts 60us-240us
 
+    line.set_value(DS1820B_PIN, LOW)
     precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
-    line.set_value(DS1820B_PIN, HIGH)
+    line.set_value(DS1820B_PIN, HIGH)  # release
 
     # poll for presence signal from sensor(s)
     timeout_start_time = time.time()
@@ -99,17 +100,6 @@ def initialize_bus_line(line):
     precise_delay_us(480 - us_since_presence_start)  # wait for 480us total
 
     return True
-
-
-def initialize_bus() -> bool:
-
-    # PRN pull high initially and wait Xus to be sure it was high before we pull low?
-    with gpiod.request_lines(
-            "/dev/gpiochip4",
-            consumer="send-init-bus",
-            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
-    ) as line:
-        return initialize_bus_line(line)
 
 
 def send_command(line, command) -> bool:
@@ -330,7 +320,8 @@ def test_read_temp() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        return send_command(line, ROM_READ_CMD)  \
+        return initialize_bus_line(line) \
+            and send_command(line, ROM_READ_CMD)  \
             and read_rom_response(line) \
             and send_command(line, CONVERT_T_CMD) \
             and wait_for_temp_conversion_to_complete(line) \
@@ -339,11 +330,6 @@ def test_read_temp() -> bool:
 
 
 def main():
-
-    if (not initialize_bus()):
-        print("Failed to initialize bus")
-        return
-    print("Bus initialized")
     test_read_temp()
 
 
