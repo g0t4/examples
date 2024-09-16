@@ -2,7 +2,11 @@
 #   seems like I might need apt to install deps for gpiod... version in venv doesn't work but then if I move out of venv it works
 # https://pypi.org/project/gpiod/
 
-#!!! deal breaker it seems is sleeping in python, the accuracy isn't working out... and it might be due to overhead from interpreting commands... i.e. attempt wait 480us... but it is 545us! off by 65 us when I need 1us (or less) precision... I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance... can I fix anything to make the python work or is it just not possible w/ interpreted... can I compile my python code? or?
+# !!! TIMING MIGHT BE WORKING in my python!
+# !!! ok my timing looks close enough now actually, so I might have smth wrong with the protocol, let's revisit that next ... I am within the tolerances I understand and still don't get a response to the read ROM... I bet I have smth off in my understanding
+#  DO NOT BE SLOPPY with prints or anything that adds overhead... one print can add 50us, same with not carefully choosing when to drive line low (before/after requesting output mode)
+# PRN might be able to keep a list of messages and dump on a failure/completino as long as adding to the list is trivial <1us timing
+# !!! WES KEEP IN MIND timing might not work out in python still... c code would rock and you can have logging there that doesn't kill perf (i.e. pr_ dev_ printk_ in a module)
 
 import gpiod
 import time
@@ -107,7 +111,9 @@ def write_command(command: int) -> bool:
     with gpiod.request_lines(
             "/dev/gpiochip4",
             consumer="send-command",
-            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT)},
+            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},
+            # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
+            #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as output:
         bits = []
         # build bits so we can send in left to right order in next loop
@@ -117,16 +123,14 @@ def write_command(command: int) -> bool:
         for bit in bits:
             if bit:
                 # write 1
-                print(f"writing 1")
                 output.set_value(DS1820B_PIN, LOW)
                 precise_delay_us(2)  # min 1us, max <15us
                 output.set_value(DS1820B_PIN, HIGH)
                 precise_delay_us(58)  # 58us of 60us total min IIUC
             else:
                 # write 0
-                print(f"writing 0")
                 output.set_value(DS1820B_PIN, LOW)
-                precise_delay_us(65)  # min 60us
+                precise_delay_us(65)  # min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
                 output.set_value(DS1820B_PIN, HIGH)
             wait_for_recovery_between_bits()
         print(f"sent command ROM read")
