@@ -205,6 +205,9 @@ def read_bit(line, response_bits) -> bool:
     # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
     # FYI sensor also pulls low by this time so me releasing (set high) doesn't change it until sensor also releases
 
+    # simple idea => wait for the line to actually change before reading it (in the event it is a 1 and goes high rather quickly and we have a very very narrow window to read the line during b/c of stupid timing decisions)
+    precise_delay_us(2)  # give it time to actually change so hopefully don't need to re-read which can push past 15us window to read logic 1s
+
     while line.get_value(DS1820B_PIN) == LOW:  # ~3us to read the value, occasionally 5-6us
         if time.time() - start_time > 1:
             logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
