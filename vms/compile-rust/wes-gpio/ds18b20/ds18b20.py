@@ -285,6 +285,9 @@ def read_scratchpad_response(line) -> bool:
 
 
 def wait_for_temp_conversion_to_complete(line):
+    time.sleep(1)
+    return
+
     # issue read slot to get temp conversion status
     # conversion can take up to 750ms (12-bit precision)
     # FYI I find it takes ~500ms to for the conversion to complete
