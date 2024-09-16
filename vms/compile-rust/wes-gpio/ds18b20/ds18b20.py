@@ -67,26 +67,25 @@ def initialize_bus() -> bool:
             "/dev/gpiochip4",
             consumer="send-init-bus",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
-    ) as output:
+    ) as line:
         # initialize pulse is:
         #   480us low => release
         #   wait 15-60us for presence signal from sensor(s)
         #   presence signal (low) lasts 60us-240us
         precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
         #  I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance
-        output.set_value(DS1820B_PIN, HIGH)
+        line.set_value(DS1820B_PIN, HIGH)
 
-        input = output
         # wait for presence signal from sensor(s)
         timeout_start_time = time.time()
-        while input.get_value(DS1820B_PIN) != LOW:
+        while line.get_value(DS1820B_PIN) != LOW:
             if time.time() - timeout_start_time > 0.001:
                 print("No presence signal")
                 return False
         # print("Presence signal received")
         # wait for presence signal to end
         timeout_start_time = time.time()
-        while input.get_value(DS1820B_PIN) == LOW:
+        while line.get_value(DS1820B_PIN) == LOW:
             if time.time() - timeout_start_time > 0.001:
                 print("Presence signal didn't end")
                 return False
