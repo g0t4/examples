@@ -134,9 +134,10 @@ def write_command_todo_split_read(command: int) -> bool:
         bits = []
 
         def read_bit():
-            # ensure output so we can trigger read bit
+            # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
+            line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
+
             # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
-            line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)})
             line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
             start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
             precise_delay_us(1)  # min time 1 us
