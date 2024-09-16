@@ -165,7 +165,7 @@ def write_command_todo_split_read(command: int) -> bool:
             else:
                 bits.append(1)
                 # print(f"high - {seconds_low*1_000_000} us")
-            while time.time() - start_time < 0.000_060:
+            while time.time() - start_time < 0.000_080: # TODO did increasing this make reads more reliable? (60us required minimum)
                 # all read slots must be 60us (min)
                 pass
             wait_for_recovery_between_bits()
