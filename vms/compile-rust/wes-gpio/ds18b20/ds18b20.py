@@ -110,23 +110,33 @@ def send_command(line, command) -> bool:
     # build bits so we can send in left to right order in next loop
     for i in range(8):
         # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
+        prev_bit = 0
         this_bit = (command >> i) & 1
         cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
     for bit in cmd_bits:
         if bit:
             # write 1
             line.set_value(DS1820B_PIN, LOW)
-            precise_delay_us(2)  # min 1us, max <15us
+            # TODO PRN read value until its actually low? then start timing?
+            # min 1us, max <15us
+            if prev_bit == 0:
+                precise_delay_us(2)  # 0 => 1 needs less time to pull low again by not as high above threshold
+            else:
+                precise_delay_us(5)  # 1 => 1 needs more time to pull low b/c way above threshold
+            # TODO tweak delay based on previous bit (current line status before set low) 1 => 1 needs more delay (pull down) whereas 0 => 1 needs less delay as its not fully pulled back up most likely so it pulls below threshold faster
             line.set_value(DS1820B_PIN, HIGH)
             precise_delay_us(60)  # 60 us total window (min)
+            prev_bit = 1
         else:
             # write 0
             line.set_value(DS1820B_PIN, LOW)
             precise_delay_us(65)  # min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
             line.set_value(DS1820B_PIN, HIGH)
+            prev_bit = 0
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
     print(f"sent command: {command:08b} ({hex(command)})")
+    precise_delay_us(1000)
     return True
 
 
