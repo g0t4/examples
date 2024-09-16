@@ -165,7 +165,7 @@ def write_command_todo_split_read(command: int) -> bool:
             else:
                 bits.append(1)
                 # print(f"high - {seconds_low*1_000_000} us")
-            while time.time() - start_time < 0.000_080: # TODO did increasing this make reads more reliable? (60us required minimum)
+            while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
                 # all read slots must be 60us (min)
                 pass
             wait_for_recovery_between_bits()
@@ -177,12 +177,12 @@ def write_command_todo_split_read(command: int) -> bool:
                 return False
 
         print(f"bits read: {bits}")
-        bytes = []
+        all_bytes = []
         for i in range(0, 64, 8):
             byte = 0
             for j in range(8):
                 byte = byte | (bits[i + j] << j)
-            bytes.append(byte)
+            all_bytes.append(byte)
         # TODO look at waveform and run several times and see if I am just reading wrong timing info
         # FRUSTRATING why write has 60us=0, <15us=1 ...  but read is 16us=0, 2us=1 nonsensee and then have to wait 60us for the window anyways... FOOO
 
@@ -196,16 +196,28 @@ def write_command_todo_split_read(command: int) -> bool:
         #     | MSB        LSB |  MSB              LSB | MSB           LSB |
         #
         print("bytes:")
-        for byte in bytes:
+        for byte in all_bytes:
             print(f"  {byte:08b} ({byte})")
             # YAY often I am seeing the same bits in each byte... 1st and 5th sometimes vary...
 
-        family_code = bytes[0]  # 8 bits (1 byte)
-        serial_number = bytes[1:7]  # 48 bits (6 bytes)
-        crc = bytes[7]  # 8 bits (1 byte)
+        print("check crc:")
+        import crcmod
+        ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)
+        # Define the CRC-8 function using the polynomial 0x131 (x^8 + x^5 + x^4 + 1)
+        crc_all = ds18b20_crc8(bytes(all_bytes))  # if include last byte then it should come out to 0, no need to know CRC computed vs actual if they don't match anyways
+        if crc_all != 0:
+            print(f"Failed CRC check: {crc_all}")
+            return False
+
+        family_code = all_bytes[0]  # 8 bits (1 byte)
+        serial_number = all_bytes[1:7]  # 48 bits (6 bytes)
+        crc = all_bytes[7]  # 8 bits (1 byte)
         print(f"Family code: {family_code}")
         print(f"Serial number: {serial_number}")
         print(f"CRC: {crc}")
+        if family_code != 0x28:
+            print("Invalid family code")
+            return False
 
     # ** wait/read_edge_events => my first attempt didn't work?!
 
