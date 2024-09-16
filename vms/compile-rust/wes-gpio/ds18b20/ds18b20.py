@@ -8,6 +8,8 @@
 # PRN might be able to keep a list of messages and dump on a failure/completino as long as adding to the list is trivial <1us timing
 # !!! WES KEEP IN MIND timing might not work out in python still... c code would rock and you can have logging there that doesn't kill perf (i.e. pr_ dev_ printk_ in a module)
 
+# FYI I checked out libgpiod for the APIs => https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.gitß => libgpiod/bindings/python
+
 import gpiod
 import time
 from gpiod.line import Direction, Value
@@ -133,17 +135,17 @@ def write_command(command: int) -> bool:
                 line.set_value(DS1820B_PIN, HIGH)
                 # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
             wait_for_recovery_between_bits()
-        print(f"sent command ROM read")
+        print(f"sent command ROM read")  # delay here is NBD (can be infinite and still trigger read next)
 
-        print("triggering read")
         line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
         start_time = time.time()
         precise_delay_us(1)  # min time 1 us
-        # ! wait/read_edge_events!!!! what lets use this !!!!!!!!!!!!! REDO ALL OF MY CODE???
+
+        # manual wait
         # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
-        line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})
+        line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # TODO is this super slow?
         # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
-        # IIUC I can read right here, up to 15us since pull low so do it right away
+        # # IIUC I can read right here, up to 15us since pull low so do it right away
         while line.get_value(DS1820B_PIN) == LOW:
             if time.time() - start_time > 1:
                 print("timeout - held low indefinitely - s/b NOT POSSIBLE")
@@ -154,6 +156,8 @@ def write_command(command: int) -> bool:
                 print(f"low - {seconds_low*1_000_000} us")
             else:
                 print(f"high - {seconds_low*1_000_000} us")
+
+        # ** wait/read_edge_events => my first attempt didn't work?!
 
         # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
         # precise_delay_us(13)
@@ -242,6 +246,7 @@ def read_rom() -> bool:
 
 
 def main():
+
     if (not initialize_bus()):
         print("Failed to initialize bus")
         return
