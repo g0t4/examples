@@ -108,6 +108,7 @@ def write_command_todo_split_read(command: int) -> bool:
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         cmd_bits = []
+        # TODO scope the waverform after no comms for a while, seems to initially have failed read rom... and then works after that first round... see if maybe line was not high or?
         # build bits so we can send in left to right order in next loop
         for i in range(8):
             # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
@@ -127,9 +128,9 @@ def write_command_todo_split_read(command: int) -> bool:
                 line.set_value(DS1820B_PIN, HIGH)
                 # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
             wait_for_recovery_between_bits()
-        print(f"sent command ROM read")  # delay here is NBD (can be infinite and still trigger read next)
+        print(f"sent command: {command:08b} ({command})")  # FYI no need to worry about timing after this as the cmd write is now done
 
-        bits = []
+        response_bits = []
 
         def read_bit():
             # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
@@ -151,14 +152,14 @@ def write_command_todo_split_read(command: int) -> bool:
             end_time = time.time()
             seconds_low = end_time - start_time
             if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
-                bits.append(0)
+                response_bits.append(0)
                 # print(f"low - {seconds_low*1_000_000} us")
             elif seconds_low < 0.000_002:
                 # looks like sensor never held it low past me so this is invalid
                 print("timeout - sensor not holding low after I release - it is not responding to read request")
                 return False
             else:
-                bits.append(1)
+                response_bits.append(1)
                 # print(f"high - {seconds_low*1_000_000} us")
             while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
                 # all read slots must be 60us (min)
@@ -171,12 +172,12 @@ def write_command_todo_split_read(command: int) -> bool:
                 print(f"Failed to read bit {i}, aborting...")
                 return False
 
-        print(f"bits read: {bits}")
+        print(f"bits read: {response_bits}")
         all_bytes = []
         for i in range(0, 64, 8):
             byte = 0
             for j in range(8):
-                byte = byte | (bits[i + j] << j)
+                byte = byte | (response_bits[i + j] << j)
             all_bytes.append(byte)
 
         # *** see data sheet:
