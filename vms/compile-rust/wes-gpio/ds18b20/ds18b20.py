@@ -16,7 +16,7 @@ import gpiod
 import time
 from gpiod.line import Direction, Value
 
-import crcmod # ~1ms
+import crcmod  # ~1ms
 
 ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)  # ~0.250us, so only do it once... this is reusable right?
 
@@ -215,11 +215,10 @@ def read_rom_response(line):
     family_code = all_bytes[0]  # 8 bits (1 byte)
     serial_number = all_bytes[1:7]  # 48 bits (6 bytes)
     crc = all_bytes[7]  # 8 bits (1 byte)
-    print(f"Family code: {family_code}")
-    print(f"Serial number: {serial_number}")
-    print(f"CRC: {crc}")
+    logger.info(f"Serial number: {serial_number}")
+    logger.info(f"CRC: {crc}")
     if family_code != 0x28:
-        print("Invalid family code")
+        print(f"Invalid family code: {hex(family_code)}, expected 0x28")
         return False
 
 
