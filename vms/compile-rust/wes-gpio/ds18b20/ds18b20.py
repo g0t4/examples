@@ -99,6 +99,31 @@ def initialize_bus() -> bool:
         return True
 
 
+def send_command(line, command):
+    cmd_bits = []
+    # TODO scope the waverform after no comms for a while, seems to initially have failed read rom... and then works after that first round... see if maybe line was not high or?
+    # build bits so we can send in left to right order in next loop
+    for i in range(8):
+        # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
+        this_bit = (command >> i) & 1
+        cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
+    for bit in cmd_bits:
+        if bit:
+            # write 1
+            line.set_value(DS1820B_PIN, LOW)
+            precise_delay_us(2)  # min 1us, max <15us
+            line.set_value(DS1820B_PIN, HIGH)
+            precise_delay_us(60)  # 60 us total window (min)
+        else:
+            # write 0
+            line.set_value(DS1820B_PIN, LOW)
+            precise_delay_us(65)  # min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
+            line.set_value(DS1820B_PIN, HIGH)
+            # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
+        wait_for_recovery_between_bits()
+    print(f"sent command: {command:08b} ({command})")  # FYI no need to worry about timing after this as the cmd write is now done
+
+
 def write_command_todo_split_read(command: int) -> bool:
 
     with gpiod.request_lines(
@@ -107,28 +132,7 @@ def write_command_todo_split_read(command: int) -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        cmd_bits = []
-        # TODO scope the waverform after no comms for a while, seems to initially have failed read rom... and then works after that first round... see if maybe line was not high or?
-        # build bits so we can send in left to right order in next loop
-        for i in range(8):
-            # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
-            this_bit = (command >> i) & 1
-            cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
-        for bit in cmd_bits:
-            if bit:
-                # write 1
-                line.set_value(DS1820B_PIN, LOW)
-                precise_delay_us(2)  # min 1us, max <15us
-                line.set_value(DS1820B_PIN, HIGH)
-                precise_delay_us(60)  # 60 us total window (min)
-            else:
-                # write 0
-                line.set_value(DS1820B_PIN, LOW)
-                precise_delay_us(65)  # min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
-                line.set_value(DS1820B_PIN, HIGH)
-                # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
-            wait_for_recovery_between_bits()
-        print(f"sent command: {command:08b} ({command})")  # FYI no need to worry about timing after this as the cmd write is now done
+        send_command(line, command)
 
         response_bits = []
 
