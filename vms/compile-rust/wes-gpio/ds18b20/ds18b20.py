@@ -13,9 +13,30 @@ DS1820B_PIN = 12
 LOW = Value.INACTIVE
 HIGH = Value.ACTIVE
 
+# ! NOTE ABOUT gpiod pkg (in venv vs system pkgs):
+# ! below uses gpiod via `pip install gpiod` via venv
+# !   IS NOT same as gpiod pkg via `apt install apt info python3-libgpiod`
+# research on diffs:
+# system pkgs => python3 =>
+#   import gpiod
+#   gpiod.version_string() #  1.6.3
+#   help(gpiod)   # completely diff APIs
+#   gpiod # <module 'gpiod' from '/usr/lib/python3/dist-packages/gpiod.cpython-311-aarch64-linux-gnu.so'>
+#
+#   exit repl:
+#       dpkg -S /usr/lib/python3/dist-packages/gpiod.cpython-311-aarch64-linux-gnu.so
+#       # => python3-libgpiod:arm64: /usr/lib/python3/dist-packages/gpiod.cpython-311-aarch64-linux-gnu.so
+#
+# venv pkgs => python3 =>
+#   import gpiod
+#   gpiod.version.__version__ # 2.2.1
+#   gpiod # <module 'gpiod' from '/home/pi/wes-gpio/.venv/lib/python3.11/site-packages/gpiod/__init__.py'>
+#   help(gpiod)   # completely diff APIs
+#
+#
+# IIUC, as of v2.0.2 they made breaking changes to the APIs that replaced the unofficial pure python APIS (must be the system pkg version b/c it is 1.6.3)... and going forward it sounds like the new APIs are via pypi pkg only (not apt installed cpython pkg)... I bet that is is, the cpython impl is probably not updated to 2.x b/c that would break reality, and so its left at that point in time and won't ever be migrated to 2.x... would make sense
 
 def initialize_bus() -> bool:
-    # FYI below uses gpiod via `pip install gpiod`... which IS NOT same as gpiod pkg via `apt install apt info python3-libgpiod`
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
