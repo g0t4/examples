@@ -108,7 +108,7 @@ def initialize_bus() -> bool:
         return True
 
 
-def send_command(line, command):
+def send_command(line, command) -> bool:
     # TODO written for READ ROM command, might need to make changes or other versions for other CMDs
 
     cmd_bits = []
@@ -133,9 +133,10 @@ def send_command(line, command):
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
     print(f"sent command: {command:08b} ({hex(command)})")
+    return True
 
 
-def read_rom_response(line):
+def read_rom_response(line) -> bool:
 
     response_bits = []
 
@@ -154,20 +155,18 @@ def read_rom_response(line):
 
         while line.get_value(DS1820B_PIN) == LOW:
             if time.time() - start_time > 1:
-                print("timeout - held low indefinitely - s/b NOT POSSIBLE")
+                logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
                 return False
         end_time = time.time()
         seconds_low = end_time - start_time
-        if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
+        if seconds_low > 0.000_015:
             response_bits.append(0)
-            # print(f"low - {seconds_low*1_000_000} us")
         elif seconds_low < 0.000_002:
             # looks like sensor never held it low past me so this is invalid
-            print("timeout - sensor not holding low after I release - it is not responding to read request")
+            logger.error("timeout - sensor not holding low after I release - it is not responding to read request")
             return False
         else:
             response_bits.append(1)
-            # print(f"high - {seconds_low*1_000_000} us")
         while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
             # all read slots must be 60us (min)
             pass
@@ -215,6 +214,8 @@ def read_rom_response(line):
         print(f"Invalid family code: {hex(family_code)}, expected 0x28")
         return False
 
+    return True
+
 
 def wait_for_temp_conversion_to_complete(line):
     timeout_start_time = time.time()
@@ -222,6 +223,7 @@ def wait_for_temp_conversion_to_complete(line):
         if time.time() - timeout_start_time > 1:
             logger.error("Temp conversion did not complete after 1sec")
             return False
+    return True
 
 
 ROM_READ_CMD = 0x33
@@ -238,10 +240,10 @@ def test_read_temp() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        send_command(line, ROM_READ_CMD)
-        read_rom_response(line)
-        send_command(line, CONVERT_T_CMD)
-        wait_for_temp_conversion_to_complete(line)
+        send_command(line, ROM_READ_CMD)  \
+            and read_rom_response(line) \
+            and send_command(line, CONVERT_T_CMD) \
+            and wait_for_temp_conversion_to_complete(line)
 
     # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
     # precise_delay_us(13)
