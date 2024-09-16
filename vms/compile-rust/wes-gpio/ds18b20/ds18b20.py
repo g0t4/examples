@@ -220,6 +220,8 @@ def read_rom_response(line) -> bool:
 def read_scratchpad_response(line) -> bool:
     # TODO later extract common logic with other read response functions
 
+    num_bytes = 9  # TODO last is CRC (this is always the case, right?)
+    num_bits = num_bytes * 8
     response_bits = []
 
     def read_bit():
@@ -255,27 +257,18 @@ def read_scratchpad_response(line) -> bool:
         wait_for_recovery_between_bits()
         return True
 
-    for i in range(64):
+    for i in range(num_bits):
         if (not read_bit()):
             print(f"Failed to read bit {i}, aborting...")
             return False
 
-    print(f"bits read: {response_bits}")
     all_bytes = []
-    for i in range(0, 64, 8):
+    for i in range(0, num_bits, 8):
         byte = 0
         for j in range(8):
             byte = byte | (response_bits[i + j] << j)
         all_bytes.append(byte)
 
-    # *** see data sheet:
-    #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
-    #     are bits in reverse order within each byte?
-    #
-    #     | 8-BIT CRC CODE |  48-BIT SERIAL NUMBER | 8-BIT FAMILY CODE |
-    #     |                |                       |       (28h)       |
-    #     | MSB        LSB |  MSB              LSB | MSB           LSB |
-    #
     print("bytes:")
     for byte in all_bytes:
         print(f"  {byte:08b} ({byte})")
@@ -286,6 +279,8 @@ def read_scratchpad_response(line) -> bool:
     if crc_all != 0:
         print(f"Failed CRC check: {crc_all}")
         return False
+
+    # TODO parse the scratchpad data for temp! IIUC first two or last two bytes are 16 bits of temp data but only 12 bit default precision + 1 sign bit (MSB)
 
 
 def wait_for_temp_conversion_to_complete(line):
