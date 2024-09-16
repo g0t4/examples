@@ -10,6 +10,8 @@
 
 # FYI I checked out libgpiod for the APIs => https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.gitß => libgpiod/bindings/python
 
+import logging
+import math
 import gpiod
 import time
 from gpiod.line import Direction, Value
@@ -20,6 +22,15 @@ DS1820B_PIN = 12
 # readability:
 LOW = Value.INACTIVE
 HIGH = Value.ACTIVE
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR)
+
+
+def enable_debug_mode():
+    # Turn on debug logs when needed
+    logger.setLevel(logging.DEBUG)
+
 
 # ! NOTE ABOUT gpiod pkg (in venv vs system pkgs):
 # ! below uses gpiod via `pip install gpiod` via venv
@@ -74,32 +85,34 @@ def initialize_bus() -> bool:
         #   480us low => release
         #   wait 15-60us for presence signal from sensor(s)
         #   presence signal (low) lasts 60us-240us
+
         precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
-        #  I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance
         line.set_value(DS1820B_PIN, HIGH)
 
-        # wait for presence signal from sensor(s)
+        # poll for presence signal from sensor(s)
         timeout_start_time = time.time()
         while line.get_value(DS1820B_PIN) != LOW:
-            if time.time() - timeout_start_time > 0.001:
-                print("No presence signal")
+            if time.time() - timeout_start_time > 0.000_100:  # timeout after 100us b/c should start w/in 15-60us
+                logger.error("Presence signal not received")
                 return False
-        # print("Presence signal received")
-        # wait for presence signal to end
+
+        # poll for presence signal to end
         timeout_start_time = time.time()
         while line.get_value(DS1820B_PIN) == LOW:
             if time.time() - timeout_start_time > 0.001:
-                print("Presence signal didn't end")
+                logger.error("Presence signal did not end")
                 return False
-        # IIUC must wait at least 480us for entirety of presence command + recovery time
-        precise_delay_us(480)  # should work IIUC # TODO ok? s/b ok to wait longer than needed
-        # precse_delay_us(480 - (time.time() - timeout_start_time)*1_000_000)  # take off time already spent for presence low?
-        # # print("Presence signal ended")
-        # sensor should now be sending data
+
+        # wait at least 480us for entirety of presence command + recovery time
+        us_since_presence_start = math.floor((time.time() - timeout_start_time) * 1_000_000)
+        precise_delay_us(480 - us_since_presence_start)  # wait for 480us total
+
         return True
 
 
 def send_command(line, command):
+    # TODO written for READ ROM command, might need to make changes or other versions for other CMDs
+
     cmd_bits = []
     # TODO scope the waverform after no comms for a while, seems to initially have failed read rom... and then works after that first round... see if maybe line was not high or?
     # build bits so we can send in left to right order in next loop
@@ -121,7 +134,7 @@ def send_command(line, command):
             line.set_value(DS1820B_PIN, HIGH)
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
-    print(f"sent command: {command:08b} ({command})")  # FYI no need to worry about timing after this as the cmd write is now done
+    print(f"sent command: {command:08b} ({command})")  # timing NBD (past end of command)
 
 
 def write_command_todo_split_read(command: int) -> bool:
