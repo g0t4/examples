@@ -35,6 +35,10 @@ HIGH = Value.ACTIVE
 #
 #
 # IIUC, as of v2.0.2 they made breaking changes to the APIs that replaced the unofficial pure python APIS (must be the system pkg version b/c it is 1.6.3)... and going forward it sounds like the new APIs are via pypi pkg only (not apt installed cpython pkg)... I bet that is is, the cpython impl is probably not updated to 2.x b/c that would break reality, and so its left at that point in time and won't ever be migrated to 2.x... would make sense
+#
+#
+# I do know the examples in the pypi page (https://pypi.org/project/gpiod/) show using request_lines so def aligns with the fact that I s/b using venv for the following request_lines usages:
+
 
 def initialize_bus() -> bool:
 
@@ -73,12 +77,124 @@ def initialize_bus() -> bool:
         return True
 
 
+def write_command(command: int) -> bool:
+    # write command is 0xcc (11001100)
+    # response: 8-bit CRC
+
+    # recovery time: min 1us (high, released)
+    # write 0: 60us-120us low
+    # write 1: 1us-15us low
+
+    with gpiod.request_lines(
+            "/dev/gpiochip4",
+            consumer="send-command",
+            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT)},
+    ) as output:
+        for i in range(8):
+            bit = (command >> i) & 1
+            if bit:
+                # write 1
+                output.set_value(DS1820B_PIN, LOW)
+                time.sleep(2 / 1_000_000)  # 2us (be safe)
+                output.set_value(DS1820B_PIN, HIGH)
+                time.sleep(58 / 1_000_000)  # 58us of 60us window
+            else:
+                # write 0
+                output.set_value(DS1820B_PIN, LOW)
+                time.sleep(60 / 1_000_000)  # 60us
+                output.set_value(DS1820B_PIN, HIGH)
+            time.sleep(2 / 1_000_000)  # 2us (>1us recovery between bits)
+        print(f"sent command ROM read")
+        return True
+
+
+def read_bits(num_bits: int) -> bytes:
+    # read 0: 15us-60us low
+    # read 1: 1us-15us low
+    # recovery time: min 1us (high, released)
+
+    with gpiod.request_lines(
+            "/dev/gpiochip4",
+            consumer="read-bits",
+            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)},
+    ) as input:
+        bits = []
+        for i in range(num_bits):
+            # wait for start of bit (low)
+            timeout_start_time = time.time()
+            while input.get_value(DS1820B_PIN) != LOW:
+                if time.time() - timeout_start_time > 0.001:
+                    print(f"Timeout waiting for bit {i} low signal before high.")
+                    return None
+
+            start_time = time.time()
+
+            timeout_start_time = time.time()
+            while input.get_value(DS1820B_PIN) == LOW:
+                if time.time() - timeout_start_time > 0.001:
+                    print(f"Timeout waiting for bit {i} high signal.")
+                    return None
+
+            # wait for end of bit (low)
+            timeout_start_time = time.time()
+            while input.get_value(DS1820B_PIN) != LOW:
+                if time.time() - timeout_start_time > 0.001:
+                    print(f"Timeout waiting for bit {i} low signal after high.")
+                    return None
+
+            end_time = time.time()
+            duration = end_time - start_time
+            bits.append(1 if duration < 0.000015 else 0)
+
+        return bytes(bits)
+
+
+def read_rom() -> bool:
+    # read ROM command is 0x33 (110011)
+    # response: 8-bit family code, unique 48-bit serial number, and 8-bit CRC
+
+    # recovery time: min 1us (high, released)
+    # write 0: 60us-120us low
+    # write 1: 1us-15us low
+    # read 0: 15us-60us low
+    # read 1: 1us-15us low
+    commmand = 0x33
+    if not write_command(commmand):
+        print("Failed to send ROM read command")
+        return False
+
+    bytes = read_bits(64)
+    if bytes is None:
+        print("Failed to read ROM")
+        return False
+
+    # see Figure 4 for ordering of bytes... CRC comes first IIUC
+    crc = bytes[0]  # 8 bits (1 byte) (sent first?)
+    serial_number = bytes[1:7]  # 48 bits (6 bytes)
+    family_code = bytes[7]  # 8 bits (1 byte) (sent last?)
+    print(f"Family code: {family_code}")
+    print(f"Serial number: {serial_number}")
+    print(f"CRC: {crc}")
+    family_code_hex = family_code.to_bytes(1, byteorder='big').hex()
+    serial_number_hex = serial_number.hex()
+    crc_hex = crc.to_bytes(1, byteorder='big').hex()
+    print(f"Family code (hex): {family_code_hex}")
+    print(f"Serial number (hex): {serial_number_hex}")
+    print(f"CRC (hex): {crc_hex}")
+
+
 def main():
     if (not initialize_bus()):
         print("Failed to initialize bus")
         return
-
     print("Bus initialized")
+    if (not read_rom()):
+        print("Failed to read ROM")
+        return
+    print("ROM read")
+    # if (not read_scratchpad()):
+    #     print("Failed to read scratchpad")
+    #     return
 
 
 if __name__ == "__main__":
