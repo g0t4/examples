@@ -188,6 +188,8 @@ def read_rom_response(line) -> bool:
 
 
 def read_bit(line, response_bits) -> bool:
+    # ! troubleshoot bit timing issues on read with using READ_ROM command as the result is always going to be the same
+    # TODO profile code here in a way that doesn't add too much overhead to distort calculations?
     # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
     line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
 
@@ -195,11 +197,8 @@ def read_bit(line, response_bits) -> bool:
     line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
     start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
 
-    prev_read_bit = response_bits[-1] if response_bits else 1  # assume read bit is correct then, if 1=>1 then we need to pull low longer
-    if prev_read_bit == 1:
-        precise_delay_us(3)
-    else:
-        precise_delay_us(1)  # min time 1 us
+    # holy cow getting prev_bit (response_bits[-1]) had enough delay to mess up readings so don't use it here
+    precise_delay_us(3) # since changing to 3, READ ROM has failed MUCH LESS OFTEN
 
     # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
     line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
@@ -328,6 +327,12 @@ READ_SCRATCHPAD_CMD = 0xBE
 # THIS IS MY VIDEO today => practical AI use case... let AI lookup values and just confirm them for you...  fill out this list (see page 14/27 for more cmds)
 
 
+def troubleshoot_read_CRC_failures_with_only_read_rom(line):
+    # FYI upon inspection, my CRC failures all have been correct waveform (protocol detected and values detected correct)...so it is just timing in python to detect changes (some sort of delay in interpreter or otherwise?)
+    return reset_bus_line(line) \
+        and full_read_rom(line)
+
+
 def full_read_rom(line):
     return send_command(line, ROM_READ_CMD) \
         and read_rom_response(line)
@@ -387,8 +392,9 @@ def main():
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         # read_temp_with_skip_rom(line)
-        read_rom_then_temp(line)
+        # read_rom_then_temp(line)
         # read_power_supply_type(line)
+        troubleshoot_read_CRC_failures_with_only_read_rom(line)
 
 
 if __name__ == "__main__":
