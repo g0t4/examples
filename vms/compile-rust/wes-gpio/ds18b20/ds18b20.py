@@ -135,7 +135,7 @@ def send_command(line, command) -> bool:
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
     print(f"sent command: {command:08b} ({hex(command)})")
-    precise_delay_us(100)  # TODO REMOVE if possible... dropping this gets timing in read to be an issue like dynamic timing in write above 1/0=>1 (see below)
+    # precise_delay_us(100)  #  TODO do I need this? I don't think so
     return True
 
 
@@ -197,7 +197,7 @@ def read_bit(line, response_bits) -> bool:
 
     prev_read_bit = response_bits[-1] if response_bits else 1  # assume read bit is correct then, if 1=>1 then we need to pull low longer
     if prev_read_bit == 1:
-        precise_delay_us(5)
+        precise_delay_us(3)
     else:
         precise_delay_us(1)  # min time 1 us
 
@@ -210,20 +210,17 @@ def read_bit(line, response_bits) -> bool:
         if time.time() - start_time > 1:
             logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
             return False
-    end_time = time.time()
-    seconds_low = end_time - start_time
+    seconds_low = time.time() - start_time
+    # print(f"bit {len(response_bits)} took {(seconds_low*1_000_000):.2f} seconds") # NBD b/c got 50us-ish at least to spin below and wait
     if seconds_low > 0.000_015:
         response_bits.append(0)
-    elif seconds_low < 0.000_002:
-        # looks like sensor never held it low past me so this is invalid
-        logger.error("timeout - sensor not holding low after I release - it is not responding to read request")
-        return False
     else:
         response_bits.append(1)
     while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
         # all read slots must be 60us (min)
         pass
     wait_for_recovery_between_bits()
+    # precise_delay_us(100) # TODO I don't think this is necessary but NBD to add this if I want it
     return True
 
 
