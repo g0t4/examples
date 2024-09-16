@@ -23,3 +23,15 @@ print(f"CRC-8: {crc}")
 
 crc_all = ds18b20_crc8(data + bytes([crc]))
 print(f"CRC-8 all: {crc_all} (should be 0)")
+
+
+# SHOW SERIAL:
+# Extract the 6-byte serial number (from byte 1 to byte 6, excluding family code and CRC)
+serial_number_bytes = data[1:7]
+print(f"Serial Number (Bytes): {serial_number_bytes}")
+
+# Convert the 6-byte serial number to a hexadecimal string
+serial_number_hex = ''.join(f'{byte:02X}' for byte in serial_number_bytes)
+
+# Display the serial number
+print(f"Serial Number (Hex): {serial_number_hex}")
