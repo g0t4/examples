@@ -110,7 +110,7 @@ def send_command(line, command) -> bool:
     # build bits so we can send in left to right order in next loop
     for i in range(8):
         # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
-        prev_bit = 0
+        prev_bit = 1  # s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
         this_bit = (command >> i) & 1
         cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
     for bit in cmd_bits:
