@@ -217,6 +217,40 @@ def read_rom_response(line) -> bool:
     return True
 
 
+def read_bit(line, response_bits) -> bool:
+    # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
+    line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
+
+    # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
+    line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+    start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
+    precise_delay_us(1)  # min time 1 us
+
+    # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
+    line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
+    # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
+
+    while line.get_value(DS1820B_PIN) == LOW:
+        if time.time() - start_time > 1:
+            logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
+            return False
+    end_time = time.time()
+    seconds_low = end_time - start_time
+    if seconds_low > 0.000_015:
+        response_bits.append(0)
+    elif seconds_low < 0.000_002:
+        # looks like sensor never held it low past me so this is invalid
+        logger.error("timeout - sensor not holding low after I release - it is not responding to read request")
+        return False
+    else:
+        response_bits.append(1)
+    while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
+        # all read slots must be 60us (min)
+        pass
+    wait_for_recovery_between_bits()
+    return True
+
+
 def read_scratchpad_response(line) -> bool:
     # TODO later extract common logic with other read response functions
 
@@ -224,41 +258,8 @@ def read_scratchpad_response(line) -> bool:
     num_bits = num_bytes * 8
     response_bits = []
 
-    def read_bit():
-        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
-        line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
-
-        # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
-        line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
-        start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
-        precise_delay_us(1)  # min time 1 us
-
-        # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
-        line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
-        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
-
-        while line.get_value(DS1820B_PIN) == LOW:
-            if time.time() - start_time > 1:
-                logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
-                return False
-        end_time = time.time()
-        seconds_low = end_time - start_time
-        if seconds_low > 0.000_015:
-            response_bits.append(0)
-        elif seconds_low < 0.000_002:
-            # looks like sensor never held it low past me so this is invalid
-            logger.error("timeout - sensor not holding low after I release - it is not responding to read request")
-            return False
-        else:
-            response_bits.append(1)
-        while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
-            # all read slots must be 60us (min)
-            pass
-        wait_for_recovery_between_bits()
-        return True
-
     for i in range(num_bits):
-        if (not read_bit()):
+        if (not read_bit(line, response_bits)):
             print(f"Failed to read bit {i}, aborting...")
             return False
 
@@ -284,11 +285,31 @@ def read_scratchpad_response(line) -> bool:
 
 
 def wait_for_temp_conversion_to_complete(line):
-    timeout_start_time = time.time()
-    while line.get_value(DS1820B_PIN) == LOW:
-        if time.time() - timeout_start_time > 1:
-            logger.error("Temp conversion did not complete after 1sec")
+    # issue read slot to get temp conversion status
+    # conversion can take up to 750ms (12-bit precision)
+    # FYI I find it takes ~500ms to for the conversion to complete
+
+    # # in testing, if I don't add this delay, the first read bit is 1 which is almost as if the conversion didn't start yet...
+    precise_delay_us(25_000)  # add at least 1000 delay before attempt read status...  in my testing...
+
+    timeout_start = time.time()
+    counter = 0
+    while True:
+        counter += 1
+        response_bits = []
+        print("reading bit for tmp conversion status")
+        if not read_bit(line, response_bits):  # read slot,  if 0 response then still copying, if 1 then done
+            print("Failed to read bit for status of temp conversion, aborting...")
             return False
+        print(f"  response_bits: {response_bits}")
+        if response_bits[0] == 1:
+            break
+        if time.time() - timeout_start > 1:  # allow up to 1s (max is 750ms according to data sheet)
+            print("Timeout waiting for temp conversion to complete")
+            return False
+        precise_delay_us(50_000)  # check every 50ms
+
+    print(f"Temp conversion complete after {counter} reads")
     return True
 
 
