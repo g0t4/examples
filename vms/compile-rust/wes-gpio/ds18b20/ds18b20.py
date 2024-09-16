@@ -358,36 +358,58 @@ def skip_rom(line):
     return send_command(line, ROM_SKIP_CMD)
 
 
-def test_read_temp() -> bool:
+def read_rom_then_temp(line):
+    # must issue ROM command before memory command
+    #   in this case, use read ROM before issue convert T to capture temp to scratchpad
+    #   then skip rom before reading scratchpad (temp)
+    return reset_bus_line(line) \
+        and full_read_rom(line) \
+        and send_command(line, CONVERT_T_CMD) \
+        and wait_for_temp_conversion_to_complete(line) \
+        and reset_bus_line(line) \
+        and skip_rom(line) \
+        and send_command(line, READ_SCRATCHPAD_CMD) \
+        and read_scratchpad_response(line)
 
+
+def read_temp_with_skip_rom(line) -> bool:
+    # assume only one ROM on the bus
+    return reset_bus_line(line) \
+        and skip_rom(line) \
+        and send_command(line, CONVERT_T_CMD) \
+        and wait_for_temp_conversion_to_complete(line) \
+        and reset_bus_line(line) \
+        and skip_rom(line) \
+        and send_command(line, READ_SCRATCHPAD_CMD) \
+        and read_scratchpad_response(line)
+
+
+def read_power_supply_type(line):
+    response_bits = []
+    worked =  reset_bus_line(line) \
+        and skip_rom(line) \
+        and send_command(line, 0xB4) \
+        and read_bit(line, response_bits)
+    if not worked:
+        print("Failed to read power supply type")
+        return False
+    if response_bits[0] == 0:
+        # TODO hook up VDD to GND and try to see if returns parasite power supply (could be issues with parasitic power in terms of timing/pull-up power but I don't think it s/b a problem)
+        print("Parasite power supply")
+    else:
+        print("External power supply")
+
+
+def main():
     with gpiod.request_lines(
             "/dev/gpiochip4",
             consumer="send-command",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        # return reset_bus_line(line) \
-        #     and full_read_rom(line) \
-        #     and send_command(line, CONVERT_T_CMD) \
-        #     and wait_for_temp_conversion_to_complete(line) \
-        #     and reset_bus_line(line) \
-        #     and full_read_rom(line) \
-        #     and send_command(line, READ_SCRATCHPAD_CMD) \
-        #     and read_scratchpad_response(line)
-
-        # assume only one ROM on the bus
-        return reset_bus_line(line) \
-            and skip_rom(line) \
-            and send_command(line, CONVERT_T_CMD) \
-            and wait_for_temp_conversion_to_complete(line) \
-            and reset_bus_line(line) \
-            and skip_rom(line) \
-            and send_command(line, READ_SCRATCHPAD_CMD) \
-            and read_scratchpad_response(line)
-
-
-def main():
-    test_read_temp()
+        # read_temp_with_skip_rom(line)
+        # read_rom_then_temp(line)
+        read_power_supply_type(line)
 
 
 if __name__ == "__main__":
