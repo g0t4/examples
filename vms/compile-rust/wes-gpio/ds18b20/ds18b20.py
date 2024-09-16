@@ -240,19 +240,10 @@ def test_read_temp() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        send_command(line, ROM_READ_CMD)  \
+        return send_command(line, ROM_READ_CMD)  \
             and read_rom_response(line) \
             and send_command(line, CONVERT_T_CMD) \
             and wait_for_temp_conversion_to_complete(line)
-
-    # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
-    # precise_delay_us(13)
-    # bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
-    # print(f"bit read: {bit}, {bit_2}")  # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
-
-    #help(line)
-
-    return True
 
 
 def main():
