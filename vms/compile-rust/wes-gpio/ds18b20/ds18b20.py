@@ -56,7 +56,8 @@ def precise_delay_us(us):
 
 
 def wait_for_recovery_between_bits():
-    precise_delay_us(2)  # min 1us (high, released)
+    # TODO wait until high before counting 1us here?
+    precise_delay_us(3)  # when 2us (sometimes 1us not met b/c took a while to rise back)
 
 
 def initialize_bus() -> bool:
@@ -70,7 +71,7 @@ def initialize_bus() -> bool:
         #   480us low => release
         #   wait 15-60us for presence signal from sensor(s)
         #   presence signal (low) lasts 60us-240us
-        precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010) 
+        precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
         #  I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance
         output.set_value(DS1820B_PIN, HIGH)
 
@@ -106,97 +107,115 @@ def write_command(command: int) -> bool:
 
     # recovery time: min 1us (high, released)
     # write 0: 60us-120us low
-    # write 1: 1us-15us low
+    # write 1: 1us-15us low ( min 60us total slot)
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
             consumer="send-command",
-            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},
-            # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
+            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
-    ) as output:
+    ) as line:
         bits = []
         # build bits so we can send in left to right order in next loop
         for i in range(8):
             bits = [(command >> i) & 1] + bits
-
+        bits.reverse()
         for bit in bits:
             if bit:
                 # write 1
-                output.set_value(DS1820B_PIN, LOW)
+                line.set_value(DS1820B_PIN, LOW)
                 precise_delay_us(2)  # min 1us, max <15us
-                output.set_value(DS1820B_PIN, HIGH)
-                precise_delay_us(58)  # 58us of 60us total min IIUC
+                line.set_value(DS1820B_PIN, HIGH)
+                precise_delay_us(60)  # 60 us total window (min)
             else:
                 # write 0
-                output.set_value(DS1820B_PIN, LOW)
+                line.set_value(DS1820B_PIN, LOW)
                 precise_delay_us(65)  # min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
-                output.set_value(DS1820B_PIN, HIGH)
+                line.set_value(DS1820B_PIN, HIGH)
+                # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
             wait_for_recovery_between_bits()
         print(f"sent command ROM read")
-        return True
+
+        print("triggering read")
+        line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+        precise_delay_us(2)  # min time 1 us
+        # ! wait/read_edge_events!!!! what lets use this !!!!!!!!!!!!!
+
+        # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
+        line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})
+        # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
+        # IIUC I can read right here, up to 15us since pull low so do it right away
+        bit = line.get_value(DS1820B_PIN)  # read the line to get the response
+        precise_delay_us(13)
+        bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
+        print(f"bit read: {bit}, {bit_2}") # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
+
+        #help(line)
+
+    return True
 
 
-def read_bits(num_bits: int) -> bytes:
-    # read 0: 15us-60us low
-    # read 1: 1us-15us low
-    # recovery time: min 1us (high, released)
+# def read_bits(num_bits: int) -> bytes:
+#     # read 0: 15us-60us low
+#     # read 1: 1us-15us low
+#     # recovery time: min 1us (high, released)
 
-    with gpiod.request_lines(
-            "/dev/gpiochip4",
-            consumer="read-bits",
-            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)},
-    ) as input:
-        bits = []
-        for i in range(num_bits):
-            # wait for start of bit (low)
-            timeout_start_time = time.time()
-            while input.get_value(DS1820B_PIN) != LOW:
-                if time.time() - timeout_start_time > 0.001:
-                    print(f"Timeout waiting for bit {i} low signal before high.")
-                    return None
+#     with gpiod.request_lines(
+#             "/dev/gpiochip4",
+#             consumer="read-bits",
+#             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT)},
+#     ) as input:
+#         bits = []
+#         for i in range(num_bits):
+#             # host has to trigger the read
 
-            start_time = time.time()
+#             # # wait for start of bit (low)
+#             # timeout_start_time = time.time()
+#             # while input.get_value(DS1820B_PIN) != LOW:
+#             #     if time.time() - timeout_start_time > 1:
+#             #         print(f"Timeout waiting for bit {i} low signal before high.")
+#             #         return None
 
-            timeout_start_time = time.time()
-            while input.get_value(DS1820B_PIN) == LOW:
-                if time.time() - timeout_start_time > 0.001:
-                    print(f"Timeout waiting for bit {i} high signal.")
-                    return None
+#             # start_time = time.time()
 
-            # wait for end of bit (low)
-            timeout_start_time = time.time()
-            while input.get_value(DS1820B_PIN) != LOW:
-                if time.time() - timeout_start_time > 0.001:
-                    print(f"Timeout waiting for bit {i} low signal after high.")
-                    return None
+#             # timeout_start_time = time.time()
+#             # while input.get_value(DS1820B_PIN) == LOW:
+#             #     if time.time() - timeout_start_time > 1:
+#             #         print(f"Timeout waiting for bit {i} high signal.")
+#             #         return None
 
-            end_time = time.time()
-            duration = end_time - start_time
-            bits.append(1 if duration < 0.000015 else 0)
+#             # # wait for end of bit (low)
+#             # timeout_start_time = time.time()
+#             # while input.get_value(DS1820B_PIN) != LOW:
+#             #     if time.time() - timeout_start_time > 1:
+#             #         print(f"Timeout waiting for bit {i} low signal after high.")
+#             #         return None
 
-        return bytes(bits)
+#             # end_time = time.time()
+#             # duration = end_time - start_time
+#             # bits.append(1 if duration < 0.000015 else 0)
+
+#         return bytes(bits)
 
 
 def read_rom() -> bool:
     # read ROM command is 0x33 (110011)
     # response: 8-bit family code, unique 48-bit serial number, and 8-bit CRC
 
-    # recovery time: min 1us (high, released)
-    # write 0: 60us-120us low
-    # write 1: 1us-15us low
-    # read 0: 15us-60us low
-    # read 1: 1us-15us low
-    commmand = 0x33
+    commmand = 0x33  # DO I HAVE CMD RIGHT? or bit order right?
     if not write_command(commmand):
         print("Failed to send ROM read command")
         return False
-
+    return
     bytes = read_bits(64)
     if bytes is None:
         print("Failed to read ROM")
         return False
 
+    # ! no doubt I think I have this all wrong for order:
+    #  see data sheet:
+    #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
+    #     are bits in reverse order within each byte?
     # see Figure 4 for ordering of bytes... CRC comes first IIUC
     crc = bytes[0]  # 8 bits (1 byte) (sent first?)
     serial_number = bytes[1:7]  # 48 bits (6 bytes)
