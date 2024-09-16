@@ -223,6 +223,7 @@ def read_bit(line, response_bits) -> bool:
     # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
     line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
     # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
+    # FYI sensor also pulls low by this time so me releasing (set high) doesn't change it until sensor also releases
 
     while line.get_value(DS1820B_PIN) == LOW:
         if time.time() - start_time > 1:
