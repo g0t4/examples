@@ -280,7 +280,7 @@ def read_scratchpad_response(line) -> bool:
 
 def wait_for_temp_conversion_to_complete(line):
     time.sleep(1)
-    return
+    return True
 
     # issue read slot to get temp conversion status
     # conversion can take up to 750ms (12-bit precision)
@@ -321,12 +321,16 @@ def test_read_temp() -> bool:
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         return reset_bus_line(line) \
-            and send_command(line, ROM_READ_CMD)  \
+            and send_command(line, ROM_READ_CMD) \
             and read_rom_response(line) \
             and send_command(line, CONVERT_T_CMD) \
             and wait_for_temp_conversion_to_complete(line) \
+            and reset_bus_line(line) \
+            and send_command(line, ROM_READ_CMD) \
+            and read_rom_response(line) \
             and send_command(line, READ_SCRATCHPAD_CMD) \
             and read_scratchpad_response(line)
+        # TODO testing using skip rom command... when read temp
 
 
 def main():
