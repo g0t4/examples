@@ -134,7 +134,7 @@ def send_command(line, command):
             line.set_value(DS1820B_PIN, HIGH)
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
-    print(f"sent command: {command:08b} ({command})")  # timing NBD (past end of command)
+    print(f"sent command: {command:08b} ({hex(command)})")
 
 
 def read_rom_response(line):
@@ -222,8 +222,18 @@ def read_rom_response(line):
         return False
 
 
+def wait_for_temp_conversion_to_complete(line):
+    timeout_start_time = time.time()
+    while line.get_value(DS1820B_PIN) == LOW:
+        if time.time() - timeout_start_time > 1:
+            logger.error("Temp conversion did not complete after 1sec")
+            return False
+
+
 ROM_READ_CMD = 0x33
 CONVERT_T_CMD = 0x44
+READ_SCRATCHPAD_CMD = 0xBE
+# THIS IS MY VIDEO today => practical AI use case... let AI lookup values and just confirm them for you...  fill out this list (see page 14/27 for more cmds)
 
 
 def test_read_temp() -> bool:
@@ -237,6 +247,7 @@ def test_read_temp() -> bool:
         send_command(line, ROM_READ_CMD)
         read_rom_response(line)
         send_command(line, CONVERT_T_CMD)
+        wait_for_temp_conversion_to_complete(line)
 
     # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
     # precise_delay_us(13)
