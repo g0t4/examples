@@ -107,12 +107,13 @@ def write_command_todo_split_read(command: int) -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        bits = []
+        cmd_bits = []
         # build bits so we can send in left to right order in next loop
         for i in range(8):
-            bits = [(command >> i) & 1] + bits
-        bits.reverse()  #! todo actually confirm...  I have my suspicions b/c when I reverse for READ ROM... I get inactive past when I release line so that is a response
-        for bit in bits:
+            # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
+            this_bit = (command >> i) & 1
+            cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
+        for bit in cmd_bits:
             if bit:
                 # write 1
                 line.set_value(DS1820B_PIN, LOW)
