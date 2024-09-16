@@ -71,6 +71,36 @@ def wait_for_recovery_between_bits():
     precise_delay_us(3)  # when 2us (sometimes 1us not met b/c took a while to rise back)
 
 
+def initialize_bus_line(line):
+    # initialize pulse is:
+    #   480us low => release
+    #   wait 15-60us for presence signal from sensor(s)
+    #   presence signal (low) lasts 60us-240us
+
+    precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
+    line.set_value(DS1820B_PIN, HIGH)
+
+    # poll for presence signal from sensor(s)
+    timeout_start_time = time.time()
+    while line.get_value(DS1820B_PIN) != LOW:
+        if time.time() - timeout_start_time > 0.000_100:  # timeout after 100us b/c should start w/in 15-60us
+            logger.error("Presence signal not received")
+            return False
+
+    # poll for presence signal to end
+    timeout_start_time = time.time()
+    while line.get_value(DS1820B_PIN) == LOW:
+        if time.time() - timeout_start_time > 0.001:
+            logger.error("Presence signal did not end")
+            return False
+
+    # wait at least 480us for entirety of presence command + recovery time
+    us_since_presence_start = math.floor((time.time() - timeout_start_time) * 1_000_000)
+    precise_delay_us(480 - us_since_presence_start)  # wait for 480us total
+
+    return True
+
+
 def initialize_bus() -> bool:
 
     # PRN pull high initially and wait Xus to be sure it was high before we pull low?
@@ -79,33 +109,7 @@ def initialize_bus() -> bool:
             consumer="send-init-bus",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as line:
-        # initialize pulse is:
-        #   480us low => release
-        #   wait 15-60us for presence signal from sensor(s)
-        #   presence signal (low) lasts 60us-240us
-
-        precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010)
-        line.set_value(DS1820B_PIN, HIGH)
-
-        # poll for presence signal from sensor(s)
-        timeout_start_time = time.time()
-        while line.get_value(DS1820B_PIN) != LOW:
-            if time.time() - timeout_start_time > 0.000_100:  # timeout after 100us b/c should start w/in 15-60us
-                logger.error("Presence signal not received")
-                return False
-
-        # poll for presence signal to end
-        timeout_start_time = time.time()
-        while line.get_value(DS1820B_PIN) == LOW:
-            if time.time() - timeout_start_time > 0.001:
-                logger.error("Presence signal did not end")
-                return False
-
-        # wait at least 480us for entirety of presence command + recovery time
-        us_since_presence_start = math.floor((time.time() - timeout_start_time) * 1_000_000)
-        precise_delay_us(480 - us_since_presence_start)  # wait for 480us total
-
-        return True
+        return initialize_bus_line(line)
 
 
 def send_command(line, command) -> bool:
