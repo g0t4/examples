@@ -102,7 +102,7 @@ def initialize_bus() -> bool:
         return True
 
 
-def write_command(command: int) -> bool:
+def write_command_todo_split_read(command: int) -> bool:
     # write command is 0xcc (11001100)
     # response: 8-bit CRC
 
@@ -137,6 +137,8 @@ def write_command(command: int) -> bool:
             wait_for_recovery_between_bits()
         print(f"sent command ROM read")  # delay here is NBD (can be infinite and still trigger read next)
 
+        bits = []
+
         def read_bit():
             # ensure output so we can trigger read bit
             # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
@@ -154,26 +156,63 @@ def write_command(command: int) -> bool:
             end_time = time.time()
             seconds_low = end_time - start_time
             if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
-                print(f"low - {seconds_low*1_000_000} us")
+                bits.append(0)
+                # print(f"low - {seconds_low*1_000_000} us")
+            if seconds_low < 0.000_002:
+                # looks like sensor never held it low past me so this is invalid
+                print("timeout - sensor not holding low after I release - it is not responding to read request")
+                return False
             else:
-                print(f"high - {seconds_low*1_000_000} us")
+                bits.append(1)
+                # print(f"high - {seconds_low*1_000_000} us")
             while time.time() - start_time < 0.000_060:
-                # all read slots must be 60us total
+                # all read slots must be 60us (min)
                 pass
             wait_for_recovery_between_bits()
             return True
 
         for i in range(64):
-            read_bit()
+            if (not read_bit()):
+                print(f"Failed to read bit {i}, aborting...")
+                return False
 
-        # ** wait/read_edge_events => my first attempt didn't work?!
+        print(f"bits read: {bits}")
+        bytes = []
+        for i in range(0, 64, 8):
+            byte = 0
+            for j in range(8):
+                byte = byte | (bits[i + j] << j)
+            bytes.append(byte)
 
-        # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
-        # precise_delay_us(13)
-        # bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
-        # print(f"bit read: {bit}, {bit_2}")  # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
+        # ! no doubt I think I have this all wrong for order:
+        # *** see data sheet:
+        #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
+        #     are bits in reverse order within each byte?
+        #
+        #     | 8-BIT CRC CODE |  48-BIT SERIAL NUMBER | 8-BIT FAMILY CODE |
+        #     |                |                       |       (28h)       |
+        #     | MSB        LSB |  MSB              LSB | MSB           LSB |
+        #
+        print("bytes:")
+        for byte in bytes:
+            print(f"  {byte:08b} ({byte})")
+            # YAY often I am seeing the same bits in each byte... 1st and 5th sometimes vary...
 
-        #help(line)
+        family_code = bytes[0]  # 8 bits (1 byte)
+        serial_number = bytes[1:7]  # 48 bits (6 bytes)
+        crc = bytes[7]  # 8 bits (1 byte)
+        print(f"Family code: {family_code}")
+        print(f"Serial number: {serial_number}")
+        print(f"CRC: {crc}")
+
+    # ** wait/read_edge_events => my first attempt didn't work?!
+
+    # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
+    # precise_delay_us(13)
+    # bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
+    # print(f"bit read: {bit}, {bit_2}")  # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
+
+    #help(line)
 
     return True
 
@@ -226,32 +265,11 @@ def read_rom() -> bool:
     # response: 8-bit family code, unique 48-bit serial number, and 8-bit CRC
 
     commmand = 0x33  # DO I HAVE CMD RIGHT? or bit order right?
-    if not write_command(commmand):
+    if not write_command_todo_split_read(commmand):  # TODO pass line in so can reconfigure or is request just as fast? THERE HAS TO BE A FASTER way to change direction, my code was incredibly fast at that
         print("Failed to send ROM read command")
         return False
-    return
-    bytes = read_bits(64)
-    if bytes is None:
-        print("Failed to read ROM")
-        return False
-
-    # ! no doubt I think I have this all wrong for order:
-    #  see data sheet:
-    #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
-    #     are bits in reverse order within each byte?
-    # see Figure 4 for ordering of bytes... CRC comes first IIUC
-    crc = bytes[0]  # 8 bits (1 byte) (sent first?)
-    serial_number = bytes[1:7]  # 48 bits (6 bytes)
-    family_code = bytes[7]  # 8 bits (1 byte) (sent last?)
-    print(f"Family code: {family_code}")
-    print(f"Serial number: {serial_number}")
-    print(f"CRC: {crc}")
-    family_code_hex = family_code.to_bytes(1, byteorder='big').hex()
-    serial_number_hex = serial_number.hex()
-    crc_hex = crc.to_bytes(1, byteorder='big').hex()
-    print(f"Family code (hex): {family_code_hex}")
-    print(f"Serial number (hex): {serial_number_hex}")
-    print(f"CRC (hex): {crc_hex}")
+    # TODO ...
+    return True
 
 
 def main():
@@ -260,13 +278,7 @@ def main():
         print("Failed to initialize bus")
         return
     print("Bus initialized")
-    if (not read_rom()):
-        print("Failed to read ROM")
-        return
-    print("ROM read")
-    # if (not read_scratchpad()):
-    #     print("Failed to read scratchpad")
-    #     return
+    read_rom()
 
 
 if __name__ == "__main__":
