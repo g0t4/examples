@@ -340,10 +340,17 @@ def wait_for_temp_conversion_to_complete(line):
     return True
 
 
+# command constants
 ROM_READ_CMD = 0x33
 CONVERT_T_CMD = 0x44
 READ_SCRATCHPAD_CMD = 0xBE
+
 # THIS IS MY VIDEO today => practical AI use case... let AI lookup values and just confirm them for you...  fill out this list (see page 14/27 for more cmds)
+
+
+def full_read_rom(line):
+    return send_command(line, ROM_READ_CMD) \
+        and read_rom_response(line)
 
 
 def test_read_temp() -> bool:
@@ -355,13 +362,11 @@ def test_read_temp() -> bool:
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         return reset_bus_line(line) \
-            and send_command(line, ROM_READ_CMD) \
-            and read_rom_response(line) \
+            and full_read_rom(line) \
             and send_command(line, CONVERT_T_CMD) \
             and wait_for_temp_conversion_to_complete(line) \
             and reset_bus_line(line) \
-            and send_command(line, ROM_READ_CMD) \
-            and read_rom_response(line) \
+            and full_read_rom(line) \
             and send_command(line, READ_SCRATCHPAD_CMD) \
             and read_scratchpad_response(line)
         # TODO testing using skip rom command... when read temp
