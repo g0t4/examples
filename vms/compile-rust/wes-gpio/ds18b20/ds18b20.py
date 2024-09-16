@@ -342,6 +342,7 @@ def wait_for_temp_conversion_to_complete(line):
 
 # command constants
 ROM_READ_CMD = 0x33
+ROM_SKIP_CMD = 0xCC
 CONVERT_T_CMD = 0x44
 READ_SCRATCHPAD_CMD = 0xBE
 
@@ -353,6 +354,10 @@ def full_read_rom(line):
         and read_rom_response(line)
 
 
+def skip_rom(line):
+    return send_command(line, ROM_SKIP_CMD)
+
+
 def test_read_temp() -> bool:
 
     with gpiod.request_lines(
@@ -361,15 +366,24 @@ def test_read_temp() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
+        # return reset_bus_line(line) \
+        #     and full_read_rom(line) \
+        #     and send_command(line, CONVERT_T_CMD) \
+        #     and wait_for_temp_conversion_to_complete(line) \
+        #     and reset_bus_line(line) \
+        #     and full_read_rom(line) \
+        #     and send_command(line, READ_SCRATCHPAD_CMD) \
+        #     and read_scratchpad_response(line)
+
+        # assume only one ROM on the bus
         return reset_bus_line(line) \
-            and full_read_rom(line) \
+            and skip_rom(line) \
             and send_command(line, CONVERT_T_CMD) \
             and wait_for_temp_conversion_to_complete(line) \
             and reset_bus_line(line) \
-            and full_read_rom(line) \
+            and skip_rom(line) \
             and send_command(line, READ_SCRATCHPAD_CMD) \
             and read_scratchpad_response(line)
-        # TODO testing using skip rom command... when read temp
 
 
 def main():
