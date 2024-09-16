@@ -16,6 +16,10 @@ import gpiod
 import time
 from gpiod.line import Direction, Value
 
+import crcmod # ~1ms
+
+ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)  # ~0.250us, so only do it once... this is reusable right?
+
 CHIP = 'gpiochip0'
 DS1820B_PIN = 12
 
@@ -202,9 +206,6 @@ def read_rom_response(line):
         print(f"  {byte:08b} ({byte})")
         # YAY often I am seeing the same bits in each byte... 1st and 5th sometimes vary...
 
-    print("check crc:")
-    import crcmod
-    ds18b20_crc8 = crcmod.mkCrcFun(0x131, initCrc=0, xorOut=0)
     # Define the CRC-8 function using the polynomial 0x131 (x^8 + x^5 + x^4 + 1)
     crc_all = ds18b20_crc8(bytes(all_bytes))  # if include last byte then it should come out to 0, no need to know CRC computed vs actual if they don't match anyways
     if crc_all != 0:
