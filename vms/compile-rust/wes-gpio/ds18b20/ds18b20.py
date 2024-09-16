@@ -51,6 +51,7 @@ import time
 
 
 def precise_delay_us(us):
+    # PRN address clock updates/corrections => only when I detect it as a problem
     # time.sleep is WAY off... hundreds of us in the LA1010 waveform
     start = time.perf_counter()
     while (time.perf_counter() - start) < (us / 1_000_000):
@@ -63,6 +64,7 @@ def wait_for_recovery_between_bits():
 
 def initialize_bus() -> bool:
 
+    # PRN pull high initially and wait Xus to be sure it was high before we pull low?
     with gpiod.request_lines(
             "/dev/gpiochip4",
             consumer="send-init-bus",
