@@ -222,7 +222,11 @@ def read_rom_response(line):
         return False
 
 
-def write_command_todo_split_read(command: int) -> bool:
+ROM_READ_CMD = 0x33
+CONVERT_T_CMD = 0x44
+
+
+def test_read_temp() -> bool:
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
@@ -230,8 +234,9 @@ def write_command_todo_split_read(command: int) -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        send_command(line, command)
+        send_command(line, ROM_READ_CMD)
         read_rom_response(line)
+        send_command(line, CONVERT_T_CMD)
 
     # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
     # precise_delay_us(13)
@@ -243,25 +248,13 @@ def write_command_todo_split_read(command: int) -> bool:
     return True
 
 
-def read_rom() -> bool:
-    # read ROM command is 0x33 (110011)
-    # response: 8-bit family code, unique 48-bit serial number, and 8-bit CRC
-
-    commmand = 0x33  # DO I HAVE CMD RIGHT? or bit order right?
-    if not write_command_todo_split_read(commmand):  # TODO pass line in so can reconfigure or is request just as fast? THERE HAS TO BE A FASTER way to change direction, my code was incredibly fast at that
-        print("Failed to send ROM read command")
-        return False
-    # TODO ...
-    return True
-
-
 def main():
 
     if (not initialize_bus()):
         print("Failed to initialize bus")
         return
     print("Bus initialized")
-    read_rom()
+    test_read_temp()
 
 
 if __name__ == "__main__":
