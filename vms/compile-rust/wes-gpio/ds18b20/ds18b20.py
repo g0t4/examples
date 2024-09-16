@@ -2,6 +2,8 @@
 #   seems like I might need apt to install deps for gpiod... version in venv doesn't work but then if I move out of venv it works
 # https://pypi.org/project/gpiod/
 
+#!!! deal breaker it seems is sleeping in python, the accuracy isn't working out... and it might be due to overhead from interpreting commands... i.e. attempt wait 480us... but it is 545us! off by 65 us when I need 1us (or less) precision... I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance... can I fix anything to make the python work or is it just not possible w/ interpreted... can I compile my python code? or?
+
 import gpiod
 import time
 from gpiod.line import Direction, Value
@@ -39,6 +41,19 @@ HIGH = Value.ACTIVE
 #
 # I do know the examples in the pypi page (https://pypi.org/project/gpiod/) show using request_lines so def aligns with the fact that I s/b using venv for the following request_lines usages:
 
+import time
+
+
+def precise_delay_us(us):
+    # time.sleep is WAY off... hundreds of us in the LA1010 waveform
+    start = time.perf_counter()
+    while (time.perf_counter() - start) < (us / 1_000_000):
+        pass
+
+
+def wait_for_recovery_between_bits():
+    precise_delay_us(2)  # min 1us (high, released)
+
 
 def initialize_bus() -> bool:
 
@@ -51,7 +66,8 @@ def initialize_bus() -> bool:
         #   480us low => release
         #   wait 15-60us for presence signal from sensor(s)
         #   presence signal (low) lasts 60us-240us
-        time.sleep(480 / 1_000_000)  # 480us (max 960us)
+        precise_delay_us(480)  # 480us (max 960us) => MEASURED 545us!? (LA1010) 
+        #  I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance
         output.set_value(DS1820B_PIN, HIGH)
 
     with gpiod.request_lines(
@@ -60,19 +76,22 @@ def initialize_bus() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)},
     ) as input:
         # wait for presence signal from sensor(s)
-        start_time = time.time()
+        timeout_start_time = time.time()
         while input.get_value(DS1820B_PIN) != LOW:
-            if time.time() - start_time > 0.001:
+            if time.time() - timeout_start_time > 0.001:
                 print("No presence signal")
                 return False
         # print("Presence signal received")
         # wait for presence signal to end
-        start_time = time.time()
+        timeout_start_time = time.time()
         while input.get_value(DS1820B_PIN) == LOW:
-            if time.time() - start_time > 0.001:
+            if time.time() - timeout_start_time > 0.001:
                 print("Presence signal didn't end")
                 return False
-        # print("Presence signal ended")
+        # IIUC must wait at least 480us for entirety of presence command + recovery time
+        precise_delay_us(480)  # should work IIUC # TODO ok? s/b ok to wait longer than needed
+        # precse_delay_us(480 - (time.time() - timeout_start_time)*1_000_000)  # take off time already spent for presence low?
+        # # print("Presence signal ended")
         # sensor should now be sending data
         return True
 
@@ -90,20 +109,26 @@ def write_command(command: int) -> bool:
             consumer="send-command",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT)},
     ) as output:
+        bits = []
+        # build bits so we can send in left to right order in next loop
         for i in range(8):
-            bit = (command >> i) & 1
+            bits = [(command >> i) & 1] + bits
+
+        for bit in bits:
             if bit:
                 # write 1
+                print(f"writing 1")
                 output.set_value(DS1820B_PIN, LOW)
-                time.sleep(2 / 1_000_000)  # 2us (be safe)
+                precise_delay_us(2)  # min 1us, max <15us
                 output.set_value(DS1820B_PIN, HIGH)
-                time.sleep(58 / 1_000_000)  # 58us of 60us window
+                precise_delay_us(58)  # 58us of 60us total min IIUC
             else:
                 # write 0
+                print(f"writing 0")
                 output.set_value(DS1820B_PIN, LOW)
-                time.sleep(60 / 1_000_000)  # 60us
+                precise_delay_us(65)  # min 60us
                 output.set_value(DS1820B_PIN, HIGH)
-            time.sleep(2 / 1_000_000)  # 2us (>1us recovery between bits)
+            wait_for_recovery_between_bits()
         print(f"sent command ROM read")
         return True
 
