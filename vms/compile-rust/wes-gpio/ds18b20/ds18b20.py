@@ -293,23 +293,19 @@ def wait_for_temp_conversion_to_complete(line):
     precise_delay_us(25_000)  # add at least 1000 delay before attempt read status...  in my testing...
 
     timeout_start = time.time()
-    counter = 0
     while True:
-        counter += 1
         response_bits = []
-        print("reading bit for tmp conversion status")
         if not read_bit(line, response_bits):  # read slot,  if 0 response then still copying, if 1 then done
-            print("Failed to read bit for status of temp conversion, aborting...")
+            logger.error("Failed to read bit for status of temp conversion, aborting...")
             return False
-        print(f"  response_bits: {response_bits}")
         if response_bits[0] == 1:
             break
         if time.time() - timeout_start > 1:  # allow up to 1s (max is 750ms according to data sheet)
-            print("Timeout waiting for temp conversion to complete")
+            logger.error("Timeout waiting for temp conversion to complete")
             return False
         precise_delay_us(50_000)  # check every 50ms
 
-    print(f"Temp conversion complete after {counter} reads")
+    print(f"Temp conversion complete after {time.time() - timeout_start:.2f} seconds")
     return True
 
 
