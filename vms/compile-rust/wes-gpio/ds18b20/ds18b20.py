@@ -119,7 +119,7 @@ def write_command(command: int) -> bool:
         # build bits so we can send in left to right order in next loop
         for i in range(8):
             bits = [(command >> i) & 1] + bits
-        bits.reverse()
+        bits.reverse()  #! todo actually confirm...  I have my suspicions b/c when I reverse for READ ROM... I get inactive past when I release line so that is a response
         for bit in bits:
             if bit:
                 # write 1
@@ -138,17 +138,29 @@ def write_command(command: int) -> bool:
 
         print("triggering read")
         line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
-        precise_delay_us(2)  # min time 1 us
+        start_time = time.time()
+        precise_delay_us(1)  # min time 1 us
         # ! wait/read_edge_events!!!! what lets use this !!!!!!!!!!!!!
-
+        # TODO do I need to set HIGH before switch to input?!
         # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
         line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})
         # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
         # IIUC I can read right here, up to 15us since pull low so do it right away
-        bit = line.get_value(DS1820B_PIN)  # read the line to get the response
-        precise_delay_us(13)
-        bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
-        print(f"bit read: {bit}, {bit_2}") # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
+        while line.get_value(DS1820B_PIN) == LOW:
+            if time.time() - start_time > 1:
+                print("timeout - held low indefinitely - s/b NOT POSSIBLE")
+                return False
+            end_time = time.time()
+            seconds_low = end_time - start_time
+            if seconds_low > 0.000_015:
+                print(f"low - {seconds_low*1_000_000} us")
+            else:
+                print(f"high - {seconds_low*1_000_000} us")
+
+        # bit = line.get_value(DS1820B_PIN)  # read the line to get the response
+        # precise_delay_us(13)
+        # bit_2 = line.get_value(DS1820B_PIN)  # read the line to get the response
+        # print(f"bit read: {bit}, {bit_2}")  # ! OMG after bits.reverse() when I read I get inactive / active ( FYI active/active means sensor is not responding)
 
         #help(line)
 
