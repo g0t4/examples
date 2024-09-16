@@ -56,7 +56,6 @@ def precise_delay_us(us):
 
 
 def wait_for_recovery_between_bits():
-    # TODO wait until high before counting 1us here?
     precise_delay_us(3)  # when 2us (sometimes 1us not met b/c took a while to rise back)
 
 
@@ -140,8 +139,7 @@ def write_command(command: int) -> bool:
         line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
         start_time = time.time()
         precise_delay_us(1)  # min time 1 us
-        # ! wait/read_edge_events!!!! what lets use this !!!!!!!!!!!!!
-        # TODO do I need to set HIGH before switch to input?!
+        # ! wait/read_edge_events!!!! what lets use this !!!!!!!!!!!!! REDO ALL OF MY CODE???
         # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
         line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})
         # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
