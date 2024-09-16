@@ -14,12 +14,12 @@ LOW = Value.INACTIVE
 HIGH = Value.ACTIVE
 
 
-def main():
+def initialize_bus() -> bool:
     # FYI below uses gpiod via `pip install gpiod`... which IS NOT same as gpiod pkg via `apt install apt info python3-libgpiod`
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
-            consumer="init-test",
+            consumer="send-init-bus",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=LOW)},
     ) as output:
         # initialize pulse is:
@@ -31,7 +31,7 @@ def main():
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
-            consumer="read-test",
+            consumer="detect-presence",
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)},
     ) as input:
         # wait for presence signal from sensor(s)
@@ -39,16 +39,25 @@ def main():
         while input.get_value(DS1820B_PIN) != LOW:
             if time.time() - start_time > 0.001:
                 print("No presence signal")
-                return
-        print("Presence signal received")
+                return False
+        # print("Presence signal received")
         # wait for presence signal to end
         start_time = time.time()
         while input.get_value(DS1820B_PIN) == LOW:
             if time.time() - start_time > 0.001:
                 print("Presence signal didn't end")
-                return
-        print("Presence signal ended")
+                return False
+        # print("Presence signal ended")
         # sensor should now be sending data
+        return True
+
+
+def main():
+    if (not initialize_bus()):
+        print("Failed to initialize bus")
+        return
+
+    print("Bus initialized")
 
 
 if __name__ == "__main__":
