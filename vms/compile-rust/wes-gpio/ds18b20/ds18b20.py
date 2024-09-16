@@ -30,12 +30,6 @@ HIGH = Value.ACTIVE
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.ERROR)
 
-
-def enable_debug_mode():
-    # Turn on debug logs when needed
-    logger.setLevel(logging.DEBUG)
-
-
 # ! NOTE ABOUT gpiod pkg (in venv vs system pkgs):
 # ! below uses gpiod via `pip install gpiod` via venv
 # !   IS NOT same as gpiod pkg via `apt install apt info python3-libgpiod`
