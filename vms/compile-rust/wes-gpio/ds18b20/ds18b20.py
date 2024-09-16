@@ -71,7 +71,7 @@ def wait_for_recovery_between_bits():
     precise_delay_us(3)  # when 2us (sometimes 1us not met b/c took a while to rise back)
 
 
-def initialize_bus_line(line):
+def reset_bus_line(line):
     # initialize pulse is:
     #   480us low => release
     #   wait 15-60us for presence signal from sensor(s)
@@ -320,7 +320,7 @@ def test_read_temp() -> bool:
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        return initialize_bus_line(line) \
+        return reset_bus_line(line) \
             and send_command(line, ROM_READ_CMD)  \
             and read_rom_response(line) \
             and send_command(line, CONVERT_T_CMD) \
