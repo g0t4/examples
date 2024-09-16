@@ -134,41 +134,8 @@ def read_rom_response(line) -> bool:
 
     response_bits = []
 
-    def read_bit():
-        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)}) # don't need to reconfigure
-        line.set_value(DS1820B_PIN, HIGH)  # added after removing reconfigure b/c w/o this reading fails
-
-        # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
-        line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
-        start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
-        precise_delay_us(1)  # min time 1 us
-
-        # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
-        line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
-        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
-
-        while line.get_value(DS1820B_PIN) == LOW:
-            if time.time() - start_time > 1:
-                logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
-                return False
-        end_time = time.time()
-        seconds_low = end_time - start_time
-        if seconds_low > 0.000_015:
-            response_bits.append(0)
-        elif seconds_low < 0.000_002:
-            # looks like sensor never held it low past me so this is invalid
-            logger.error("timeout - sensor not holding low after I release - it is not responding to read request")
-            return False
-        else:
-            response_bits.append(1)
-        while time.time() - start_time < 0.000_080:  # TODO did increasing this make reads more reliable? (60us required minimum)
-            # all read slots must be 60us (min)
-            pass
-        wait_for_recovery_between_bits()
-        return True
-
     for i in range(64):
-        if (not read_bit()):
+        if (not read_bit(line, response_bits)):
             print(f"Failed to read bit {i}, aborting...")
             return False
 
@@ -409,8 +376,8 @@ def main():
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
         # read_temp_with_skip_rom(line)
-        # read_rom_then_temp(line)
-        read_power_supply_type(line)
+        read_rom_then_temp(line)
+        # read_power_supply_type(line)
 
 
 if __name__ == "__main__":
