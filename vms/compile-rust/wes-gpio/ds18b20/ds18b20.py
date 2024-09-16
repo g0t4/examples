@@ -183,6 +183,8 @@ def write_command_todo_split_read(command: int) -> bool:
             for j in range(8):
                 byte = byte | (bits[i + j] << j)
             bytes.append(byte)
+        # TODO look at waveform and run several times and see if I am just reading wrong timing info
+        # FRUSTRATING why write has 60us=0, <15us=1 ...  but read is 16us=0, 2us=1 nonsensee and then have to wait 60us for the window anyways... FOOO
 
         # ! no doubt I think I have this all wrong for order:
         # *** see data sheet:
