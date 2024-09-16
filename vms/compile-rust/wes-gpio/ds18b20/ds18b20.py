@@ -76,11 +76,7 @@ def initialize_bus() -> bool:
         #  I might need to switch to c code to get better timing... why would it be off by 65us?! I can't afford that tolerance
         output.set_value(DS1820B_PIN, HIGH)
 
-    with gpiod.request_lines(
-            "/dev/gpiochip4",
-            consumer="detect-presence",
-            config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)},
-    ) as input:
+        input = output
         # wait for presence signal from sensor(s)
         timeout_start_time = time.time()
         while input.get_value(DS1820B_PIN) != LOW:
