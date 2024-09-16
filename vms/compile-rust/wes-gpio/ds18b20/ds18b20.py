@@ -137,25 +137,56 @@ def write_command(command: int) -> bool:
             wait_for_recovery_between_bits()
         print(f"sent command ROM read")  # delay here is NBD (can be infinite and still trigger read next)
 
-        line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
-        start_time = time.time()
-        precise_delay_us(1)  # min time 1 us
+        # ## reading first bit:
 
-        # manual wait
-        # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
-        line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # TODO is this super slow?
-        # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
-        # # IIUC I can read right here, up to 15us since pull low so do it right away
-        while line.get_value(DS1820B_PIN) == LOW:
-            if time.time() - start_time > 1:
-                print("timeout - held low indefinitely - s/b NOT POSSIBLE")
-                return False
+        # line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+        # start_time = time.time()
+        # precise_delay_us(1)  # min time 1 us
+
+        # # manual wait
+        # # reconfigure_lines(self, config: dict[tuple[typing.Union[int, str]], gpiod.line_settings.LineSettings]) -> None
+        # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # TODO is this super slow?
+        # # now, I am not driving the line so if the sensor is driving the line, it will keep it low then release depending on 1/0...
+        # # # IIUC I can read right here, up to 15us since pull low so do it right away
+        # while line.get_value(DS1820B_PIN) == LOW:
+        #     if time.time() - start_time > 1:
+        #         print("timeout - held low indefinitely - s/b NOT POSSIBLE")
+        #         return False
+        #     end_time = time.time()
+        #     seconds_low = end_time - start_time
+        #     if seconds_low > 0.000_015:
+        #         print(f"low - {seconds_low*1_000_000} us")
+        #     else:
+        #         print(f"high - {seconds_low*1_000_000} us")
+
+        def read_bit():
+            # ensure output so we can trigger read bit
+            # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
+            line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)})
+            line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+            precise_delay_us(1)  # min time 1 us
+
+            line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # this is adding 5-10us IIUC from my review
+            start_time = time.time()  # TODO put this here or before delay 1us above?
+
+            while line.get_value(DS1820B_PIN) == LOW:
+                if time.time() - start_time > 1:
+                    print("timeout - held low indefinitely - s/b NOT POSSIBLE")
+                    return False
             end_time = time.time()
             seconds_low = end_time - start_time
-            if seconds_low > 0.000_015:
+            if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
                 print(f"low - {seconds_low*1_000_000} us")
             else:
                 print(f"high - {seconds_low*1_000_000} us")
+            while time.time() - start_time < 0.000_060:
+                # all read slots must be 60us total
+                pass
+            wait_for_recovery_between_bits()
+            return True
+
+        for i in range(64):
+            read_bit()
 
         # ** wait/read_edge_events => my first attempt didn't work?!
 
