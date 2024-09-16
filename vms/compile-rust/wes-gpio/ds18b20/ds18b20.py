@@ -103,12 +103,6 @@ def initialize_bus() -> bool:
 
 
 def write_command_todo_split_read(command: int) -> bool:
-    # write command is 0xcc (11001100)
-    # response: 8-bit CRC
-
-    # recovery time: min 1us (high, released)
-    # write 0: 60us-120us low
-    # write 1: 1us-15us low ( min 60us total slot)
 
     with gpiod.request_lines(
             "/dev/gpiochip4",
@@ -144,10 +138,12 @@ def write_command_todo_split_read(command: int) -> bool:
             # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
             line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)})
             line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
+            start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
             precise_delay_us(1)  # min time 1 us
 
-            line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # seems to take 5-10us... unpredictable :( crap
-            start_time = time.time()  # TODO put this here or before delay 1us above?
+            # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
+            line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
+            # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
 
             while line.get_value(DS1820B_PIN) == LOW:
                 if time.time() - start_time > 1:
@@ -183,10 +179,7 @@ def write_command_todo_split_read(command: int) -> bool:
             for j in range(8):
                 byte = byte | (bits[i + j] << j)
             all_bytes.append(byte)
-        # TODO look at waveform and run several times and see if I am just reading wrong timing info
-        # FRUSTRATING why write has 60us=0, <15us=1 ...  but read is 16us=0, 2us=1 nonsensee and then have to wait 60us for the window anyways... FOOO
 
-        # ! no doubt I think I have this all wrong for order:
         # *** see data sheet:
         #     Then starting with the least significant bit of the family code, 1 bit at a time is shifted in...
         #     are bits in reverse order within each byte?
