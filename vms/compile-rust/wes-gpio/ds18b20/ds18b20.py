@@ -135,7 +135,7 @@ def send_command(line, command) -> bool:
             # PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
         wait_for_recovery_between_bits()
     print(f"sent command: {command:08b} ({hex(command)})")
-    precise_delay_us(1000)
+    precise_delay_us(100)  # TODO REMOVE if possible... dropping this gets timing in read to be an issue like dynamic timing in write above 1/0=>1 (see below)
     return True
 
 
@@ -194,7 +194,12 @@ def read_bit(line, response_bits) -> bool:
     # PRN check direction before setting? might only matter on first byte and the overhead here is NBD as nothing timing matters until I pull low
     line.set_value(DS1820B_PIN, LOW)  # host starts the read by driving low for >1us but not long
     start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
-    precise_delay_us(1)  # min time 1 us
+
+    prev_read_bit = response_bits[-1] if response_bits else 1  # assume read bit is correct then, if 1=>1 then we need to pull low longer
+    if prev_read_bit == 1:
+        precise_delay_us(5)
+    else:
+        precise_delay_us(1)  # min time 1 us
 
     # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
     line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
