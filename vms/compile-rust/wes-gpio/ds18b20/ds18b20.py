@@ -290,10 +290,16 @@ def read_scratchpad_response(line) -> bool:
     temp_msb = all_bytes[1]
     temp_raw = (temp_msb << 8) | temp_lsb
     # stored in 16 bit sign extended two's complement
+    #
+    # 2^3 2^2 2^1 2^0 2^-1 2^-2 2^-3 2^-4 # LSB
+    # S   S   S   S   S    2^6  2^5  2^4 # MSB
+    #
+    # positive numbers are verbatim in the 16 bits
     if temp_raw & 0x8000:
+        # negative numbers are stored in two's complement form
         temp_raw = -((temp_raw ^ 0xFFFF) + 1)
+    # all cases, 4 bits of decimal precision:
     temp_celsius = temp_raw / 16
-
     print(f"Temp: {temp_celsius:.2f}°C")
     temp_fahrenheit = temp_celsius * 9 / 5 + 32
     print(f"Temp: {temp_fahrenheit:.2f}°F")
