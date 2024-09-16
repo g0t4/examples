@@ -158,7 +158,7 @@ def write_command_todo_split_read(command: int) -> bool:
             if seconds_low > 0.000_014:  # put back to 15us if move start_time before delay 1us
                 bits.append(0)
                 # print(f"low - {seconds_low*1_000_000} us")
-            if seconds_low < 0.000_002:
+            elif seconds_low < 0.000_002:
                 # looks like sensor never held it low past me so this is invalid
                 print("timeout - sensor not holding low after I release - it is not responding to read request")
                 return False
