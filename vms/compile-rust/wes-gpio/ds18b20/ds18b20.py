@@ -198,14 +198,14 @@ def read_bit(line, response_bits) -> bool:
     start_time = time.time()  # starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
 
     # holy cow getting prev_bit (response_bits[-1]) had enough delay to mess up readings so don't use it here
-    precise_delay_us(3) # since changing to 3, READ ROM has failed MUCH LESS OFTEN
+    precise_delay_us(3)  # since changing to 3, READ ROM has failed MUCH LESS OFTEN
 
     # FYI using reconfigure is adding 7-8us of time before 1's can be read so that is bad news here... driving high works fine
     line.set_value(DS1820B_PIN, HIGH)  # fastest response times (~5us for read 1)
     # line.reconfigure_lines({DS1820B_PIN: gpiod.LineSettings(direction=Direction.INPUT)})  # adds (~12+ us for read 1, ouch)
     # FYI sensor also pulls low by this time so me releasing (set high) doesn't change it until sensor also releases
 
-    while line.get_value(DS1820B_PIN) == LOW:
+    while line.get_value(DS1820B_PIN) == LOW:  # ~3us to read the value, occasionally 5-6us
         if time.time() - start_time > 1:
             logger.error("timeout - held low indefinitely - s/b NOT POSSIBLE")
             return False
