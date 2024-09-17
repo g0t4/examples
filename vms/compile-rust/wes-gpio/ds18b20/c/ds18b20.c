@@ -131,6 +131,98 @@ int read_bit(struct gpiod_line *line)
   return HIGH;
 }
 
+bool read_rom_response(struct gpiod_line *line)
+{
+  int response_bits[64];
+  for (int i = 0; i < 64; i++)
+  {
+    int bit = read_bit(line);
+    if (bit < 0)
+    {
+      printf("Failed to read bit %d, aborting...\n", i);
+      return false;
+    }
+    response_bits[i] = bit;
+    precise_delay_us(100); // TODO optimize (helped protocol analyzer identify fields)
+  }
+
+  printf("bits read: ");
+  for (int i = 0; i < 64; i++)
+  {
+    printf("%d", response_bits[i]);
+  }
+  printf("\n");
+
+  uint8_t all_bytes[8];
+  for (int i = 0; i < 64; i += 8)
+  {
+    uint8_t byte = 0;
+    for (int j = 0; j < 8; j++)
+    {
+      byte = byte | (response_bits[i + j] << j);
+    }
+    all_bytes[i / 8] = byte;
+  }
+
+  printf("bytes:\n");
+  for (int i = 0; i < 8; i++)
+  {
+    printf("  %08b (%d) hex: %02x\n", all_bytes[i], all_bytes[i], all_bytes[i]);
+  }
+
+  // Define the CRC-8 function using the polynomial 0x131 (x^8 + x^5 + x^4 + 1)
+  // crc_all = ds18b20_crc8(bytes(all_bytes))  # if include last byte then it should come out to 0, no need to know CRC computed vs actual if they don't match anyways
+  // if crc_all != 0:
+  //     print(f"Failed CRC check: {crc_all}")
+  //     return False
+
+  // ! TODO FIX CRC VALIDATION
+
+  uint8_t crc_all = 0;
+  for (int i = 0; i < 7; i++)
+  {
+    crc_all = crc_all ^ all_bytes[i];
+    for (int j = 0; j < 8; j++)
+    {
+      if (crc_all & 1)
+      {
+        crc_all = (crc_all >> 1) ^ 0x8C;
+      }
+      else
+      {
+        crc_all = crc_all >> 1;
+      }
+    }
+  }
+  if (crc_all != 0)
+  {
+    printf("Failed CRC check: %d\n", crc_all);
+    // return false; // TODO put back
+  }
+
+  uint8_t family_code = all_bytes[0]; // 8 bits (1 byte)
+  uint8_t serial_number[6];           // 48 bits (6 bytes)
+  for (int i = 0; i < 6; i++)
+  {
+    serial_number[5 - i] = all_bytes[i + 1];
+  }
+  uint8_t crc = all_bytes[7]; // 8 bits (1 byte)
+  printf("Serial number: ");
+  for (int i = 0; i < 6; i++)
+  {
+    printf("%02x", serial_number[i]);
+  }
+  printf("\n");
+  printf("CRC: %d\n", crc);
+  if (family_code != 0x28)
+  {
+    printf("Invalid family code: %02x, expected 0x28\n", family_code);
+    return false;
+  }
+
+  return true;
+}
+
 bool send_command(struct gpiod_line *line, uint8_t command)
 {
   // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
@@ -170,7 +262,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     precise_delay_us(3); // recovery >1us
   }
 
-  printf("sent command: %d (%x)\n", command, command);
+  printf("sent command: %d (%02x)\n", command, command);
   // precise_delay_us(100);  //  TODO do I need this? I don't think so
   return true;
 }
@@ -212,15 +304,7 @@ int main()
 
   reset_bus(line) && send_command(line, READ_ROM);
   precise_delay_us(100); // TODO optimize (helped protocol analyzer identify fields)
-  for (int i = 0; i < 8; i++)
-  {
-    for (int j = 0; j < 8; j++)
-    {
-      int bit = read_bit(line);
-      printf("byte: %d, bit: %d => %d\n", i, j, bit);
-    }
-    precise_delay_us(100);  // TODO optimize (helped protocol analyzer identify fields)
-  }
+  read_rom_response(line);
 
   // cleanup
   gpiod_line_release(line);
