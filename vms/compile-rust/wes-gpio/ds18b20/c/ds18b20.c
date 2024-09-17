@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 #include "logging.c"
+#include <stdint.h>
 
 #define LOW 0
 #define HIGH 1
@@ -82,14 +83,14 @@ bool reset_bus(struct gpiod_line *line)
   return 0;
 }
 
-bool send_command(struct gpiod_line *line, unsigned char command)
+bool send_command(struct gpiod_line *line, uint8_t command)
 {
   // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
-  int prev_bit = 1; // s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
+  uint8_t prev_bit = 1; // s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
   for (int i = 0; i < 8; i++)
   {
     // FYI bits are sent in reverse order
-    unsigned char this_bit = (command >> i) & 1;
+    uint8_t this_bit = (command >> i) & 1;
     gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
 
     printf("bit: %d\n", this_bit);
@@ -108,7 +109,6 @@ bool send_command(struct gpiod_line *line, unsigned char command)
       }
       gpiod_line_set_value(line, HIGH);
       precise_delay_us(60); // 60 us total window (min)
-      prev_bit = 1;
     }
     else
     {
@@ -116,9 +116,9 @@ bool send_command(struct gpiod_line *line, unsigned char command)
       gpiod_line_set_value(line, LOW);
       precise_delay_us(65); // min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
       gpiod_line_set_value(line, HIGH);
-      prev_bit = 0;
       // PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
     }
+    prev_bit = this_bit;
     precise_delay_us(3); // recovery >1us
   }
 
