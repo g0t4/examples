@@ -9,6 +9,10 @@
 #define HIGH 1
 #define RELEASE HIGH
 
+#define SKIP_ROM 0xCC
+#define READ_ROM 0xBE
+#define READ_SCRATCHPAD 0xBE
+
 void precise_delay_us(unsigned int us)
 {
   struct timespec start, now;
@@ -152,8 +156,7 @@ int main()
     return 1;
   }
 
-  reset_bus(line);
-  send_command(line, 0xCC); // skip ROM
+  reset_bus(line) && send_command(line, SKIP_ROM);
 
   // cleanup
   gpiod_line_release(line);
