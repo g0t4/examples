@@ -24,7 +24,8 @@
     "**/.grc/**/conf.*": "ini",
     "/usr/src/linux-headers-6.6.31+rpt-common-rpi/**/*.h": "c",
     "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/**/*.h": "c",
-    "pins.h": "c"
+    "pins.h": "c",
+    "gpiod.h": "c"
   },
   // TODO consider putting this onto select remote machines in ~/.vscode-server/data/Machine/settings.json?
 }

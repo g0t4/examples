@@ -16,8 +16,12 @@
         "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated", // asm/cpucaps.h
         "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include/generated/uapi", // asm/errno.h
         //"/usr/src/linux-headers-6.6.31+rpt-rpi-2712/arch/arm64/include", // working w/o this
-        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include" // generated/bounds.h
+        "/usr/src/linux-headers-6.6.31+rpt-rpi-2712/include", // generated/bounds.h
 
+        // for gpiod.h client library
+        "/usr/include",
+        "/usr/lib/gcc/aarch64-linux-gnu/12/include",
+        "/usr/include/aarch64-linux-gnu",
       ],
       "defines": [
         // TODO can I import kernel config from current machine's config file? instead of defining symbols here?

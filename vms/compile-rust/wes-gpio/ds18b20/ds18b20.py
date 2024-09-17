@@ -110,9 +110,10 @@ def send_command(line, command) -> bool:
     # build bits so we can send in left to right order in next loop
     for i in range(8):
         # bits are sent in reverse (confirmed w/ protocol analyzer on LA1010 which successfully matched my READ ROM 0x33 command => )
-        prev_bit = 1  # s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
         this_bit = (command >> i) & 1
         cmd_bits = cmd_bits + [this_bit]  # append each bit to end of list
+
+    prev_bit = 1  # s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
     for bit in cmd_bits:
         if bit:
             # write 1
@@ -394,10 +395,10 @@ def main():
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        # read_temp_with_skip_rom(line)
+        read_temp_with_skip_rom(line)
         # read_rom_then_temp(line)
         # read_power_supply_type(line)
-        troubleshoot_read_CRC_failures_with_only_read_rom(line)
+        # troubleshoot_read_CRC_failures_with_only_read_rom(line)
 
 
 if __name__ == "__main__":
