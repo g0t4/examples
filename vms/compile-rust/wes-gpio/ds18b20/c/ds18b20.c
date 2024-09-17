@@ -211,11 +211,15 @@ int main()
   }
 
   reset_bus(line) && send_command(line, READ_ROM);
-  precise_delay_us(100);
+  precise_delay_us(100); // TODO optimize (helped protocol analyzer identify fields)
   for (int i = 0; i < 8; i++)
   {
-    int bit = read_bit(line);
-    printf("bit: %d\n", bit);
+    for (int j = 0; j < 8; j++)
+    {
+      int bit = read_bit(line);
+      printf("byte: %d, bit: %d => %d\n", i, j, bit);
+    }
+    precise_delay_us(100);  // TODO optimize (helped protocol analyzer identify fields)
   }
 
   // cleanup
