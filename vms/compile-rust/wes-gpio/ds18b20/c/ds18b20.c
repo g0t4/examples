@@ -80,17 +80,17 @@ bool reset_bus(struct gpiod_line *line)
   // printf("presence us: %d\n", presence_us);
   usleep(480 - presence_us); // must ensure entire presenece period is 480us
 
-  return 0;
+  return true;
 }
 
 bool send_command(struct gpiod_line *line, uint8_t command)
 {
   // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
-  uint8_t prev_bit = 1; // s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
+  bool prev_bit = 1; // s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
   for (int i = 0; i < 8; i++)
   {
     // FYI bits are sent in reverse order
-    uint8_t this_bit = (command >> i) & 1;
+    bool this_bit = (command >> i) & 1;
     gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
 
     printf("bit: %d\n", this_bit);
@@ -124,7 +124,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
 
   printf("sent command: %d (%x)\n", command, command);
   // precise_delay_us(100);  //  TODO do I need this? I don't think so
-  return 1;
+  return true;
 }
 
 int main()
