@@ -1,9 +1,14 @@
+#define LOG_LEVEL_INFO 1
+#define LOG_LEVEL_DEBUG 2
+#define LOG_LEVEL LOG_LEVEL_DEBUG
+
 #include <gpiod.h>
 // sudo apt-get install libgpiod-dev
 // dpkg -S gpiod.h => /usr/include/gpiod.h
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include "logging.c"
 
 #define LOW 0
 #define HIGH 1
@@ -12,6 +17,10 @@
 #define SKIP_ROM 0xCC
 #define READ_ROM 0xBE
 #define READ_SCRATCHPAD 0xBE
+
+#define GPIO_CHIP_NAME "gpiochip4"
+#define GPIO_CHIP_LABEL "pinctrl-rp1"
+#define GPIO_LINE_DS18B20 12
 
 void precise_delay_us(unsigned int us)
 {
@@ -75,6 +84,7 @@ bool reset_bus(struct gpiod_line *line)
 
 bool send_command(struct gpiod_line *line, unsigned char command)
 {
+  // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
   int prev_bit = 1; // s/b high and worse case we just wait a smidge longer on first writing first bit when its 1
   for (int i = 0; i < 8; i++)
   {
@@ -119,36 +129,32 @@ bool send_command(struct gpiod_line *line, unsigned char command)
 
 int main()
 {
-  const char *chipname = "gpiochip4"; // Change to your GPIO chip name
-  int line_num = 12;                  // GPIO number 12 => ds18b20
-  struct gpiod_chip *chip;
-  struct gpiod_line *line;
-  int ret;
 
   if (CLOCKS_PER_SEC != 1000000)
   {
-    printf("CLOCKS_PER_SEC is not 1_000_000\n");
+    printf("CLOCKS_PER_SEC is not 1_000_000 (us)\n");
+    printf("CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
     return 1;
   }
 
-  // Open the GPIO chip
-  chip = gpiod_chip_open_by_name(chipname);
+  // struct gpiod_chip *chip = gpiod_chip_open_by_name(GPIO_CHIP_NAME);
+  struct gpiod_chip *chip = gpiod_chip_open_by_label(GPIO_CHIP_LABEL);
   if (!chip)
   {
     perror("Open GPIO chip failed");
     return 1;
   }
 
-  line = gpiod_chip_get_line(chip, line_num);
+  struct gpiod_line *line = gpiod_chip_get_line(chip, GPIO_LINE_DS18B20);
   if (!line)
   {
     perror("Get GPIO line failed");
     gpiod_chip_close(chip);
     return 1;
   }
-  // printf("line is %d\n", gpiod_line_get_value(line)); // -1 b/c it's not yet requested
-  // pull low for reset
-  ret = gpiod_line_request_output(line, "my_program", HIGH);
+
+  // FYI also event based interface instead: gpiod_line_request_rising_edge_events, IIUC incompatible with read/write APIs
+  int ret = gpiod_line_request_output(line, "my_program", HIGH); // keep high (unchanged initially)
   if (ret < 0)
   {
     perror("Request line as output failed");
