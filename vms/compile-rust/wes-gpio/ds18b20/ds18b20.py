@@ -395,10 +395,10 @@ def main():
             config={DS1820B_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=HIGH)},  # FYI CONFIRMED => keep it high for so any overhead in request line isn't adding to total time low on first bit if 0
             #   PREV defaulted to low and that added 50us to the first bit low time!!!!
     ) as line:
-        read_temp_with_skip_rom(line)
+        # read_temp_with_skip_rom(line)
         # read_rom_then_temp(line)
         # read_power_supply_type(line)
-        # troubleshoot_read_CRC_failures_with_only_read_rom(line)
+        troubleshoot_read_CRC_failures_with_only_read_rom(line)
 
 
 if __name__ == "__main__":
