@@ -38,6 +38,11 @@ void precise_delay_us(unsigned int us)
       break;
     }
   }
+
+  // FYI w1 therm driver in kernel impls spin timer => might be more accurate than what I am using above so consider it if more accurate timing is needed
+  //  w1_delay https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/w1/w1_io.c#L40-L54
+  //    unfortunately it uses udelay (kernel space only, IIUC => linux/asm/delay.h)
+  //   https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/w1/w1_io.c#L342-L349
 }
 
 bool reset_bus(struct gpiod_line *line)
