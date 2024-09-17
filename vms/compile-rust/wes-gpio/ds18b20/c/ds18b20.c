@@ -16,7 +16,8 @@
 #define RELEASE HIGH
 
 #define SKIP_ROM 0xCC
-#define READ_ROM 0xBE
+#define READ_ROM 0x33
+#define CONVERT_T_CMD 0x44
 #define READ_SCRATCHPAD 0xBE
 
 #define GPIO_CHIP_NAME "gpiochip4"
@@ -86,6 +87,48 @@ bool reset_bus(struct gpiod_line *line)
   usleep(480 - presence_us); // must ensure entire presenece period is 480us
 
   return true;
+}
+
+// return the bit that is read (negative if error) (0 is low, 1 is high)
+int read_bit(struct gpiod_line *line)
+{
+  gpiod_line_set_value(line, HIGH); // might be vesitgial
+
+  gpiod_line_set_value(line, LOW); // host starts the read by driving low for >1us but not long
+  int start_time = clock();        // starts after pull low, have up to 15us to read the bit 0/1 for sure though I am seeing 31ish us for 0s, <5us for 1s
+
+  // holy cow getting prev_bit (response_bits[-1]) had enough delay to mess up readings so don't use it here
+  precise_delay_us(5); // since changing to 3, READ ROM has failed MUCH LESS OFTEN
+
+  gpiod_line_set_value(line, HIGH);
+
+  // simple idea => wait for the line to actually change before reading it (in the event it is a 1 and goes high rather quickly and we have a very very narrow window to read the line during b/c of stupid timing decisions)
+  precise_delay_us(2); // give it time to actually change so hopefully don't need to re-read which can push past 15us window to read logic 1s
+
+  while (gpiod_line_get_value(line) == LOW)
+  { // ~3us to read
+    if (clock() - start_time > 1e6)
+    {
+      printf("timeout - held low indefinitely - s/b NOT POSSIBLE\n");
+      return -1;
+    }
+  }
+
+  int us_low = clock() - start_time;
+
+  // ensure 60us on 0 and 15us on 1
+  int wait_more_us = 65 - us_low;
+  // TODO try 15us on 1s
+  if (wait_more_us > 0)
+  {
+    precise_delay_us(wait_more_us);
+  }
+
+  if (us_low > 15)
+  {
+    return LOW;
+  }
+  return HIGH;
 }
 
 bool send_command(struct gpiod_line *line, uint8_t command)
@@ -167,7 +210,13 @@ int main()
     return 1;
   }
 
-  reset_bus(line) && send_command(line, SKIP_ROM);
+  reset_bus(line) && send_command(line, READ_ROM);
+  precise_delay_us(100);
+  for (int i = 0; i < 8; i++)
+  {
+    int bit = read_bit(line);
+    printf("bit: %d\n", bit);
+  }
 
   // cleanup
   gpiod_line_release(line);
