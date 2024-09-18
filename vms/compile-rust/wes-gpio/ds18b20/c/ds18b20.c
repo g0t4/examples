@@ -178,7 +178,7 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
   for (int i = 0; i < 8; i++)
   {
     // FYI %08b is not standard C, but it is in glibc? IIUC
-    LOG_DEBUG("  %08b (%d) hex: %02x", bytes[i], bytes[i], bytes[i]);
+    LOG_DEBUG("  %08b (0x%02x = %3d)", bytes[i], bytes[i], bytes[i]);
   }
 
   return true;
@@ -294,8 +294,25 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     precise_delay_us(3); // recovery >1us
   }
 
-  LOG_INFO("sent command: %d (%02x)", command, command);
-  // precise_delay_us(100);  //  TODO do I need this? I don't think so
+  switch (command)
+  {
+  case SKIP_ROM:
+    LOG_INFO("sent command: SKIP_ROM 0x%02x", SKIP_ROM);
+    break;
+  case READ_ROM:
+    LOG_INFO("sent command: READ_ROM 0x%02x", READ_ROM);
+    break;
+  case CONVERT_T_CMD:
+    LOG_INFO("sent command: CONVERT_T_CMD 0x%02x", CONVERT_T_CMD);
+    break;
+  case READ_SCRATCHPAD:
+    LOG_INFO("sent command: READ_SCRATCHPAD 0x%02x", READ_SCRATCHPAD);
+    break;
+  default:
+    LOG_INFO("sent generic command: %d (0x%02x) - please add command name to list to show meaningful name", command, command);
+    break;
+  }
+
   return true;
 }
 
