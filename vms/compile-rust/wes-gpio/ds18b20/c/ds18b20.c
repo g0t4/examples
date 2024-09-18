@@ -180,10 +180,11 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
     bytes[byteIndex] = current_byte;
   }
 
-  LOG_DEBUG("%d bytes read:\n", num_bytes);
+  LOG_DEBUG("%d bytes read:", num_bytes);
   for (int i = 0; i < 8; i++)
   {
-    printf("  %08b (%d) hex: %02x\n", bytes[i], bytes[i], bytes[i]);
+    // FYI %08b is not standard C, but it is in glibc? IIUC
+    LOG_DEBUG("  %08b (%d) hex: %02x", bytes[i], bytes[i], bytes[i]);
   }
 
   return true;
@@ -204,7 +205,7 @@ bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t num_byt
     fprintf(stderr, "Failed CRC check: %u\n", crc);
     return 0; // Or return an appropriate error code
   }
-  LOG_DEBUG("crc: %d\n", crc);
+  LOG_DEBUG("crc: %d", crc);
   return true;
 }
 
