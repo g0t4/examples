@@ -59,7 +59,7 @@ bool reset_bus(struct gpiod_line *line)
   {
     if (clock() - start_us > 1000000)
     {
-      printf(stderr, "timeout waiting for line to go low - the start of presence response\n");
+      fprintf(stderr, "timeout waiting for line to go low - the start of presence response\n");
       break;
     }
   }
@@ -70,7 +70,7 @@ bool reset_bus(struct gpiod_line *line)
   {
     if (clock() - start_us > 1000000)
     {
-      printf(stderr, "timeout waiting for line to go high - the end of presence response\n");
+      fprintf(stderr, "timeout waiting for line to go high - the end of presence response\n");
       break;
     }
   }
@@ -103,7 +103,7 @@ int read_bit(struct gpiod_line *line)
   { // ~3us to read
     if (clock() - start_time > 1e6)
     {
-      printf("timeout - held low indefinitely - s/b NOT POSSIBLE\n");
+      fprintf(stderr, "timeout - held low indefinitely - s/b NOT POSSIBLE\n");
       return -1;
     }
   }
@@ -280,8 +280,8 @@ int main()
 
   if (CLOCKS_PER_SEC != 1000000)
   {
-    printf(stderr, "ERROR: CLOCKS_PER_SEC is not 1_000_000 (us)\n");
-    printf(stderr, "  CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
+    fprintf(stderr, "ERROR: CLOCKS_PER_SEC is not 1_000_000 (us)\n");
+    fprintf(stderr, "  CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
     return 1;
   }
 
