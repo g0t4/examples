@@ -320,6 +320,7 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
 {
   // FYI if you call Convert T then it writes to memory a temp value and subsequent reads will work without this delay... so the first time you boot up and request temp you need to manually ywait to get around hte 750ms min on 12-bit resolution
   // TODO fix this, why isn't it working? also look at python impl and fix it too if fixed here
+  // ! TODO check manual - says smth about 10us to release bus after convert T command... am I doing that? why does this successfully wait for read slot to return 1 after 600ms and then read scratch pad always fails?
   // FYI this issue is not waiting, but READ_SCRATCHPAD always fails
   return true;
 
