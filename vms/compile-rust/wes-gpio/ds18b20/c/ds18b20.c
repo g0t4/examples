@@ -179,6 +179,13 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
     }
     bytes[byteIndex] = current_byte;
   }
+
+  LOG_DEBUG("%d bytes read:\n", num_bytes);
+  for (int i = 0; i < 8; i++)
+  {
+    printf("  %08b (%d) hex: %02x\n", bytes[i], bytes[i], bytes[i]);
+  }
+
   return true;
 }
 
@@ -207,12 +214,6 @@ bool read_rom_response(struct gpiod_line *line)
   if (!read_bytes_with_crc(line, all_bytes, 8))
   {
     return false;
-  }
-
-  printf("bytes:\n");
-  for (int i = 0; i < 8; i++)
-  {
-    printf("  %08b (%d) hex: %02x\n", all_bytes[i], all_bytes[i], all_bytes[i]);
   }
 
   uint8_t family_code = all_bytes[0]; // 8 bits (1 byte)
