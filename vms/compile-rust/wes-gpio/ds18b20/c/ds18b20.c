@@ -223,16 +223,14 @@ bool read_rom_response(struct gpiod_line *line)
   {
     serial_number[5 - i] = all_bytes[i + 1];
   }
-  printf("Serial number: ");
-  for (int i = 0; i < 6; i++)
-  {
-    printf("%02x", serial_number[i]);
-  }
-  printf("\n");
+
+  char serial_number_string[13];
+  sprintf(serial_number_string, "%02x%02x%02x%02x%02x%02x", serial_number[0], serial_number[1], serial_number[2], serial_number[3], serial_number[4], serial_number[5]);
+  LOG_DEBUG("serial number: %s", serial_number_string);
 
   if (family_code != 0x28)
   {
-    printf("Invalid family code: %02x, expected 0x28\n", family_code);
+    printf("ERROR: Invalid family code %02x, expected 0x28\n", family_code);
     return false;
   }
 
