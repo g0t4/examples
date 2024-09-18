@@ -48,43 +48,37 @@ void precise_delay_us(unsigned int us)
 
 bool reset_bus(struct gpiod_line *line)
 {
-  // printf("line is %d\n", gpiod_line_get_value(line));
   gpiod_line_set_value(line, LOW);
-  // printf("line is %d\n", gpiod_line_get_value(line));
-  //  wait for 480us
-  // usleep(480);
+
   precise_delay_us(480);
-  // busy_wait(480);
 
   gpiod_line_set_value(line, HIGH);
-  // printf("line is %d\n", gpiod_line_get_value(line));
 
   int start_us = clock();
   while (gpiod_line_get_value(line) == 1)
   {
     if (clock() - start_us > 1000000)
     {
-      printf("timeout\n");
+      printf(stderr, "timeout waiting for line to go low - the start of presence response\n");
       break;
     }
-    // printf("line is %d\n", gpiod_line_get_value(line));
   }
-  // went low
+  // just went low
   start_us = clock();
+
   while (gpiod_line_get_value(line) == 0)
   {
     if (clock() - start_us > 1000000)
     {
-      printf("timeout\n");
+      printf(stderr, "timeout waiting for line to go high - the end of presence response\n");
       break;
     }
-    // printf("line is %d\n", gpiod_line_get_value(line));
   }
   // released
-  // need to wait >480us total before proceed
+
+  // must wait 480us past start of presence response
   int presence_us = clock() - start_us; // s/b 60 < presence_us < 120
-  // printf("presence us: %d\n", presence_us);
-  usleep(480 - presence_us); // must ensure entire presenece period is 480us
+  usleep(480 - presence_us);
 
   return true;
 }
@@ -247,7 +241,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     bool this_bit = (command >> i) & 1;
     gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
 
-    printf("bit: %d\n", this_bit);
+    LOG_DEBUG("bit: %d\n", this_bit);
     if (this_bit)
     {
       // write 1
@@ -276,7 +270,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     precise_delay_us(3); // recovery >1us
   }
 
-  printf("sent command: %d (%02x)\n", command, command);
+  LOG_INFO("sent command: %d (%02x)\n", command, command);
   // precise_delay_us(100);  //  TODO do I need this? I don't think so
   return true;
 }
@@ -286,8 +280,8 @@ int main()
 
   if (CLOCKS_PER_SEC != 1000000)
   {
-    printf("CLOCKS_PER_SEC is not 1_000_000 (us)\n");
-    printf("CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
+    printf(stderr, "ERROR: CLOCKS_PER_SEC is not 1_000_000 (us)\n");
+    printf(stderr, "  CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
     return 1;
   }
 
