@@ -316,6 +316,37 @@ bool send_command(struct gpiod_line *line, uint8_t command)
   return true;
 }
 
+bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
+{
+  // FYI if you call Convert T then it writes to memory a temp value and subsequent reads will work without this delay... so the first time you boot up and request temp you need to manually ywait to get around hte 750ms min on 12-bit resolution
+  // TODO fix this, why isn't it working? also look at python impl and fix it too if fixed here
+  return true;
+
+  precise_delay_us(25000);
+  int start_time = clock();
+  while (1)
+  {
+    int bit = read_bit(line);
+    if (bit < 0)
+    {
+      LOG_ERROR("Failed to read bit for status of temp conversion, aborting...");
+      return false;
+    }
+    if (bit == 1)
+    {
+      break;
+    }
+    if (clock() - start_time > 1e6)
+    {
+      LOG_ERROR("Timeout waiting for temp conversion to complete");
+      return false;
+    }
+    precise_delay_us(50000); // check every 50ms
+  }
+
+  return true;
+}
+
 int main()
 {
 
@@ -357,6 +388,7 @@ int main()
 
   reset_bus(line) && send_command(line, SKIP_ROM)                                 // use comment to stop vcformat from combining lines (hack for now)
       && precise_delay_us(100) && send_command(line, CONVERT_T_CMD)               //
+      && wait_for_temp_conversion_to_complete(line)                               //
       && precise_delay_us(100) && reset_bus(line) && send_command(line, SKIP_ROM) //
       && precise_delay_us(100) && send_command(line, READ_SCRATCHPAD) && read_scratchpad(line);
 
