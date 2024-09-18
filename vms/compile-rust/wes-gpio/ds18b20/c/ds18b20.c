@@ -266,7 +266,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     bool this_bit = (command >> i) & 1;
     gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
 
-    LOG_DEBUG("bit: %d", this_bit);
+    LOG_DEBUG("writing bit: %d", this_bit);
     if (this_bit)
     {
       // write 1
