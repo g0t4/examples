@@ -9,3 +9,5 @@
 #else
 #define LOG_DEBUG(fmt, ...)
 #endif
+
+#define LOG_ERROR(fmt, ...) fprintf(stderr, "ERROR: " fmt "\n", ##__VA_ARGS__)

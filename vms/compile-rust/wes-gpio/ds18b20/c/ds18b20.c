@@ -59,7 +59,7 @@ bool reset_bus(struct gpiod_line *line)
   {
     if (clock() - start_us > 1000000)
     {
-      fprintf(stderr, "timeout waiting for line to go low - the start of presence response\n");
+      LOG_ERROR("timeout waiting for line to go low - the start of presence response");
       break;
     }
   }
@@ -70,7 +70,7 @@ bool reset_bus(struct gpiod_line *line)
   {
     if (clock() - start_us > 1000000)
     {
-      fprintf(stderr, "timeout waiting for line to go high - the end of presence response\n");
+      LOG_ERROR("timeout waiting for line to go high - the end of presence response");
       break;
     }
   }
@@ -103,7 +103,7 @@ int read_bit(struct gpiod_line *line)
   { // ~3us to read
     if (clock() - start_time > 1e6)
     {
-      fprintf(stderr, "timeout - held low indefinitely - s/b NOT POSSIBLE\n");
+      LOG_ERROR("timeout - held low indefinitely - s/b NOT POSSIBLE");
       return -1;
     }
   }
@@ -164,7 +164,7 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
       int bit = read_bit(line);
       if (bit < 0)
       {
-        fprintf(stderr, "Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
+        LOG_ERROR("Failed to read byte %d bit %d, aborting...", byteIndex, bitIndex);
         return false;
       }
       // reads: put bit into current_byte at position bitIndex
@@ -196,7 +196,7 @@ bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t num_byt
   uint8_t crc = w1_calc_crc8(bytes, num_bytes);
   if (crc != 0)
   {
-    fprintf(stderr, "Failed CRC check: %u\n", crc);
+    LOG_ERROR("Failed CRC check: %u", crc);
     return 0; // Or return an appropriate error code
   }
   LOG_DEBUG("crc: %d", crc);
@@ -224,7 +224,7 @@ bool read_rom_response(struct gpiod_line *line)
 
   if (family_code != 0x28)
   {
-    fprintf(stderr, "ERROR: Invalid family code %02x, expected 0x28\n", family_code);
+    LOG_ERROR("Invalid family code %02x, expected 0x28", family_code);
     return false;
   }
 
@@ -280,8 +280,7 @@ int main()
 
   if (CLOCKS_PER_SEC != 1000000)
   {
-    fprintf(stderr, "ERROR: CLOCKS_PER_SEC is not 1_000_000 (us)\n");
-    fprintf(stderr, "  CLOCKS_PER_SEC is %d\n", CLOCKS_PER_SEC);
+    LOG_ERROR("CLOCKS_PER_SEC is not 1_000_000 (us), it is %d", CLOCKS_PER_SEC);
     return 1;
   }
 
