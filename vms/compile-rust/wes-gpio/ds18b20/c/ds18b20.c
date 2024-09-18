@@ -173,7 +173,7 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
         printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
         return false;
       }
-      current_byte = current_byte | (bit << bitIndex);
+      current_byte = (bit << bitIndex) | current_byte;
     }
     bytes[byteIndex] = current_byte;
   }
