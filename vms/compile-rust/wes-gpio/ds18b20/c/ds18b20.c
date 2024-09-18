@@ -241,7 +241,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     bool this_bit = (command >> i) & 1;
     gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
 
-    LOG_DEBUG("bit: %d\n", this_bit);
+    LOG_DEBUG("bit: %d", this_bit);
     if (this_bit)
     {
       // write 1
@@ -270,7 +270,7 @@ bool send_command(struct gpiod_line *line, uint8_t command)
     precise_delay_us(3); // recovery >1us
   }
 
-  LOG_INFO("sent command: %d (%02x)\n", command, command);
+  LOG_INFO("sent command: %d (%02x)", command, command);
   // precise_delay_us(100);  //  TODO do I need this? I don't think so
   return true;
 }
