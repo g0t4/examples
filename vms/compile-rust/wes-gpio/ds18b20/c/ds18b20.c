@@ -160,37 +160,33 @@ uint8_t w1_calc_crc8(uint8_t *data, int len)
   return crc;
 }
 
-bool read_rom_response(struct gpiod_line *line)
+bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t length)
 {
-  int response_bits[64];
-  for (int i = 0; i < 64; i++)
-  {
-    int bit = read_bit(line);
-    if (bit < 0)
-    {
-      printf("Failed to read bit %d, aborting...\n", i);
-      return false;
-    }
-    response_bits[i] = bit;
-    precise_delay_us(100); // TODO optimize (helped protocol analyzer identify fields)
-  }
-
-  printf("bits read: ");
-  for (int i = 0; i < 64; i++)
-  {
-    printf("%d", response_bits[i]);
-  }
-  printf("\n");
-
-  uint8_t all_bytes[8];
-  for (int i = 0; i < 64; i += 8)
+  for (int i = 0; i < length; i++)
   {
     uint8_t byte = 0;
     for (int j = 0; j < 8; j++)
     {
-      byte = byte | (response_bits[i + j] << j);
+      int bit = read_bit(line);
+      if (bit < 0)
+      {
+        printf("Failed to read byte %d bit %d, aborting...\n", i, j);
+        return false;
+      }
+      byte = byte | (bit << j);
     }
-    all_bytes[i / 8] = byte;
+    bytes[i] = byte;
+  }
+  return true;
+}
+
+bool read_rom_response(struct gpiod_line *line)
+{
+  uint8_t all_bytes[8];
+  if (!read_bytes(line, all_bytes, 8))
+  {
+    printf("Failed to read all bytes\n");
+    return false;
   }
 
   printf("bytes:\n");
