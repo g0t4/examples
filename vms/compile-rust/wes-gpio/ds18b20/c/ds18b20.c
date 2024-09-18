@@ -165,15 +165,15 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
   for (int byteIndex = 0; byteIndex < num_bytes; byteIndex++)
   {
     uint8_t byte = 0;
-    for (int j = 0; j < 8; j++)
+    for (int bitIndex = 0; bitIndex < 8; bitIndex++)
     {
       int bit = read_bit(line);
       if (bit < 0)
       {
-        printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, j);
+        printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
         return false;
       }
-      byte = byte | (bit << j);
+      byte = byte | (bit << bitIndex);
     }
     bytes[byteIndex] = byte;
   }
