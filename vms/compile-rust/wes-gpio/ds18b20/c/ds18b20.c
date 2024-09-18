@@ -170,7 +170,7 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
       int bit = read_bit(line);
       if (bit < 0)
       {
-        printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
+        fprintf(stderr, "Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
         return false;
       }
       // reads: put bit into current_byte at position bitIndex
@@ -194,10 +194,10 @@ bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t num_byt
   uint8_t crc = w1_calc_crc8(bytes, num_bytes);
   if (crc != 0)
   {
-    printf("Failed CRC check: %u\n", crc);
+    fprintf(stderr, "Failed CRC check: %u\n", crc);
     return 0; // Or return an appropriate error code
   }
-  printf("crc: %d\n", crc);
+  LOG_DEBUG("crc: %d\n", crc);
   return true;
 }
 
