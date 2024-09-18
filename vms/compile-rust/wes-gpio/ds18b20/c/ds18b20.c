@@ -224,7 +224,7 @@ bool read_rom_response(struct gpiod_line *line)
 
   if (family_code != 0x28)
   {
-    printf("ERROR: Invalid family code %02x, expected 0x28\n", family_code);
+    fprintf(stderr, "ERROR: Invalid family code %02x, expected 0x28\n", family_code);
     return false;
   }
 
