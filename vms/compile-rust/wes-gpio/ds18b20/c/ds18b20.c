@@ -231,6 +231,31 @@ bool read_rom_response(struct gpiod_line *line)
   return true;
 }
 
+bool read_scratchpad(struct gpiod_line *line)
+{
+  uint8_t scratchpad[9];
+  if (!read_bytes_with_crc(line, scratchpad, 9))
+  {
+    return false;
+  }
+
+  uint8_t temp_lsb = scratchpad[0];
+  uint8_t temp_msb = scratchpad[1];
+  int16_t temp_raw = (temp_msb << 8) | temp_lsb;
+  if (temp_raw & 0x8000)
+  {
+    temp_raw = -((temp_raw ^ 0xFFFF) + 1);
+  }
+  float temp_celsius = temp_raw / 16.0;
+  LOG_INFO("Temp: %.2f°C", temp_celsius);
+  float temp_fahrenheit = temp_celsius * 9 / 5 + 32;
+  LOG_INFO("Temp: %.2f°F", temp_fahrenheit);
+
+  // PRN read rest of scratchpad beyond temperature when I need it and build a struct response?
+
+  return true;
+}
+
 bool send_command(struct gpiod_line *line, uint8_t command)
 {
   // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
