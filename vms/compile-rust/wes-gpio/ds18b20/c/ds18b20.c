@@ -199,7 +199,6 @@ bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t num_byt
     LOG_ERROR("Failed CRC check: %u", crc);
     return 0; // Or return an appropriate error code
   }
-  LOG_DEBUG("crc: %d", crc);
   return true;
 }
 
