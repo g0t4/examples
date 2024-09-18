@@ -180,13 +180,32 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t length)
   return true;
 }
 
+bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t length)
+{
+  if (!read_bytes(line, bytes, length))
+  {
+    return false;
+  }
+
+  size_t crc_index = length - 1;
+  uint8_t crc = w1_calc_crc8(bytes, crc_index);
+  if (crc != bytes[crc_index])
+  {
+    printf("Failed CRC check: %u\n", crc);
+    return 0; // Or return an appropriate error code
+  }
+  printf("crc: %d\n", crc);
+
+  return true;
+}
+
 bool read_rom_response(struct gpiod_line *line)
 {
   uint8_t all_bytes[8];
-  if (!read_bytes(line, all_bytes, 8))
+  if (!read_bytes_with_crc(line, all_bytes, 8))
   {
-    printf("Failed to read all bytes\n");
-    return false;
+    // return false;
+    printf("fail");
   }
 
   printf("bytes:\n");
