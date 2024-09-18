@@ -173,6 +173,8 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
         printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, bitIndex);
         return false;
       }
+      // reads: put bit into current_byte at position bitIndex
+      // thus we assemble the byte from left to right (reverse of how we read it)
       current_byte = (bit << bitIndex) | current_byte;
     }
     bytes[byteIndex] = current_byte;
