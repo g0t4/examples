@@ -320,7 +320,7 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
 {
   // FYI if you call Convert T then it writes to memory a temp value and subsequent reads will work without this delay... so the first time you boot up and request temp you need to manually ywait to get around hte 750ms min on 12-bit resolution
   // TODO fix this, why isn't it working? also look at python impl and fix it too if fixed here
-  return true;
+  // return true;
 
   precise_delay_us(25000);
   int start_time = clock();
@@ -329,11 +329,14 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
     int bit = read_bit(line);
     if (bit < 0)
     {
-      LOG_ERROR("Failed to read bit for status of temp conversion, aborting...");
+      int elapsed_ms = (clock() - start_time) / 1000;
+      LOG_ERROR("Failed to read bit for status of temp conversion, aborting after %d ms", (clock() - start_time) / 1000);
       return false;
     }
     if (bit == 1)
     {
+      int elapsed_ms = (clock() - start_time) / 1000;
+      LOG_INFO("Temp conversion complete after %d ms", elapsed_ms);
       break;
     }
     if (clock() - start_time > 1e6)
