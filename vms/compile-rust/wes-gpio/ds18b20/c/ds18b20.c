@@ -160,9 +160,9 @@ uint8_t w1_calc_crc8(uint8_t *data, int len)
   return crc;
 }
 
-bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t length)
+bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
 {
-  for (int i = 0; i < length; i++)
+  for (int i = 0; i < num_bytes; i++)
   {
     uint8_t byte = 0;
     for (int j = 0; j < 8; j++)
