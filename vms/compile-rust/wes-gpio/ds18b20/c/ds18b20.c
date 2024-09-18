@@ -180,22 +180,22 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t length)
   return true;
 }
 
-bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t length)
+bool read_bytes_with_crc(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
 {
-  if (!read_bytes(line, bytes, length))
+  if (!read_bytes(line, bytes, num_bytes))
   {
     return false;
   }
 
-  size_t crc_index = length - 1;
-  uint8_t crc = w1_calc_crc8(bytes, crc_index);
-  if (crc != bytes[crc_index])
+  // FYI crc(bytes) == 0
+  //   OR crc(bytes[0:7]) == bytes[8]
+  uint8_t crc = w1_calc_crc8(bytes, num_bytes);
+  if (crc != 0)
   {
     printf("Failed CRC check: %u\n", crc);
     return 0; // Or return an appropriate error code
   }
   printf("crc: %d\n", crc);
-
   return true;
 }
 
@@ -204,8 +204,7 @@ bool read_rom_response(struct gpiod_line *line)
   uint8_t all_bytes[8];
   if (!read_bytes_with_crc(line, all_bytes, 8))
   {
-    // return false;
-    printf("fail");
+    return false;
   }
 
   printf("bytes:\n");
@@ -214,29 +213,19 @@ bool read_rom_response(struct gpiod_line *line)
     printf("  %08b (%d) hex: %02x\n", all_bytes[i], all_bytes[i], all_bytes[i]);
   }
 
-  size_t length = sizeof(all_bytes) / sizeof(all_bytes[0]);
-  uint8_t crc_all = w1_calc_crc8(all_bytes, length);
-  if (crc_all != 0)
-  {
-    printf("Failed CRC check: %u\n", crc_all);
-    return 0; // Or return an appropriate error code
-  }
-  printf("crc_all: %d\n", crc_all);
-
   uint8_t family_code = all_bytes[0]; // 8 bits (1 byte)
   uint8_t serial_number[6];           // 48 bits (6 bytes)
   for (int i = 0; i < 6; i++)
   {
     serial_number[5 - i] = all_bytes[i + 1];
   }
-  uint8_t crc = all_bytes[7]; // 8 bits (1 byte)
   printf("Serial number: ");
   for (int i = 0; i < 6; i++)
   {
     printf("%02x", serial_number[i]);
   }
   printf("\n");
-  printf("CRC: %d\n", crc);
+
   if (family_code != 0x28)
   {
     printf("Invalid family code: %02x, expected 0x28\n", family_code);
