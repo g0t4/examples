@@ -162,7 +162,7 @@ uint8_t w1_calc_crc8(uint8_t *data, int len)
 
 bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
 {
-  for (int i = 0; i < num_bytes; i++)
+  for (int byteIndex = 0; byteIndex < num_bytes; byteIndex++)
   {
     uint8_t byte = 0;
     for (int j = 0; j < 8; j++)
@@ -170,12 +170,12 @@ bool read_bytes(struct gpiod_line *line, uint8_t *bytes, size_t num_bytes)
       int bit = read_bit(line);
       if (bit < 0)
       {
-        printf("Failed to read byte %d bit %d, aborting...\n", i, j);
+        printf("Failed to read byte %d bit %d, aborting...\n", byteIndex, j);
         return false;
       }
       byte = byte | (bit << j);
     }
-    bytes[i] = byte;
+    bytes[byteIndex] = byte;
   }
   return true;
 }
