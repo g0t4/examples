@@ -320,7 +320,8 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
 {
   // FYI if you call Convert T then it writes to memory a temp value and subsequent reads will work without this delay... so the first time you boot up and request temp you need to manually ywait to get around hte 750ms min on 12-bit resolution
   // TODO fix this, why isn't it working? also look at python impl and fix it too if fixed here
-  // return true;
+  // FYI this issue is not waiting, but READ_SCRATCHPAD always fails
+  return true;
 
   precise_delay_us(25000);
   int start_time = clock();
