@@ -24,7 +24,7 @@
 #define GPIO_CHIP_LABEL "pinctrl-rp1"
 #define GPIO_LINE_DS18B20 12
 
-void precise_delay_us(unsigned int us)
+bool precise_delay_us(unsigned int us)
 {
   struct timespec start, now;
   clock_gettime(CLOCK_MONOTONIC, &start);
@@ -39,7 +39,7 @@ void precise_delay_us(unsigned int us)
       break;
     }
   }
-
+  return true; // just so I can compose with other boolean operations
   // FYI w1 therm driver in kernel impls spin timer => might be more accurate than what I am using above so consider it if more accurate timing is needed
   //  w1_delay https://github.com/raspberrypi/linux/blob/rpi-6.8.y/drivers/w1/w1_io.c#L40-L54
   //    unfortunately it uses udelay (kernel space only, IIUC => linux/asm/delay.h)
@@ -334,9 +334,15 @@ int main()
     return 1;
   }
 
-  reset_bus(line) && send_command(line, READ_ROM);
-  precise_delay_us(100); // TODO optimize (helped protocol analyzer identify fields)
-  read_rom_response(line);
+  // TODO remove or optimize the precise_delay_us(100) - added to help protocol analyzer identify fields clearly
+
+  // reset_bus(line) && send_command(line, READ_ROM) //
+  //     && precise_delay_us(100) && read_rom_response(line);
+
+  reset_bus(line) && send_command(line, SKIP_ROM)                                 // use comment to stop vcformat from combining lines (hack for now)
+      && precise_delay_us(100) && send_command(line, CONVERT_T_CMD)               //
+      && precise_delay_us(100) && reset_bus(line) && send_command(line, SKIP_ROM) //
+      && precise_delay_us(100) && send_command(line, READ_SCRATCHPAD) && read_scratchpad(line);
 
   // cleanup
   gpiod_line_release(line);
