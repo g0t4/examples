@@ -405,13 +405,49 @@ bool search_rom(struct gpiod_line *line)
 {
   send_command(line, SEARCH_ROM);
 
-  uint8_t read1 = read_bit(line);
-  uint8_t read2 = read_bit(line);
   // | read1 | read2 |
   // |   0   |   0   |   sensor(s) remaining with 0 and 1
   // |   0   |   1   |   sensor(s) remaining with 0, none with 1
   // |   1   |   0   |   sensor(s) remaining with 1, none with 0
   // |   1   |   1   |   no sensors (remaining)
+
+  // first sensor ROM:
+  // 8 bytes (64 bits) of ROM
+  uint64_t rom1 = 0;
+  printf("bits read:\n  ");
+  for (int i = 0; i < 64; i++)
+  {
+    uint8_t bit = read_bit(line);
+    uint8_t compliment_bit = read_bit(line);
+    if (bit < 0 || compliment_bit < 0)
+    {
+      return false; // assume inner read_bit already logged explanation
+    }
+
+    printf("%d / %d\n", bit, compliment_bit);
+    rom1 = (rom1 << 1) | bit;
+
+    // IIUC if I don't write the byte I am pursuing then all sensors will continue to repeat the same response (first or current bit)... can that be used to double check the value read?
+    // write decision about which next bit to pursue (filter remaining sensors on bus), for now just go with first bit read (ignore compliment)
+    if (!write_bit(line, bit, ASSUME_PREV_HIGH))
+    {
+      return false;
+    }
+    // TODO left off here, just trying to get protocol hammered out before an elegant solution to search ROM... just for a challenge so I can get temp from multiple sensors :)
+  }
+
+  // for (int byte_index = 0; byte_index < 8; byte_index++)
+  // {
+  //   for (int bit_index = 0; bit_index < 8; bit_index++)
+  //   {
+  //     int overall_bit_index = byte_index * 8 + bit_index;
+  //     // FYI %08b is not standard C, but it is in glibc? IIUC
+  //     LOG_DEBUG("  %08b (0x%02x = %3d)", bytes[i], bytes[i], bytes[i]);
+  //   }
+  // }
+
+  // uint8_t family_code = (uint8_t)(rom1 & 0x0000000000FF);
+  // LOG_INFO("family_code: 0x%02x = %3d", family_code, family_code);
 
   // create an array of  to store discovered bits and help sequence the search
   return false; // TODO
@@ -488,9 +524,9 @@ int main()
   //     && precise_delay_us(100) && reset_bus(line) && send_command(line, SKIP_ROM) //
   //     && precise_delay_us(100) && send_command(line, READ_SCRATCHPAD) && read_scratchpad(line);
 
-  // reset_bus(line) && search_rom(line); // for multi device setups =
+  reset_bus(line) && search_rom(line); // for multi device setups
 
-  read_power_supply_type(line);
+  // read_power_supply_type(line);
 
   // cleanup
   gpiod_line_release(line);
