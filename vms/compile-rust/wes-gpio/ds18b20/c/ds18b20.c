@@ -322,9 +322,10 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
   // TODO fix this, why isn't it working? also look at python impl and fix it too if fixed here
   // ! TODO check manual - says smth about 10us to release bus after convert T command... am I doing that? why does this successfully wait for read slot to return 1 after 600ms and then read scratch pad always fails?
   // FYI this issue is not waiting, but READ_SCRATCHPAD always fails
-  return true;
 
-  precise_delay_us(25000);
+  // WTF, now, waiting for a second results in read scratch pad CRC failures... WTF? without delay I am reading an old value, reliably?!
+  // precise_delay_us(1000000);
+  return true;
   int start_time = clock();
   while (1)
   {
