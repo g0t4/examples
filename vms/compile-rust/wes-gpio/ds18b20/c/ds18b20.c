@@ -448,6 +448,7 @@ bool search_rom(struct gpiod_line *line)
     }
     LOG_INFO("  %s", byte_string);
   }
+  // TODO something is wrong with this command b/c I often get invalid ROM responses (i.e. all 1s... what am I missing? check timing of when to read each bit)
   // TODO check CRC
 
   uint8_t family_code = (uint8_t)(rom1 & 0xFF);
