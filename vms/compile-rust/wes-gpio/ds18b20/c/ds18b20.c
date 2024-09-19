@@ -15,10 +15,20 @@
 #define HIGH 1
 #define RELEASE HIGH
 
+// ROM commands
 #define SKIP_ROM 0xCC
 #define READ_ROM 0x33
+#define SEARCH_ROM 0xF0
+#define MATCH_ROM 0x55
+#define ALARM_SEARCH 0xEC
+
+// memory commands (must come after a ROM command)
 #define CONVERT_T_CMD 0x44
 #define READ_SCRATCHPAD 0xBE
+#define RECALL_E2 0xB8
+#define WRITE_SCRATCHPAD 0x4E
+#define COPY_SCRATCHPAD 0x48
+#define MEMORY_READ_POWER_SUPPLY 0xB4 // PRN rename other memory commands that aren't obvious, maybe prefix all with MEMORY_ (that way I can easily spot if I am using commands in the wrong order)
 
 #define GPIO_CHIP_NAME "gpiochip4"
 #define GPIO_CHIP_LABEL "pinctrl-rp1"
@@ -296,17 +306,39 @@ bool send_command(struct gpiod_line *line, uint8_t command)
 
   switch (command)
   {
+
+    // ROM commands
   case SKIP_ROM:
     LOG_INFO("sent command: SKIP_ROM 0x%02x", SKIP_ROM);
     break;
   case READ_ROM:
     LOG_INFO("sent command: READ_ROM 0x%02x", READ_ROM);
     break;
+  case SEARCH_ROM:
+    LOG_INFO("sent command: SEARCH_ROM 0x%02x", SEARCH_ROM);
+    break;
+  case MATCH_ROM:
+    LOG_INFO("sent command: MATCH_ROM 0x%02x", MATCH_ROM);
+    break;
+
+    // Memory commands
   case CONVERT_T_CMD:
     LOG_INFO("sent command: CONVERT_T_CMD 0x%02x", CONVERT_T_CMD);
     break;
   case READ_SCRATCHPAD:
     LOG_INFO("sent command: READ_SCRATCHPAD 0x%02x", READ_SCRATCHPAD);
+    break;
+  case WRITE_SCRATCHPAD:
+    LOG_INFO("sent command: WRITE_SCRATCHPAD 0x%02x", WRITE_SCRATCHPAD);
+    break;
+  case COPY_SCRATCHPAD:
+    LOG_INFO("sent command: COPY_SCRATCHPAD 0x%02x", COPY_SCRATCHPAD);
+    break;
+  case RECALL_E2:
+    LOG_INFO("sent command: RECALL_E2 0x%02x", RECALL_E2);
+    break;
+  case MEMORY_READ_POWER_SUPPLY:
+    LOG_INFO("sent command: READ_POWER_SUPPLY 0x%02x", MEMORY_READ_POWER_SUPPLY);
     break;
   default:
     LOG_INFO("sent generic command: %d (0x%02x) - please add command name to list to show meaningful name", command, command);
@@ -353,6 +385,48 @@ bool wait_for_temp_conversion_to_complete(struct gpiod_line *line)
   return true;
 }
 
+bool search_rom(struct gpiod_line *line)
+{
+  send_command(line, SEARCH_ROM);
+
+  uint8_t read1 = read_bit(line);
+  uint8_t read2 = read_bit(line);
+  // | read1 | read2 |
+  // |   0   |   0   |   sensor(s) remaining with 0 and 1
+  // |   0   |   1   |   sensor(s) remaining with 0, none with 1
+  // |   1   |   0   |   sensor(s) remaining with 1, none with 0
+  // |   1   |   1   |   no sensors (remaining)
+
+  // create an array of  to store discovered bits and help sequence the search
+  return false; // TODO
+}
+
+bool read_power_supply_type(struct gpiod_line *line)
+{
+  bool success = reset_bus(line)                 //
+                 && send_command(line, SKIP_ROM) //
+                 && send_command(line, MEMORY_READ_POWER_SUPPLY);
+  if (!success)
+  {
+    LOG_ERROR("Failed to send command to read power supply type");
+    return false;
+  }
+  int response = read_bit(line);
+  if (response < 0)
+  {
+    LOG_ERROR("Failed to read power supply status bit");
+    return false;
+  }
+  // PRN extract method that can return power supply type for code branching (i.e. to know to wait 750ms versus reading status bit on Convert T)
+  if (response)
+  {
+    LOG_INFO("External power supply: %d", response);
+    return true;
+  }
+  LOG_INFO("Parasite power (using data line, no external power): %d", response);
+  return true;
+}
+
 int main()
 {
 
@@ -392,11 +466,15 @@ int main()
   // reset_bus(line) && send_command(line, READ_ROM) //
   //     && precise_delay_us(100) && read_rom_response(line);
 
-  reset_bus(line) && send_command(line, SKIP_ROM)                                 // use comment to stop vcformat from combining lines (hack for now)
-      && precise_delay_us(100) && send_command(line, CONVERT_T_CMD)               //
-      && wait_for_temp_conversion_to_complete(line)                               //
-      && precise_delay_us(100) && reset_bus(line) && send_command(line, SKIP_ROM) //
-      && precise_delay_us(100) && send_command(line, READ_SCRATCHPAD) && read_scratchpad(line);
+  // reset_bus(line) && send_command(line, SKIP_ROM)                                 // use comment to stop vcformat from combining lines (hack for now)
+  //     && precise_delay_us(100) && send_command(line, CONVERT_T_CMD)               //
+  //     && wait_for_temp_conversion_to_complete(line)                               //
+  //     && precise_delay_us(100) && reset_bus(line) && send_command(line, SKIP_ROM) //
+  //     && precise_delay_us(100) && send_command(line, READ_SCRATCHPAD) && read_scratchpad(line);
+
+  // reset_bus(line) && search_rom(line); // for multi device setups =
+
+  read_power_supply_type(line);
 
   // cleanup
   gpiod_line_release(line);
