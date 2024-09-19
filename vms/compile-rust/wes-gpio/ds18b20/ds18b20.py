@@ -65,6 +65,7 @@ def precise_delay_us(us):
     start = time.perf_counter()
     while (time.perf_counter() - start) < (us / 1_000_000):
         pass
+    return True
 
 
 def wait_for_recovery_between_bits():
@@ -378,6 +379,14 @@ def read_power_supply_type(line):
         and skip_rom(line) \
         and send_command(line, 0xB4) \
         and read_bit(line, response_bits)
+        # ! TODO read_bit is returning alternating values when s/b 1 always... 
+        #    LA1010 shows external power supply == 1 (always)... 
+        #    ok timing wise:
+        #    6.25us => 0
+        #    7.5us => 0
+        #    3.625us => 1
+        #    ! TODO fix why longer 1s are delayed enough to look like a ZERO..
+        #        THIS MIGHT EXPLAIN OTHER TIMING ISSUES reading failed CRCs... goddamn timing... WHY T F did they make the read slot timing so goddamn fast (<15 us) versus write timing (60+us for read!!)
     if not worked:
         print("Failed to read power supply type")
         return False
