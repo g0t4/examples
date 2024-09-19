@@ -414,7 +414,6 @@ bool search_rom(struct gpiod_line *line)
   // first sensor ROM:
   // 8 bytes (64 bits) of ROM
   uint64_t rom1 = 0;
-  printf("bits read:\n  ");
   for (int i = 0; i < 64; i++)
   {
     uint8_t bit = read_bit(line);
@@ -424,30 +423,48 @@ bool search_rom(struct gpiod_line *line)
       return false; // assume inner read_bit already logged explanation
     }
 
-    printf("%d / %d\n", bit, compliment_bit);
-    rom1 = (rom1 << 1) | bit;
-
+    LOG_DEBUG("read two bits: %d / %d", bit, compliment_bit);
+    rom1 |= (uint64_t)bit << i; //  TODO what is a common convention for bit order?
+    printf(" rom1 = hex: 0x%02x", rom1);
+    precise_delay_us(100); // TODO is there a min gap between bits?
     // IIUC if I don't write the byte I am pursuing then all sensors will continue to repeat the same response (first or current bit)... can that be used to double check the value read?
     // write decision about which next bit to pursue (filter remaining sensors on bus), for now just go with first bit read (ignore compliment)
-    if (!write_bit(line, bit, ASSUME_PREV_HIGH))
+    uint8_t prev_bit = compliment_bit; // explicit for readability
+    if (!write_bit(line, bit, prev_bit))
     {
       return false;
     }
-    // TODO left off here, just trying to get protocol hammered out before an elegant solution to search ROM... just for a challenge so I can get temp from multiple sensors :)
+    precise_delay_us(100);
+    // WORKING! FYI bits (per byte IIAC) are in reverse order (again per byte IIAC)
   }
 
-  // for (int byte_index = 0; byte_index < 8; byte_index++)
-  // {
-  //   for (int bit_index = 0; bit_index < 8; bit_index++)
-  //   {
-  //     int overall_bit_index = byte_index * 8 + bit_index;
-  //     // FYI %08b is not standard C, but it is in glibc? IIUC
-  //     LOG_DEBUG("  %08b (0x%02x = %3d)", bytes[i], bytes[i], bytes[i]);
-  //   }
-  // }
+  for (int byte_index = 0; byte_index < 8; byte_index++)
+  {
+    char byte_string[9] = {0};
+    for (int bit_index = 0; bit_index < 8; bit_index++)
+    {
+      bool this_bit = (rom1 >> (bit_index + byte_index * 8)) & 1;
+      byte_string[bit_index] = this_bit ? '1' : '0';
+    }
+    LOG_INFO("  %s", byte_string);
+  }
+  // TODO check CRC
 
-  // uint8_t family_code = (uint8_t)(rom1 & 0x0000000000FF);
-  // LOG_INFO("family_code: 0x%02x = %3d", family_code, family_code);
+  uint8_t family_code = (uint8_t)(rom1 & 0xFF);
+  LOG_INFO("family_code: 0x%02x = %3d", family_code, family_code);
+
+  // serial:
+  uint64_t serial = rom1 >> 8;
+  for (int byte_index = 0; byte_index < 7; byte_index++)
+  {
+    char byte_string[9] = {0};
+    for (int bit_index = 0; bit_index < 8; bit_index++)
+    {
+      bool this_bit = (serial >> (bit_index + byte_index * 8)) & 1;
+      byte_string[bit_index] = this_bit ? '1' : '0';
+    }
+    LOG_INFO("  %s", byte_string);
+  }
 
   // create an array of  to store discovered bits and help sequence the search
   return false; // TODO
