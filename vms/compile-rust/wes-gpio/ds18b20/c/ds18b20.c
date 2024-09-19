@@ -14,6 +14,7 @@
 #define LOW 0
 #define HIGH 1
 #define RELEASE HIGH
+#define ASSUME_PREV_HIGH HIGH
 
 // ROM commands
 #define SKIP_ROM 0xCC
@@ -265,6 +266,39 @@ bool read_scratchpad(struct gpiod_line *line)
   return true;
 }
 
+bool write_bit(struct gpiod_line *line, bool this_bit, bool prev_bit)
+{
+  gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
+
+  LOG_DEBUG("writing bit: %d", this_bit);
+  if (this_bit)
+  {
+    // write 1
+    gpiod_line_set_value(line, LOW);
+    // min 1us, max <15us
+    if (prev_bit == 0)
+    {
+      precise_delay_us(2); // 0 => 1 needs less time to pull low again by not as high above threshold
+    }
+    else
+    {
+      precise_delay_us(5); // 1 => 1 needs more time to pull low b/c way above threshold
+    }
+    gpiod_line_set_value(line, HIGH);
+    precise_delay_us(60); // 60 us total window (min)
+  }
+  else
+  {
+    // write 0
+    gpiod_line_set_value(line, LOW);
+    precise_delay_us(65); // min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
+    gpiod_line_set_value(line, HIGH);
+    // PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
+  }
+  precise_delay_us(3); // recovery >1us
+  return true;
+}
+
 bool send_command(struct gpiod_line *line, uint8_t command)
 {
   // TODO analyze timing of 0=>0, 0=>1, 1=>0, 1=>1 (it looks like each has unique timing that can be perfected probably to avoid issues)
@@ -273,35 +307,11 @@ bool send_command(struct gpiod_line *line, uint8_t command)
   {
     // FYI bits are sent in reverse order
     bool this_bit = (command >> i) & 1;
-    gpiod_line_set_value(line, HIGH); // ensure high // TODO do I need this?
-
-    LOG_DEBUG("writing bit: %d", this_bit);
-    if (this_bit)
+    if (!write_bit(line, this_bit, prev_bit))
     {
-      // write 1
-      gpiod_line_set_value(line, LOW);
-      // min 1us, max <15us
-      if (prev_bit == 0)
-      {
-        precise_delay_us(2); // 0 => 1 needs less time to pull low again by not as high above threshold
-      }
-      else
-      {
-        precise_delay_us(5); // 1 => 1 needs more time to pull low b/c way above threshold
-      }
-      gpiod_line_set_value(line, HIGH);
-      precise_delay_us(60); // 60 us total window (min)
-    }
-    else
-    {
-      // write 0
-      gpiod_line_set_value(line, LOW);
-      precise_delay_us(65); // min 60us => wow turned into 120us (LA1010),73us, 68us, 72us ...  120us breaks the rules (max 120)... the rest work inadvertently
-      gpiod_line_set_value(line, HIGH);
-      // PRN wait for it to be high? I am noticing that when I am low for along time and then go high, it seems to cut into recovery between bits
+      return false; // assume inner write_bit already logged explanation
     }
     prev_bit = this_bit;
-    precise_delay_us(3); // recovery >1us
   }
 
   switch (command)
