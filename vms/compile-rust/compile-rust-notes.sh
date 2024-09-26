@@ -132,7 +132,7 @@ time sudo make install
 sudo dkms status # shows parallel-tools
 sudo dkms remove -m parallels-tools -v 19.3.0.54924 --all # check version if failed
 sudo dkms status # s/b none
-sudo rm /boot/*6.11.0* # remove prev attempt(s)
+sudo rm /boot/*6.11.0* # remove prev attempt(s)
 time sudo make install # 3.5s
 
 # check menu entries in grub:
@@ -158,8 +158,7 @@ echo -n "qr_code" | sudo tee /sys/module/drm/parameters/panic_screen
 
 # PROFIT! DONE!
 
-
-# test LLVM w/o rust timing:
+# *** test LLVM w/o rust timing:
 cp ../configs/03-rust-qr.config . # then will strip rust
 make LLVM=-18 menuconfig
 # General setup => Rust support = n
@@ -167,6 +166,7 @@ icdiff .config ../configs/03-rust-qr.config
 # see how it updates depenedent config (ie QR_CODE=n now too)
 cp .config $HOME/configs/04-llvm-no-rust.config
 time make LLVM=-18 -j$(nproc) # 290.42s
+# to do - test the timing with...
 
 
 
