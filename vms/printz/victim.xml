@@ -79,9 +79,10 @@
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </memballoon>
+    <!-- LATER https://askubuntu.com/questions/1014674/using-file-system-passthrough-with-kvm-guests
     <filesystem type='mount' accessmode='passthrough'>
       <source dir='/home/wes/printz'/>
       <target dir='/mnt/printztest'/>
-    </filesystem>
+    </filesystem> -->
   </devices>
 </domain>
