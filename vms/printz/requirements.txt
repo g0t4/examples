@@ -1,0 +1,8 @@
+requests
+
+# bit libs
+construct
+bitstring
+
+# for parsing and responding to IPP requests... this guy has a great lib that already handles the bytes parsing so why reinvent that
+ippserver
