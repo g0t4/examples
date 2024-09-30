@@ -41,3 +41,8 @@ sudo ss -anp | grep 631
 diff_two_commands 'ssh host1 -C "cat /etc/cups/cupsd.conf"' 'ssh victim -C "cat /etc/cups/cupsd.conf"'
 diff_two_commands 'ssh host1 -C "cat /etc/cups/cups-browsed.conf"' 'ssh victim -C "cat /etc/cups/cups-browsed.conf"'
 #
+
+# rework the simplest possible server.py to demo this => yay got a response from UDP packet!
+veinit # ...
+python3 servers/server1.py
+
