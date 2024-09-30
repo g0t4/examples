@@ -46,3 +46,64 @@ diff_two_commands 'ssh host1 -C "cat /etc/cups/cups-browsed.conf"' 'ssh victim -
 veinit # ...
 python3 servers/server1.py
 
+# !!! 2.0.0-0ubuntu10.1 # security patch release (automatic) applied on victim-vm ... I wanna roll back to 2.0.0-0ubuntu10 (s/b vulnerable)
+#  *** YOU CAN SEE \" \" on quotes in the string... hrm... what might be overlooked still?
+sudo apt remove -y cups
+sudo apt autoremove -y
+# *** https://launchpad.net/ubuntu/+source/cups-browsed/2.0.0-0ubuntu10.1  # OH WOW debian/patches/sec-202409-1.patch: disable legacy CUPS protocol in configure.ac.
+# *** https://launchpad.net/ubuntu/+source/cups-browsed/2.0.0-0ubuntu10
+# TODO pull both packages and diff them to see what all was fixed
+
+# # lets disable security/updates
+# cups:
+#   Installed: (none)
+#   Candidate: 2.4.7-1.2ubuntu7.3
+#   Version table:
+#      2.4.7-1.2ubuntu7.3 500
+#         500 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
+#         500 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages
+#         100 /var/lib/dpkg/status
+#      2.4.7-1.2ubuntu7 500
+#         500 http://us.archive.ubuntu.com/ubuntu noble/main amd64 Packages
+
+# *** TLDR I commented out security, noble-updates and noble-backports (didn't need to exclude backports but w/e)
+sudo vim /etc/apt/sources.list.d/ubuntu.sources
+# b/c the updates are on security and noble-updates
+sudo apt update
+# sudo apt install -y cups=2.4.7-1.2ubuntu7
+sudo apt install -y cups # => selected cups=2.4.7-1.2ubuntu7  (GOOD SO FAR)
+# *** I reset the config file too to pkg version... yup ok this most recent security release disabled CUPS remote browsing too (in addition to escaping \")
+#
+apt list --installed | grep cups
+# cups-browsed/noble,now 2.0.0-0ubuntu10 amd64 [installed,automatic]
+# cups-client/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# cups-common/noble,now 2.4.7-1.2ubuntu7 all [installed,automatic]
+# cups-core-drivers/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# cups-daemon/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# cups-filters-core-drivers/noble,now 2.0.0-0ubuntu4 amd64 [installed,automatic]
+# cups-filters/noble,now 2.0.0-0ubuntu4 amd64 [installed,automatic]
+# cups-ipp-utils/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# cups-ppdc/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# cups-server-common/noble,now 2.4.7-1.2ubuntu7 all [installed,automatic]
+# cups/noble,now 2.4.7-1.2ubuntu7 amd64 [installed]
+# libcups2t64/noble,now 2.4.7-1.2ubuntu7 amd64 [installed,automatic]
+# libcupsfilters2-common/noble,now 2.0.0-0ubuntu7 all [installed,automatic]
+# libcupsfilters2t64/noble,now 2.0.0-0ubuntu7 amd64 [installed,automatic]
+
+cups-browsed --version
+# cups-browsed version 2.0.0
+netstat -an | grep 631 # shows udp open still, makes sense
+cat /etc/cups/cups-browsed.conf | grep BrowseRemoteProtocols
+#   =>    BrowseRemoteProtocols dnssd cups
+
+# try it out (fingers crossed for demo's sake on a new machine anyways)
+sudo journalctl -u cups-browsed.service --follow
+# WORKS !!!! YAY
+# re-enable debug logging
+sudo sed -i 's/^#.*DebugLogging stderr/DebugLogging stderr/' /etc/cups/cups-browsed.conf
+sudo systemctl restart cups cups-browsed.service
+sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -Pi "(foo|priv)"
+#
+# PRINT:
+echo foo | lp -d 192_168_122_1
+# YAY!!!
