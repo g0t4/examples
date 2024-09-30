@@ -18,3 +18,26 @@ virsh net-dhcp-leases default
 # https://ubuntu.com/server/docs/install-and-configure-a-cups-print-server
 sudo apt-get install -y cups
 #  includes cups-browsed, cups-filters (with foomatic and my precious, foomatic-rip ;)
+
+# TODO try:
+cupsctl --debug-logging
+# etc
+
+# *** get victim VM configured for demo
+cups-browsed --version # 2.0.0 vs host1 demo env was 1.28
+# victim did not have 631/udp open, from testing b/c cups protocol was not enabled in remote protocols list (IIUC cups is being phassed out? in favor of dnssd and ippeverywhere?)
+# *** cups-browsed.conf:  (controls 631/udp)
+#   BrowseRemoteProtocols dnssd cups # was just dnssd (added cups) # ***! this opened 631/udp
+#   FYI BrowseLocalProtocols/BrowseProtocols (both) could be used too
+sudo systemctl restart cups cups-browsed.service
+#
+sudo netstat -anp | grep 631 # FYI! do not forget sudo, else won't see executable name/pid
+sudo ss -anp | grep 631
+# *** cupsd.conf:  (controls 631/tcp) - No chanegs so far
+#   Browsing No # PRN set "Yes"? (IIGC this is for sharing printers back out to other CUPs servers and clients?) I just wanna register printers to this machine so probably not gonna need this ever
+#   Listen localhost:631 # ? both hosts have localhost:631 for cupsd
+#
+# FYI compare cups configs:
+diff_two_commands 'ssh host1 -C "cat /etc/cups/cupsd.conf"' 'ssh victim -C "cat /etc/cups/cupsd.conf"'
+diff_two_commands 'ssh host1 -C "cat /etc/cups/cups-browsed.conf"' 'ssh victim -C "cat /etc/cups/cups-browsed.conf"'
+#
