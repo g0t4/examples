@@ -13,3 +13,8 @@ sudo systemd-machine-id-setup
 # dhcp should pick up a new lease
 # confirm on host:
 virsh net-dhcp-leases default
+
+# install cups onto victim
+# https://ubuntu.com/server/docs/install-and-configure-a-cups-print-server
+sudo apt-get install -y cups
+#  includes cups-browsed, cups-filters (with foomatic and my precious, foomatic-rip ;)
