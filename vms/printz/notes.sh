@@ -128,3 +128,7 @@ lpstat -p  # -l
 sudo cat /etc/cups/ppd/192_168_122_1.ppd | grep -Pi "(foo|priv)"
 sudo cat /etc/cups/ppd/192_168_122_1.ppd
 #      foomatic or privacy or whatever else
+
+# disable unattented updates (then I can likely add back security if needed for other pkgs)
+sudo systemctl stop unattended-upgrades.service
+sudo systemctl disable unattended-upgrades.service
