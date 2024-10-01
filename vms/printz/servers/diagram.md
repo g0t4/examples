@@ -9,7 +9,8 @@ flowchart LR
         C(Respond: IPP Attributes
             w/ PPD Injection Attack)
 
-        F(Phone Home Payload ...)
+        F(Phone Home Payload 
+            ...)
     end
 
 
