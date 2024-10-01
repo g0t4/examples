@@ -5,25 +5,24 @@ flowchart LR
     subgraph Fake_Printer_Attacker
         
         A(CUPS UDP/631 
-            Printer Announcement)
-        C(Respond: IPP Attributes
-            w/ PPD Injection Attack)
+            Printer Announce)
+        C(Respond: IPP Attrs
+            + PPD Inject Attack)
 
-        F(Phone Home Payload 
-            ...)
+        F(📡 Leaked Data)
     end
 
 
     subgraph CUPS_Victim
-        B(Recieve Announcement
-            Request: Printer Attributes)
+        B(Recv Announce
+            Request: Printer Attrs)
         D(IPP Attrs => PPD File
-            Add Printer
-            Wait)
+            Printer Added
+            ⏳)
 
-        E(User Prints to Fake Printer
+        E(User Prints → Fake Printer
             PPD Executes RCE
-            Phones Home)
+            📡 Phones Home)
     end
 
 
@@ -32,9 +31,5 @@ flowchart LR
     C --> D
     D --> E
     E --> F
-
-
-
-
 
 ```
