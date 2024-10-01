@@ -20,7 +20,7 @@ process_browse_data
     debug_printf("incorrect browse packet format\n");
     return (TRUE);
   }
-    # `type` can be any hex value except CUPS_PRINTER_DELETE = 0x100000
+    # `type` can be any hex value except NOT bit at: CUPS_PRINTER_DELETE = 0x100000 (!(type & CUPS_PRINTER_DELETE)) # bitwise check
     # `state` can be any hex value, beyond that it is ignored
     # IIAC evilsocket saw < 3 and assumed that meant "0 3" as in 3 in 2nd arg but sscanf is returning the number of successful matches, so < 3 means less than 3 successful matches, which means 2 or less successful matches
       # and this must be partially why uri is parsed and not used... and then reparsed into location/info... YET it is passed to next stage!
@@ -32,3 +32,10 @@ process_browse_data
     # looking for an info field... ok but why parse uri at all with scanf?
     # btw looking for " again (3rd one) for start of implicit info field, then copies until either end of info size or end of packet or next " (4th one)
     #
+
+  # calls found_cups_printer(remote_host, uri, location, info)
+    # remote_host from socket addr
+    #   via `httpAddrString(&srcaddr [from socket], remote_host...)
+    # location (sscanf) / location/info from for loop
+
+# found_cups_printer
