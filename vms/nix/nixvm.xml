@@ -36,7 +36,7 @@
         </disk>
         <disk type='file' device='disk'>
             <driver name='qemu' type='raw' />
-            <source file='/var/lib/libvirt/boot/TODOISO' />
+            <source file='/var/lib/libvirt/boot/latest-nixos-plasma6-x86_64-linux.iso' />
             <target dev='vdb' bus='virtio' />
             <boot order='2' />
         </disk>
