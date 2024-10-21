@@ -1,4 +1,4 @@
-<domain type='kvm'>
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
     <name>nixvm</name>
     <uuid>B75ABC5E-C5CF-4C63-A352-593FFE563A99</uuid> <!-- adding this allows to call define w/o undefine first -->
     <memory unit='GiB'>16</memory>
@@ -36,7 +36,7 @@
         </disk>
         <disk type='file' device='disk'>
             <driver name='qemu' type='raw' />
-            <source file='/var/lib/libvirt/boot/ubuntu-24.04.1-live-server-amd64.iso' />
+            <source file='/var/lib/libvirt/boot/TODOISO' />
             <target dev='vdb' bus='virtio' />
             <boot order='2' />
         </disk>
