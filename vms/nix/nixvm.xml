@@ -1,13 +1,13 @@
 <domain type='kvm'>
-    <name>guestvm</name>
-    <uuid>90084c22-fabc-4c54-ba23-d83cb858954a</uuid> <!-- adding this allows to call define w/o undefine first -->
+    <name>nixvm</name>
+    <uuid>B75ABC5E-C5CF-4C63-A352-593FFE563A99</uuid> <!-- adding this allows to call define w/o undefine first -->
     <memory unit='GiB'>16</memory>
     <cpu mode='host-passthrough' />
-    <vcpu placement='static'>12</vcpu> <!-- increase to 12? -->
+    <vcpu placement='static'>12</vcpu>
     <os>
         <type arch='x86_64' machine='q35'>hvm</type>
         <loader readonly='yes' type='pflash'>/usr/share/OVMF/OVMF_CODE_4M.fd</loader>
-        <nvram template='/usr/share/OVMF/OVMF_VARS_4M.fd'>/var/lib/libvirt/nvram/guestvm_VARS.fd</nvram>
+        <nvram template='/usr/share/OVMF/OVMF_VARS_4M.fd'>/var/lib/libvirt/nvram/nixvm_VARS.fd</nvram>
         <!--<boot dev='hd'/> <boot dev='cdrom'/> --> <!-- don't use boot here with boot on devices too -->
     </os>
     <features>
@@ -29,7 +29,7 @@
         <emulator>/usr/bin/qemu-system-x86_64</emulator>
         <disk type='file' device='disk'>
             <driver name='qemu' type='qcow2' />
-            <source file='/var/lib/libvirt/images/guestvm-primary.qcow2' />
+            <source file='/var/lib/libvirt/images/nixvm-primary.qcow2' />
             <target dev='vda' bus='virtio' />
             <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0' />
             <boot order='1' />
