@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sqlite": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "/Users/wes/repos/github/g0t4/examples/claude/mcp/sqlite/test.db"]
+    }
+  }
+}
