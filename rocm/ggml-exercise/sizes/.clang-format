@@ -5,4 +5,5 @@ MaxEmptyLinesToKeep: 3
 ColumnLimit: 300
 # TODO I really just wanna tell it not to fuck with lines ever... like never split nor combine lines
 AllowShortEnumsOnASingleLine: false
+IndentWidth: 4
 # TODO look into "Break" options...  
