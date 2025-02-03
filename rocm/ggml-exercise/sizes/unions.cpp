@@ -39,11 +39,22 @@ int main() {
 
     // use integer field to encode "wes" in ascii
 
+    // so a 1 char field => is the rightmost byte (8bits)
+    // so a 2 char field => is 3rd and 4th (rightmost) byte (16 bits)  => but 4th is first char, 3rd is 2nd
+    // 3 char => 4th byte, 3rd byte, 2nd byte
+    // 4 char => 4th byte, 3rd byte, 2nd byte, 1st byte
+    // this is why they read backwards if you think of each char you put into the 4 bytes
     // backwards FYI: shows as "sew"
-    other.i = 7824755; // bitmaths 0x776573
-    /*const char *wes = "wes";*/
-    /*other.i = (wes[0] << 16) | (wes[1] << 8) | wes[2];*/
+    // other.i = 7824755; // bitmaths 0x776573
+    const char *wes = "wes";
+    other.i = (wes[0] << 16) | (wes[1] << 8) | wes[2];
     std::cout << std::endl << std::endl << "other:" << std::endl;
+    std::cout << "data.i: " << other.i << std::endl;
+    std::cout << "data.ui: " << other.ui << std::endl;
+    std::cout << "strfour: " << other.strfour << std::endl;
+
+    other.i = ('s' << 16) | ('e' << 8) | 'w';
+    std::cout << std::endl << std::endl << "reversed: " << std::endl;
     std::cout << "data.i: " << other.i << std::endl;
     std::cout << "data.ui: " << other.ui << std::endl;
     std::cout << "strfour: " << other.strfour << std::endl;
