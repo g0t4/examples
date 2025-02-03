@@ -12,6 +12,7 @@ int main() {
         char strfour[4]; // size: 4
         // bool bits[8]; // size: 8 (bytes)
     };
+    // BTW... the biggest field dictates size of the memory allocated
 
     union Data data;
 
