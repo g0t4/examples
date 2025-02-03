@@ -1,7 +1,7 @@
 #include <iostream>
 
 int main() {
-    // an "either or" type ... you can access the same memory location with different types... but it all is backed by the same memory... 
+    // an "either or" type ... you can access the same memory location with different types... but it all is backed by the same memory...
     //   so changing the integer would alter the char(s) and float, etc
     union Data {
         int i; // size: 4
@@ -32,4 +32,19 @@ int main() {
     std::cout << "str (char): '" << data.str << "' - size: " << sizeof(data.str) << std::endl;
     std::cout << "f (float): " << data.f << " - size: " << sizeof(data.f) << std::endl;
     std::cout << "strfour (char[4]): '" << data.strfour << "' - size: " << sizeof(data.strfour) << std::endl;
+
+
+
+    union Data other;
+
+    // use integer field to encode "wes" in ascii
+
+    // backwards FYI: shows as "sew"
+    other.i = 7824755; // bitmaths 0x776573
+    /*const char *wes = "wes";*/
+    /*other.i = (wes[0] << 16) | (wes[1] << 8) | wes[2];*/
+    std::cout << std::endl << std::endl << "other:" << std::endl;
+    std::cout << "data.i: " << other.i << std::endl;
+    std::cout << "data.ui: " << other.ui << std::endl;
+    std::cout << "strfour: " << other.strfour << std::endl;
 }
