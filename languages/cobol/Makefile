@@ -3,18 +3,17 @@ COBOL = cobc
 CFLAGS = -x  # -x flag creates an executable
 
 # Directories
-SRC = . 
 BIN = bin
 
 # Files
-SOURCES = $(wildcard $(SRC)/*.cob)
-EXECUTABLES = $(patsubst $(SRC)/%.cob, $(BIN)/%, $(SOURCES))
+SOURCES = $(wildcard *.cob)
+EXECUTABLES = $(patsubst %.cob, $(BIN)/%, $(SOURCES))
 
 # Default target
 all: $(EXECUTABLES)
 
 # Compile COBOL files
-$(BIN)/%: $(SRC)/%.cob | $(BIN)
+$(BIN)/%: %.cob | $(BIN)
 	$(COBOL) $(CFLAGS) -o $@ $<
 
 # Create bin directory if it doesn't exist
