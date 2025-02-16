@@ -1,0 +1,11 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. GETDATE.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  TODAY-DATE  PIC 9(8).
+
+       PROCEDURE DIVISION.
+           ACCEPT TODAY-DATE FROM DATE.
+           DISPLAY "Today's date is: " TODAY-DATE.
+           STOP RUN.
