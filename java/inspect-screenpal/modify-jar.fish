@@ -56,6 +56,8 @@ cat /Applications/ScreenPal.app/Contents/app/partner_app.properties
 cd /Applications/ScreenPal.app/Contents/app/
 cp partner_app.properties partner_app.properties.original
 
+nvim /Applications/ScreenPal.app/Contents/app/partner_app.properties
+
 # OH FUCK YES... NO MOTHER FUCKING TRAY APP!!!!!!!!! FINALLY FUCK FUCK FUCKERS... I asked if I could disable it... they never responded!
 # ... I can change alot of things it seems.. including classes that are loaded by the app!!
 #     can I change out for less gpu intensive graphics elements?
