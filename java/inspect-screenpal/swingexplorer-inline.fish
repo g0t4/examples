@@ -22,6 +22,8 @@ export APPDIR=/Applications/ScreenPal.app/Contents/app
 #  *** interesting enoguht a similar
 #   GONNNA REINSTALL APP (deleted ~/Library/ScreenPal-v3 and /Applications/ScreenPal.app)
 #    OMG they no whave an M-Series installer for macSO!!! that might've been the issue too... somehow limited to intel for some native piece?
+#     and now I get:
+#         02/19/25 02:46:36 INFO T0001: SPLASH_SCREEN: A Java native splash screen has been shown and is still showing.  The image file used was "file:/Applications/ScreenPal.app/Contents/app/ScreenPalSplashScreen.png".  Its window bounds are:  java.awt.Rectangle[x=352,y=167,width=608,height=373].
 
 
 # java \
