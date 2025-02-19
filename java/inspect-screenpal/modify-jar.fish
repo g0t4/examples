@@ -57,6 +57,9 @@ cd /Applications/ScreenPal.app/Contents/app/
 cp partner_app.properties partner_app.properties.original
 
 # OH FUCK YES... NO MOTHER FUCKING TRAY APP!!!!!!!!! FINALLY FUCK FUCK FUCKERS... I asked if I could disable it... they never responded!
+# ... I can change alot of things it seems.. including classes that are loaded by the app!!
+#     can I change out for less gpu intensive graphics elements?
+#     seems if I were to whitelabel I could change much of the UI to maybe less GPU/CPU intense interfaces that I don't give a FLYING FUCK ABOUT
 
 # OMG... there is this too in app.properties
 #   app.version.check.url=DEFAULTHOST/check_latest_versions?currentVersion=CURRENT_VERSION&osName=OS_NAME&osVersion=OS_VERSION
