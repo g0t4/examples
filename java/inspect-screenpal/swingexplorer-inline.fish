@@ -11,6 +11,15 @@ export APPDIR=/Applications/ScreenPal.app/Contents/app
 #     02/19/25 02:28:29 WARN T0001: Failed to use current version folder so trying to delete: /Users/wesdemos/Library/ScreenPal-v3/v3.16.0
 #        have to load .app again to get it to bring back 3.16.0
 # *** BTW ... IIRC version.txt dictates what one is used... I just added that and maybe that is why it is now deleting 3.16.0 when it "doesn't work"
+#    OK AND ON FAILURE IT PUTS 2.9.2 into version-x64.txt!!! then tries to download it
+#    ORIGINAL FAILURE IS: java.lang.ClassNotFoundException: com.screencastomatic.login.StartLogin
+#       TODO do I need to find this and add to classpath?
+#       unfortunately I dont get a reason why 3.16.0 didn't work.. just says about splash screen not working or?
+#02/19/25 02:39:36 INFO T0022: UPDATING-STARTING-UP-FRAME: The Splash Screen was not showing.  (The user has not run the newer ScreenPal Installer.)  Opening the Updating/Starting-Up identical looking image of (656, 354, 608, 373).
+#02/19/25 02:39:36 INFO T0022: UPDATING-STARTING-UP-FRAME: Set to "Starting Up..." mode.
+#02/19/25 02:39:36 INFO T0022: UPDATING-STARTING-UP-FRAME: SHOWING the STARTING UP window.
+#02/19/25 02:39:36 WARN T0001: Failed to run login with class: com.screencastomatic.login.StartLogin
+#  *** interesting enoguht a similar
 
 
 # java \
