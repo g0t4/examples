@@ -2,6 +2,7 @@
 
 export APPDIR=/Applications/ScreenPal.app/Contents/app
 
+# FYI NATIVE VERSION ... this still fails to load 3.16.0... and then downloads 2.9.2... so TBD
 
 # *** OK SO -D et al CANNOT COME AFTER ScrenPal (class name)... 
 # **** OK LAST THING TO SOLVE (see app-0.log in ~/Library/ScreenPal-v3/app-0.log) ... why it doesn't try v3.16.0.. it keeps trying 2.9.2 and that fails cuz its not downloaded... this is last issue, why is it trying 2.9.2!!!!!
