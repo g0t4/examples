@@ -2,6 +2,7 @@
 
 export APPDIR=/Applications/ScreenPal.app/Contents/app
 
+
 # *** OK SO -D et al CANNOT COME AFTER ScrenPal (class name)... 
 # **** OK LAST THING TO SOLVE (see app-0.log in ~/Library/ScreenPal-v3/app-0.log) ... why it doesn't try v3.16.0.. it keeps trying 2.9.2 and that fails cuz its not downloaded... this is last issue, why is it trying 2.9.2!!!!!
 #   even solve this with test.fish and why it suggests to download 2.9.2 as newer vesrion... vs standalone which doesn't do this... hrm
@@ -9,6 +10,8 @@ export APPDIR=/Applications/ScreenPal.app/Contents/app
 #   OK WEIRD... this tries to load 3.16.0 and fails so it deletes it!
 #     02/19/25 02:28:29 WARN T0001: Failed to use current version folder so trying to delete: /Users/wesdemos/Library/ScreenPal-v3/v3.16.0
 #        have to load .app again to get it to bring back 3.16.0
+# *** BTW ... IIRC version.txt dictates what one is used... I just added that and maybe that is why it is now deleting 3.16.0 when it "doesn't work"
+
 
 # java \
 export JAVA_TOOL_OPTIONS="    -Djpackage.app-version=3 
