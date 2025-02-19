@@ -23,3 +23,20 @@ end
 for jar in ~/repos/scratch/extract-screenpal/$screenpal_version/*.jar
     unzip -o -d $jar-expand $jar
 end
+
+echo "DONE => cd ~/repos/scratch/extract-screenpal/"
+echo "     ag -G properties tray" 
+
+# nuke other languages to cleanup search for properties
+# ag -ig "_pt_br"
+# ls **/*_*.properties
+# trash **/*_pt_br.properties
+# trash **/*_de.properties
+# trash **/*_es.properties
+# trash **/*_fr.properties
+# trash **/*_it.properties
+# trash **/*_ja.properties
+# trash **/*_zh.properties
+# 
+# # now this works beter
+# ag  -G properties tray
