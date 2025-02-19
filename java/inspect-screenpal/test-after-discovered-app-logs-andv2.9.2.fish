@@ -16,15 +16,20 @@ export APPDIR=/Applications/ScreenPal.app/Contents/app
 # FUU this isn't working now... smth smells off.. is it possible I am detectin different downloads of SOM/SPAL... and starting diff ones...
 # *** app log has more!
 # cat /Users/wesdemos/Library/ScreenPal-v3/app-0.log
-# !!! SHIT ITS LOADING v 2.9.2!!! WTF
+#   WOA was LOADING v 2.9.2
 #      App Tmp Dir Set: /Users/wesdemos/Library/ScreenPal-v2/
 #    issue?   this log has     som.appdata.path="null"
 #   FYI start it regularly and review app log for differences
 #      regular was failing wiht 2.9.2 present!!!!!
 #        ok 2.9.2. is what is suggested for download by this script (when this works, after remove 2.9.2 this then works again)
 # ***! TRYING TO USE swexpl TRIGGERED THE DOWNLOAD of 2.9.2
+#        FYI app-0.log => you can see args aren't passed correctly... one has URL w/ comman delimited args in URL?!
+#           Checking previous app port: http://127.0.0.1:56480/-Djpackage.app-version%3D3,--add-opens,java.desktop%2Fjava.awt%3DALL-UNNAMED,--add-opens,java.desktop%2Fjava.awt.event%3DALL-UNNAMED,--add-opens,java.desktop%2Fjava.awt.peer%3DALL-UNNAMED,--add-opens,java.desktop%2Fjavax.swing%3DALL-UNNAMED,--add-opens,java.desktop%2Fjavax.swing.plaf.basic%3DALL-UNNAMED,--add-opens,java.desktop%2Fjavax.swing.text%3DALL-UNNAMED,--add-opens,java.desktop%2Fsun.awt%3DALL-UNNAMED,--add-opens,java.desktop%2Fsun.lwawt%3DALL-UNNAMED,--add-opens,java.desktop%2Fsun.lwawt.macosx%3DALL-UNNAMED,-splash%3A%2FApplications%2FScreenPal.app%2FContents%2Fapp%2FScreenPalSplashScreen.png,-Dapple.awt.enableTemplateImages%3Dtrue,-Djava.system.class.loader%3DDynamicURLClassLoader,-Dsom.exe.path%3D%2FApplications%2FScreenPal.app%2FContents%2Fapp%2FXXXNOEXE,-Dsom.mac.app%3D%2FApplications%2FScreenPal.app%2FContents%2Fapp%2F..%2F..,-Dsom.mac.app.launcher%3D%2FApplications%2FScreenPal.app%2FContents%2Fapp%2FScreenPal.app,-Dsom.mac.app.tray%3D%2FApplications%2FScreenPal.app%2FContents%2Fapp%2FScreenPalTray.app,-Dsp.installer.version%3D3.0.2.0,-Dsun.java2d.opengl%3Dtrue,-Xmx2G
+#           as if it is checking for a new version from this location... what are the args to pass? in what order or?
+# !!! ARGS are likely messed up still in swexpl case
 #     still feels like some args aren't getting passed... TBD see if can fix later
 # !! DIFF LOGS to find diff in app-0.log between run .app vs this test.fish... what is causing 2.9.2 to be downloaded or suggestedo??
+#   
 #   
 
 java \
