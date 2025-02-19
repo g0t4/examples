@@ -21,6 +21,7 @@ export APPDIR=/Applications/ScreenPal.app/Contents/app
 #02/19/25 02:39:36 WARN T0001: Failed to run login with class: com.screencastomatic.login.StartLogin
 #  *** interesting enoguht a similar
 #   GONNNA REINSTALL APP (deleted ~/Library/ScreenPal-v3 and /Applications/ScreenPal.app)
+#    OMG they no whave an M-Series installer for macSO!!! that might've been the issue too... somehow limited to intel for some native piece?
 
 
 # java \
