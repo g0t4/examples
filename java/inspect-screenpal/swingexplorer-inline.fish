@@ -59,10 +59,11 @@ java -javaagent:/Users/wesdemos/repos/github/swingexplorer/swingexplorer/dist/Sw
     -Dsom.mac.app=$APPDIR/../.. \
     -Dsom.mac.app.launcher=$APPDIR/ScreenPal.app \
     -Dsom.mac.app.tray=$APPDIR/ScreenPalTray.app \
-    -Dsp.installer.version=3.0.2.0 \
+    -Dsp.installer.version=3.1.10.1 \
     -Dsun.java2d.opengl=true \
+    -Dsun.security.jgss.native=true \
     -Xmx2G \
-    -cp /Users/wesdemos/repos/github/swingexplorer/swingexplorer/dist/SwingExplorer-1.8.0-SNAPSHOT/swingexplorer-core-1.8.0-SNAPSHOT.jar:/Users/wesdemos/repos/github/swingexplorer/swingexplorer/dist/SwingExplorer-1.8.0-SNAPSHOT/lib/swing-layout-1.0.3.jar:$APPDIR/AppMain-3.0.2.jar:$APPDIR/proxy-selector.jar:$APPDIR/rhino-1.7.14.jar \
+    -cp /Users/wesdemos/repos/github/swingexplorer/swingexplorer/dist/SwingExplorer-1.8.0-SNAPSHOT/swingexplorer-core-1.8.0-SNAPSHOT.jar:/Users/wesdemos/repos/github/swingexplorer/swingexplorer/dist/SwingExplorer-1.8.0-SNAPSHOT/lib/swing-layout-1.0.3.jar:$APPDIR/AppMain-3.1.10.jar:$APPDIR/proxy-selector.jar:$APPDIR/rhino-1.7.14.jar \
     org.swingexplorer.Launcher \
     ScreenPal
 
