@@ -1,7 +1,12 @@
 #!/usr/bin/env fish
 
 # ***! MUST SET APPDIR else fails on splash screen exception
-export APPDIR=/Applications/ScreenPal.app/Contents/app
+# export APPDIR=/Applications/ScreenPal.app/Contents/app
+export APPDIR=/Applications/ScreenPal.app/Contents/app/NoSplashScreen/ScreenPal.app/Contents/app
+# both dirs work btw
+#  TODO!! some how there is a notice to download an older version of SPAL! TODO FIND OUT WHAT IS WRONG
+#    FOR NOW ONLY UPDATE AFTER LAUNCHING with the actual app and not this script...then it doesn't show the old version as an update
+# 
 
 # FYI! THIS IS BASED on jpackage config file for ScreenPal
 # see this: /Applications/ScreenPal.app/Contents/app/ScreenPal.cfg
