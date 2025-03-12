@@ -139,25 +139,3 @@ curl http://localhost:8000/v1/chat/completions \
 #
 #  enable_request_id_headers=False
 #
-
-# *** try benchmarking w/ benchmarks/ dir
-#   https://github.com/vllm-project/vllm/tree/main/benchmarks
-set MODEL_NAME "Qwen/Qwen2.5-7B-Instruct"
-vllm serve $MODEL_NAME --disable-log-requests
-#
-# new tab:
-# get dataset:
-cd benchmarks
-wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
-
-# missing packages that script needs:
-pip install datasets pillow pandas
-
-set MODEL_NAME "Qwen/Qwen2.5-7B-Instruct"
-set NUM_PROMPTS 10
-set BACKEND openai-chat
-set DATASET_NAME sharegpt
-set DATASET_PATH "ShareGPT_V3_unfiltered_cleaned_split.json"
-python3 benchmark_serving.py --backend $BACKEND --model $MODEL_NAME \
-    --endpoint /v1/chat/completions --dataset-name $DATASET_NAME \
-    --dataset-path $DATASET_PATH --num-prompts $NUM_PROMPTS
