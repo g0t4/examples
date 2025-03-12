@@ -1,4 +1,11 @@
 
+# links:
+#   pytorch 5090 support:
+#     https://github.com/pytorch/pytorch/issues/145949
+#   vllm 5090 support:
+#     https://github.com/vllm-project/vllm/issues/13306
+
+
 
 # ***! next time try with ccache to speed up re-builds
 sudo pacman --noconfirm -S ccache
