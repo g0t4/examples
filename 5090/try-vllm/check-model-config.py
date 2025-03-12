@@ -2,7 +2,7 @@ from vllm import LLM
 
 #  https://docs.vllm.ai/en/stable/api/offline_inference/llm.html
 llm = LLM(model="Qwen/Qwen2.5-7B-Instruct")
-llm.get_default_sampling_params()
+print(f"sampling params: {llm.get_default_sampling_params()}")
 
 tokenizer = llm.get_tokenizer()
 print("vocab siz: ", len(tokenizer.get_vocab()))
