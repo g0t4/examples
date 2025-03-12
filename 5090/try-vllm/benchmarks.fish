@@ -67,6 +67,19 @@ python3 benchmark_throughput.py \
 #   wtf 700 tokens/sec?!
 
 
+# *** vllm bench serve
+
+# what is this doing? which datasets?
+vllm bench serve --model "Qwen/Qwen2.5-Coder-3B"
+# how did 3B get 2923 tokens/sec? that is not in real
+# ============ Serving Benchmark Result ============
+# Successful requests:                     1000
+# Benchmark duration (s):                  43.63
+# Total input tokens:                      1024000
+# Total generated tokens:                  127552
+# Request throughput (req/s):              22.92
+# Output token throughput (tok/s):         2923.17
+# Total Token throughput (tok/s):          26390.70
 
 
 
