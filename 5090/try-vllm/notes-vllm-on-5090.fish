@@ -76,3 +76,58 @@ curl http://localhost:8000/v1/chat/completions \
          }'
 
 
+
+# TODO try these args to vllm serve:
+#  collect_detailed_traces=None
+#
+#  enable_reasoning=False
+#    reasoning_parser=None
+#
+#  speculative_model=None
+#    try spec decoding
+#     speculative_model_quantization=None
+#     num_speculative_tokens=None
+#     speculative_max_model_len=None
+#     ngram_prompt_lookup_max=None
+#     ngram_prompt_lookup_min=None
+#     spec_decoding_acceptance_method='rejection_sampler'
+#
+#  task='auto'
+#    try other tasks with qwen! (see above)
+#
+#  max_model_len=None
+#  max_seq_len_to_capture=8192
+#  max_num_seqs=None
+#
+#  seed=None
+#  hf_config_path=None
+#  download_dir=None
+#  dtype='auto'
+#  kv_cache_dtype='auto'
+#
+#  cpu_offload_gb=0
+#  gpu_memory_utilization=0.9
+#  num_gpu_blocks_override=None
+#
+#  disable_log_requests=False
+#  max_log_len=None
+#  uvicorn_log_level='info'
+#    # other perf options for when I don't want any overhead
+#
+#  backends:
+#    guided_decoding_backend='xgrammar'
+#    distributed_executor_backend=None
+#
+#  lora_modules=None
+#  prompt_adapters=None
+#  chat_template=None
+#    response_role='assistant'
+#
+#  tool use!
+#    enable_auto_tool_choice=False
+#     tool_call_parser=None
+#     tool_parser_plugin=''
+#
+#  enable_request_id_headers=False
+#
+#
