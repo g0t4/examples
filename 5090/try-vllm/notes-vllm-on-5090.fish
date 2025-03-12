@@ -56,6 +56,9 @@ vllm serve Qwen/Qwen2.5-7B-Instruct
 #
 #   INFO 03-12 10:44:46 [config.py:576] This model supports multiple tasks: {'score', 'classify', 'generate', 'embed', 'reward'}. Defaulting to 'generate'.
 #   INFO 03-12 10:44:49 [config.py:576] This model supports multiple tasks: {'reward', 'classify', 'embed', 'generate', 'score'}. Defaulting to 'generate'.
+#
+#   INFO 03-12 11:32:49 [cuda.py:285] Using Flash Attention backend.
+#
 #      TODO try other supported tasks!
 #
 #   TODO review more of output for the part that confirms loaded into GPU
