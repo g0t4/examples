@@ -1,16 +1,17 @@
+# FYI, to use my prebuilt venv (w/ vllm):
+cd ~/repos/github/vllm-project/vllm
+source .venv/bin/activate.fish
 
+# FYI! to rebuild:
 # links:
 #   pytorch 5090 support:
 #     https://github.com/pytorch/pytorch/issues/145949
 #   vllm 5090 support:
 #     https://github.com/vllm-project/vllm/issues/13306
 
-
-
 # ***! next time try with ccache to speed up re-builds
 sudo pacman --noconfirm -S ccache
 #   https://docs.vllm.ai/en/latest/getting_started/installation/gpu.html?device=cuda#full-build-with-compilation
-
 
 # *** install pyenv for python versions
 sudo pacman -S pyenv
@@ -21,7 +22,6 @@ uv venv -p python3.9 .venv # ** create new venv w/o any deps
 # FYI can run python command too (though it complains if deps aren't satisifed)
 #   uv run python --version # does this work even if pyproject.toml is present?
 #   uv run --python 3.12 python --version
-
 
 # * USE PYTHON 3.12 not 3.13
 # FYI used pyenv to create a 3.12 venv (next time use uv above)
@@ -40,45 +40,51 @@ pip install --pre torch torchvision torchaudio --index-url https://download.pyto
 # * GUIDE used for next custom build (didn't verbatim follow, but gist of it):
 #   https://docs.vllm.ai/en/latest/getting_started/installation/gpu.html?device=cuda#use-an-existing-pytorch-installation
 # install deps to build vllm:
-pip install  -r requirements/build.txt
-pip install  -r requirements/common.txt
+pip install -r requirements/build.txt
+pip install -r requirements/common.txt
 # *** WORKED to build vllm:
 pip install -e . --no-build-isolation
 #   FYI I had to install rust (used rustup pacman package) though I can't recall what dep needed that, I just got output from pip install that it was needed
-
 
 # test it, it works!!!
 vllm serve Qwen/Qwen2.5-7B-Instruct
 # key output:
 #
-#   INFO 03-12 10:44:55 [worker.py:267] the current vLLM instance can use total_gpu_memory (31.37GiB) x gpu_memory_utilization (0.90) = 28.23GiB
-#     if need be increase to > 90% gpu memory util?
-#
 #   INFO 03-12 10:44:46 [config.py:576] This model supports multiple tasks: {'score', 'classify', 'generate', 'embed', 'reward'}. Defaulting to 'generate'.
 #   INFO 03-12 10:44:49 [config.py:576] This model supports multiple tasks: {'reward', 'classify', 'embed', 'generate', 'score'}. Defaulting to 'generate'.
+#      TODO try other supported tasks!
 #
 #   INFO 03-12 11:32:49 [cuda.py:285] Using Flash Attention backend.
 #
-#      TODO try other supported tasks!
+#   INFO 03-12 10:44:55 [worker.py:267] the current vLLM instance can use total_gpu_memory (31.37GiB) x gpu_memory_utilization (0.90) = 28.23GiB
+#     if need be increase to > 90% gpu memory util?
+#   INFO 03-12 11:32:54 [worker.py:267] model weights take 14.25GiB; non_torch_memory takes 0.11GiB; PyTorch activation peak memory takes 4.35GiB; the rest of the memory reserved for KV Cache is 9.52GiB.
+#
+#   INFO 03-12 11:32:54 [executor_base.py:116] Maximum concurrency for 32768 tokens per request: 5.44x
+#
+#   INFO 03-12 11:32:55 [model_runner.py:1442] Capturing cudagraphs for decoding. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI. If out-of-memory error occurs during cudagraph capture, consider decreasing `gpu_memory_utilization` or switching to eager mode. You can also reduce the `max_num_seqs` as needed to decrease memory usage.
+#
+#   # TODO default params:
+#   INFO 03-12 11:33:04 [serving_chat.py:114] Using default chat sampling params from model: {'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}
+#   INFO 03-12 11:33:04 [serving_completion.py:60] Using default completion sampling params from model: {'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}
+#
 #
 #   TODO review more of output for the part that confirms loaded into GPU
 #
 # test completions:
 curl http://localhost:8000/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
+    -H "Content-Type: application/json" \
+    -d '{
            "model": "Qwen/Qwen2.5-7B-Instruct",
            "messages": [{"role": "user", "content": "Hello!"}]
          }'
 
 # DO NOT NEED MODEL in request, IIUC, b/c vllm serves one at a time (like llama-server)
 curl http://localhost:8000/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
+    -H "Content-Type: application/json" \
+    -d '{
            "messages": [{"role": "user", "content": "Hello!"}]
          }'
-
-
 
 # TODO try these args to vllm serve:
 #  collect_detailed_traces=None
@@ -133,4 +139,18 @@ curl http://localhost:8000/v1/chat/completions \
 #
 #  enable_request_id_headers=False
 #
+
+# *** try benchmarking w/ benchmarks/ dir
+#   https://github.com/vllm-project/vllm/tree/main/benchmarks
+set MODEL_NAME "Qwen/Qwen2.5-7B-Instruct"
+vllm serve $MODEL_NAME --disable-log-requests
 #
+# new tab:
+set MODEL_NAME "Qwen/Qwen2.5-7B-Instruct"
+set NUM_PROMPTS 10
+set BACKEND openai-chat
+set DATASET_NAME sharegpt
+set DATASET_PATH "<your data path>/ShareGPT_V3_unfiltered_cleaned_split.json"
+python3 benchmarks/benchmark_serving.py --backend ${BACKEND} --model ${MODEL_NAME} \
+    --endpoint /v1/chat/completions --dataset-name ${DATASET_NAME} \
+    --dataset-path ${DATASET_PATH} --num-prompts ${NUM_PROMPTS}
