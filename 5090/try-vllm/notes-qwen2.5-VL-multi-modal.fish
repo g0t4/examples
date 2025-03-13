@@ -38,6 +38,13 @@ vllm serve Qwen/Qwen2.5-VL-7B-Instruct
 # try 3B
 vllm serve Qwen/Qwen2.5-VL-3B-Instruct
 # ???
+# ERROR 03-13 02:05:13 [engine.py:411] The model's max seq len (128000) is larger than the maximum number of tokens that can be stored in KV cache (3040). Try increasing `gpu_memory_utilization` or decreasing `max_model_len` when initializing the engine.
+# dang... I need to decrease max_model_len
+vllm serve Qwen/Qwen2.5-VL-3B-Instruct --max-model-len 32768
+#   YAY IT LOADED!
+# TODO also change? 
+# Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.48, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+# It looks like you are trying to rescale already rescaled images. If the input images have pixel values between 0 and 1, set `do_rescale=False` to avoid rescaling them again.
 
 
 
