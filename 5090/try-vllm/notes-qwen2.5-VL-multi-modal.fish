@@ -66,6 +66,26 @@ curl http://localhost:8000/v1/chat/completions \
 # {"id":"chatcmpl-a1b7d248d39b4bf2974922972812a23b","object":"chat.completion","created":1741849891,"model":"Qwen/Qwen2.5-VL-3B-Instruct","choices":[{"index":0,"message":{"role":"assistant","reasoning_content":null,"content":"The text in the illustration reads \"TONGYI Qwen.\"","tool_calls":[]},"logprobs":null,"finish_reason":"stop","stop_reason":null}],"usage":{"prompt_tokens":74,"total_tokens":89,"completion_tokens":15,"prompt_tokens_details":null},"prompt_logprobs":null}⏎
 #    => "content": "The text in the illustration reads \"TONGYI Qwen.\""
 
+curl http://localhost:8000/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+    "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": "https://imgs.search.brave.com/8bCgWghGAuePTAJGHztcQ3zOdAkzq5l2Q_9sB9lYT7o/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/dmFsdWVjb2RlcnMu/Y29tL2Jsb2cvd3At/Y29udGVudC91cGxv/YWRzLzIwMjQvMDUv/S2V5LUZlYXR1cmVz/LW9mLXRoZS1MTEFN/QS0zLU1vZGVsLmpw/Zy53ZWJw"}},
+        {"type": "text", "text": "What is in this image?"}
+    ]}
+    ]
+    }' | jq
+#
+#  "content": "The image features a pair of sunglasses with a unique design, including feathers and a colorful frame. The background has a gradient effect transitioning from blue to purple. The text \"LLAMA 3\" is prominently displayed on the left side of the image.",
+
+# *** btw brave search makes nice links that for sure don't give away what is in the image... though I should check that when visited they dont include headers that give it away?
+#    CRAP THE HEADERS might be there?
+#    Content-Disposition: inline; filename="Key-Features-of-the-LLAMA-3-Model.jpg.jpg"
+#    TODO see if vllm passes headers to model?
+
 #
 # FYI in the future, I should be able to find a build for cu128 once torch 12.8 moves to regular releases (not nightly server)
 #   nightly serve doesn't list xformers wheel
