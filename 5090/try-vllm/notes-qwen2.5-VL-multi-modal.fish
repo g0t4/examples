@@ -19,6 +19,25 @@ pip install --pre torch torchvision torchaudio --index-url https://download.pyto
 # and this again:
 pip install -e . --no-build-isolation
 # PHEW fixed it for now :)
+#
+# ok cd to xformers checkout
+# source .venv  
+wcl https://github.com/facebookresearch/xformers.git
+z xformers 
+pip install --no-deps -e .
+#    WOW TRHIS WAS FAST
+#    --nodeps => or, do like vllm does and remove deps like torch from requirements.txt
+#
+# next just confirm non-multimodal model works:
+vllm serve "Qwen/Qwen2.5-Coder-7B" # good!
+#
+# try this again:
+vllm serve Qwen/Qwen2.5-VL-7B-Instruct
+# cross fingers!
+# CRAP OUT OF MEMORY!!! just barely!!!
+# try 3B
+vllm serve Qwen/Qwen2.5-VL-3B-Instruct
+# ???
 
 
 
