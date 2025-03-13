@@ -40,30 +40,37 @@ vllm serve Qwen/Qwen2.5-VL-3B-Instruct
 # ???
 # ERROR 03-13 02:05:13 [engine.py:411] The model's max seq len (128000) is larger than the maximum number of tokens that can be stored in KV cache (3040). Try increasing `gpu_memory_utilization` or decreasing `max_model_len` when initializing the engine.
 # dang... I need to decrease max_model_len
+#    also basically KV cache was using 20GB of memory due to size!
 vllm serve Qwen/Qwen2.5-VL-3B-Instruct --max-model-len 32768
+#  and now the log shows:
+#     INFO 03-13 02:07:41 [worker.py:267] model weights take 7.16GiB; non_torch_memory takes 0.12GiB; PyTorch activation peak memory takes 4.06GiB; the rest of the memory reserved for KV Cache is 16.90GiB.
+#
 #   YAY IT LOADED!
 # TODO also change? 
 # Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.48, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
 # It looks like you are trying to rescale already rescaled images. If the input images have pixel values between 0 and 1, set `do_rescale=False` to avoid rescaling them again.
 
+curl http://localhost:8000/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+    "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": "https://modelscope.oss-cn-beijing.aliyuncs.com/resource/qwen.png"}},
+        {"type": "text", "text": "What is the text in the illustrate?"}
+    ]}
+    ]
+    }'
+# OMFG! it works
+# {"id":"chatcmpl-a1b7d248d39b4bf2974922972812a23b","object":"chat.completion","created":1741849891,"model":"Qwen/Qwen2.5-VL-3B-Instruct","choices":[{"index":0,"message":{"role":"assistant","reasoning_content":null,"content":"The text in the illustration reads \"TONGYI Qwen.\"","tool_calls":[]},"logprobs":null,"finish_reason":"stop","stop_reason":null}],"usage":{"prompt_tokens":74,"total_tokens":89,"completion_tokens":15,"prompt_tokens_details":null},"prompt_logprobs":null}⏎
+#    => "content": "The text in the illustration reads \"TONGYI Qwen.\""
 
-
-
-
-# after the rebuild, install xformers w/o deps? OR find compatible build?
-# LATER I s/b to get a custom cuda version like 12.6:
-# pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu126
 #
-# BUT for 12.8 right now, that is only nightly so I can't use that for xformers (yet)
-# pip3 install -U xformers --index-url https://download.pytorch.org/whl/nightly/cu128
-#
-# *** build xformers from src
-git clone https://github.com/facebookresearch/xformers.git
-# 
-# CRAP, per GH issues the build fails?
-#   https://github.com/facebookresearch/xformers/issues?q=is%3Aissue%20state%3Aopen%20%2012.8
-# maybe just wait on using multimodal if this is required
-#
-
+# FYI in the future, I should be able to find a build for cu128 once torch 12.8 moves to regular releases (not nightly server)
+#   nightly serve doesn't list xformers wheel
+# pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu128
+#   FYI right now can get up to 12.6:
+#      pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu126
 
 
