@@ -25,7 +25,7 @@ pip install -e . --no-build-isolation
 wcl https://github.com/facebookresearch/xformers.git
 z xformers 
 pip install --no-deps -e .
-#    WOW TRHIS WAS FAST
+#    WOW THIS WAS FAST
 #    --nodeps => or, do like vllm does and remove deps like torch from requirements.txt
 #
 # next just confirm non-multimodal model works:
