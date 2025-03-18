@@ -24,6 +24,7 @@ uv venv -p python3.9 .venv # ** create new venv w/o any deps
 #   uv run --python 3.12 python --version
 
 # * USE PYTHON 3.12 not 3.13
+# ***! WORKING INSTALL:
 # FYI used pyenv to create a 3.12 venv (next time use uv above)
 rm -rf .venv/
 pyenv install 3.12

@@ -1,3 +1,13 @@
+
+git worktree add -b vllm-latest /home/wes/repos/github/vllm-project/vllm-latest origin/main 
+
+python chat.py # my stupid simple chat client for demos
+# prompt:    tower of hanoi in lua!
+
+
+
+
+
 vllm serve "Qwen/Qwen2.5-0.5B"
 vllm serve "Qwen/Qwen2.5-0.5B-Instruct"
 vllm serve "Qwen/Qwen2.5-7B-Instruct"
