@@ -1,9 +1,4 @@
-# 
-# ! REMEMBER package IMPORTS are relative to the workspace root
-#   in the case of a venv, the dir its created in 
-#   launch python/nvim/ipython all from the root dir
-#   DO NOT OPEN neovim in a nested dir, otherwise package imports will fail
-#
+
 from helpers.trees import *
 import torch
 import numpy as np
