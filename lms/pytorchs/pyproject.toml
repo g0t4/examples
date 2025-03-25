@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "examples to learn PyTorch's basic concepts"
 requires-python = ">=3.12"
 dependencies = [
+    "ipython>=9.0.2",
     "rich>=13.9.4",
     "torch>=2.6.0",
     "torchaudio>=2.6.0",
