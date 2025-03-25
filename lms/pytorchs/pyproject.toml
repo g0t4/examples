@@ -1,9 +1,12 @@
 [project]
-name = "torch"
+name = "pytorchs"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "examples to learn PyTorch's basic concepts"
 requires-python = ">=3.12"
 dependencies = [
     "rich>=13.9.4",
+    "torch>=2.6.0",
+    "torchaudio>=2.6.0",
+    "torchvision>=0.21.0",
+    "transformers>=4.50.0",
 ]
