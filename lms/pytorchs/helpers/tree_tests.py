@@ -12,6 +12,8 @@ import numpy as np
 
 array1D = np.random.rand(4)
 print(array1D)
+print_tree(array1D)
+print_treearrays(array1D)
 
 #%% 2D 
 
