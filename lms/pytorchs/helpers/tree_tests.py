@@ -10,7 +10,7 @@ import numpy as np
 
 #%% 1D
 
-array1D = np.random.rand(1, 4)
+array1D = np.random.rand(4)
 print(array1D)
 
 #%% 2D 
