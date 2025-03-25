@@ -28,8 +28,11 @@ print_treearrays(array3D)
 
 #%% 3D smaller
 
-# increasingly obvious to me that tree makes more sense at 3D+
-#   yes, numpy compact array structure is similar and saves screen space but it is easy to lose track of the [] and thus lose track of the dimensions
+# IMO tree makes more sense at 3D+
+#   yes, numpy compact array structure is similar (esp lower dimension)
+#   and saves screen space 
+#   but easy to lose track of []/dimensions
+
 array3Dsmaller = np.random.rand(2, 1, 1)
 print(array3Dsmaller)
 print_tree(array3Dsmaller)
