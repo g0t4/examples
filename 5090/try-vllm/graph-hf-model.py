@@ -19,7 +19,7 @@ def show_image_iterm2(path):
 # model_name = "meta-llama/Llama-3.2-1B-Instruct" # waiting for approval to gated
 model_name ="Qwen/Qwen2.5-Coder-0.5B"
 is_ipython = sys.argv[0].endswith("ipython")
-if not is_python and len(sys.argv) > 1:
+if not is_ipython and len(sys.argv) > 1:
     model_name = sys.argv[1]
 print(model_name)
 
@@ -31,7 +31,7 @@ model = AutoModel.from_pretrained(model_name)
 from torchinfo import summary
 
 # *** VERY NICE SUMMARY! (text and tree like)
-model_stats = summary(model, input_size=(1, 32), dtypes= [ torch.long ] )  # batch size 1, seq len 32
+model_stats = summary(model, input_size=(1, 32), dtypes=[ torch.long ])  # batch size 1, seq len 32
 print(model_stats)
 
 #%% 
