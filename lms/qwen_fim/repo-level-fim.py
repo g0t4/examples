@@ -3,7 +3,7 @@ device = "cuda" # the device to load the model onto
 
 # Now you do not need to add "trust_remote_code=True"
 TOKENIZER = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-7B")
-MODEL = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-Coder-7B", device_map="auto").eval()
+MODEL = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-Coder-7B", device_map="cuda").eval()
 
 # tokenize the input into tokens
 input_text = """<|repo_name|>library-system
