@@ -91,11 +91,11 @@ import json
 from rich import print as rich_print
 print = rich_print
 
-_313 = train_dataset[311] 
+_311 = train_dataset[311] 
 
-with open('tmp-test-runs/full-313.json', 'w') as f:
-    f.write(json.dumps(_313))
-with open('tmp-test-runs/prompt-313.txt', 'w') as f:
-    f.write(_313["text"])
+with open('tmp-test-runs/full-311.json', 'w') as f:
+    f.write(json.dumps(_311))
+with open('tmp-test-runs/prompt-311.txt', 'w') as f:
+    f.write(_311["text"])
 
-print(_313)
+print(_311)

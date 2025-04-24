@@ -6,7 +6,7 @@
 echo curl -X POST http://localhost:8000/v1/completions \
     -H "Content-Type: application/json" \
     -d @(jq -n \
-        --arg prompt "$(cat tmp-test-runs/prompt-313.txt)" \
+        --arg prompt "$(cat tmp-test-runs/prompt-311.txt)" \
         '{  prompt: $prompt, 
             max_tokens: 256, 
             temperature: 0.7, 
@@ -14,9 +14,9 @@ echo curl -X POST http://localhost:8000/v1/completions \
             n: 1, 
             stop: null
         }' \
-        | psub) > tmp-test-runs/response-313.json
+        | psub) > tmp-test-runs/response-311.json
 
-cat tmp-test-runs/response-313.json | jq ".choices[].text" -r
+cat tmp-test-runs/response-311.json | jq ".choices[].text" -r
 # FYI don't set model for vllm b/c it only serves one model.. and will fail if you mess up name so no point in setting unless you wanna check it
 
 # TODO left off before check prompt is setup propertly (i.e. any system message too?) is this playing well with template as intended (or if no template that too)?
