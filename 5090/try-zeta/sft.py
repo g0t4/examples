@@ -32,28 +32,26 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 
 #%% 
 
-alpaca_prompt = """### Instruction:
-You are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.
+# FYI! I had to collapse prompt into a single line string b/c iron.nvim doesn't detect these! ugh it filters them out as if comments... TODO fix that!
+alpaca_prompt = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n\n{}\n"""
 
-### User Edits:
-
-{}
-
-### User Excerpt:
-
-{}
-
-### Response:
-
-{}
-"""
+#%% 
 
 EOS_TOKEN = tokenizer.eos_token # Must add EOS_TOKEN
 original_start_marker = "<|editable_region_start|>"
 original_end_marker = "<|editable_region_end|>"
 
 def format_example(events, input, output):
-    return alpaca_prompt.format(events, input, output)
+    is_312 = "let new_edits = <|user_cursor_is_here|>" in input
+    if is_312:
+        print("## 312 found")
+        print("events:", events)
+        print("input:", input)
+        print("output:", output)
+    prompt = alpaca_prompt.format(events, input, output)
+    if is_312:
+        print("prompt:", prompt)
+    return prompt
 
 def formatting_prompts_func(examples):
     events       = examples["events"]
@@ -93,7 +91,7 @@ import json
 from rich import print as rich_print
 print = rich_print
 
-_313 = train_dataset[313] 
+_313 = train_dataset[311] 
 
 with open('tmp-test-runs/full-313.json', 'w') as f:
     f.write(json.dumps(_313))
