@@ -3,12 +3,12 @@
 # vllm serve zed-industries/zeta
 # use sft.py to extract prompts from dataset 
 
-echo curl -X POST http://localhost:8000/v1/completions \
+curl -X POST http://localhost:8000/v1/completions \
     -H "Content-Type: application/json" \
     -d @(jq -n \
         --arg prompt "$(cat tmp-test-runs/prompt-311.txt)" \
         '{  prompt: $prompt, 
-            max_tokens: 256, 
+            max_tokens: 2000,
             temperature: 0.7, 
             top_p: 0.9, 
             n: 1, 
