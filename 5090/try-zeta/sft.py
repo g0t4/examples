@@ -87,10 +87,17 @@ eval_dataset = dataset["eval"]
 print("train len", len(train_dataset))
 print("eval len", len(eval_dataset))
 
-print(train_dataset[313]["text"])
-
 #%% 
+# * right now I am just extracting examples to manually test vllm serve myself (so dont need to load model above... just being lazy with generating prompt and EOS token was only reason I left that stuff in for loading tokenizer)
+import json
+from rich import print as rich_print
+print = rich_print
 
-# write to file
-with open('prompt-313-text.txt', 'w') as f:
-    f.write(train_dataset[313]["text"])
+_313 = train_dataset[313] 
+
+with open('tmp-test-runs/full-313.json', 'w') as f:
+    f.write(json.dumps(_313))
+with open('tmp-test-runs/prompt-313.txt', 'w') as f:
+    f.write(_313["text"])
+
+print(_313)
