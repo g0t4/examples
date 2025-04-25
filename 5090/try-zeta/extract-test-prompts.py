@@ -35,7 +35,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 # FYI! I had to collapse prompt into a single line string b/c iron.nvim doesn't detect these! ugh it filters them out as if comments... TODO fix that!
 # alpaca_prompt = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n\n{}\n"""
 # FYI for my purposes, I don't want to include response (obviously... I am testing the already fine tuned model :)...  so I lopped off output/response
-alpaca_prompt = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n"""
+test_prompt = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n"""
 
 #%% 
 
@@ -50,7 +50,7 @@ def format_example(events, input, output):
         print("events:", events)
         print("input:", input)
         print("output:", output)
-    prompt = alpaca_prompt.format(events, input, output)
+    prompt = test_prompt.format(events, input, output)
     if is_312:
         print("prompt:", prompt)
     return prompt
