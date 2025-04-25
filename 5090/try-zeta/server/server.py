@@ -1,8 +1,6 @@
 import asyncio
 import httpx
 from flask import Flask, request, jsonify
-import os
-import time
 from rich import print as rich_print
 
 print = rich_print
@@ -41,7 +39,7 @@ print = rich_print
 app = Flask(__name__)
 
 # PREDICTION_API_URL = os.getenv("PREDICTION_API_URL")
-PREDICTION_API_URL = "http://localhost:8000/v1/completions"
+VLLM_COMPLETIONS_V1_URL = "http://localhost:8000/v1/completions"
 
 
 @app.route('/predict_edits', methods=['POST'])
@@ -49,18 +47,17 @@ def predict_edits():
     data = request.get_json()
     print("## headers", request.headers)
     print("## data", data)
-    outline = data.get('outline', '')  # TODO validate input_outline (is name zed sends)
-    input_events = data.get('input_events', '')  # TODO validate input_events (from zed)
-    input_excerpt = data.get('input_excerpt', '')  # TODO validate input_excerpt (from zed)
-    # TODO more params
+    outline = data.get('outline', '')
+    input_events = data.get('input_events', '')
+    input_excerpt = data.get('input_excerpt', '')
+    # FYI other params passed by zed:
     # speculated_output: Some(values.speculated_output), # TODO what is this for? seems to be a subset of input_excerpt?
-    # can_collect_data,
     # diagnostic_groups # TODO capture example of this
+    # can_collect_data
 
-    # TODO is this the right outline prefix/header?
+    # TODO is this the right outline prefix/header for prompt?
     outline_prefix = f"### Outline for current file:\n{outline}\n" if outline else ""
     if outline:
-        # TODO outline
         print("[WARN]: outline not yet supported")
 
     # TODO is there a header before Instruction?
@@ -72,14 +69,11 @@ def predict_edits():
     # TODO any thing else passed in current version?
     # zeta client request body builder:
     #   https://github.com/zed-industries/zed/blob/17ecf94f6f/crates/zeta/src/zeta.rs#L449-L466
-    # TODO capture request AND response
-    #   TODO validate response format! from API
     async def fetch_prediction():
-        timeout_sec = 30  # TODO timeout?
+        timeout_sec = 30
         async with httpx.AsyncClient(timeout=timeout_sec) as client:
             response = await client.post(
-                PREDICTION_API_URL,
-                # headers={"Authorization": f"Bearer {PREDICTION_API_KEY}"},
+                VLLM_COMPLETIONS_V1_URL,
                 json={
                     # "model": "zeta", -- do not need with vllm backend
                     "prompt": prompt,
@@ -96,16 +90,13 @@ def predict_edits():
             print("\n\n## result", result)
             response.raise_for_status()
             choice_text = result.get("choices", [{}])[0].get("text", "")
-
-            response_id = result["id"].replace("cmpl-","")
+            response_id = result["id"].replace("cmpl-", "") # drop cmpl- prefix, must be valid UUID for zed to parse (not sure what it needs it for, maybe logging?)
 
             return {
-                #     pub output_excerpt: String,
                 "output_excerpt": choice_text,
-                #
+
                 # FYI PR/23997 does not set request_id so lets skip for now, was only in zeta codebase
-                #     pub request_id: Uuid,
-                "request_id": response_id,  # FYI zed log shows "missing field `request_id`" error message
+                "request_id": response_id,  # required, UUID
                 # here is where crates/zeta uses reuest_id:
                 #   https://github.com/zed-industries/zed/blob/17ecf94f6f/crates/zeta/src/zeta.rs#L845
                 #   not sure this is then used anywhere
