@@ -18,7 +18,7 @@ print = rich_print
 #      or is there a newer model :) and train dataset :)
 #
 # FYI to test this
-#   export ZED_PREDICT_EDITS_URL=http://build21:PORT/predict_edits/v2 # or w/e route I use below
+#   export ZED_PREDICT_EDITS_URL=http://build21:PORT/predict_edits # or w/e route I use below
 #   zed  # zed will use the URL for request (already confirmed this works)
 
 #
@@ -44,7 +44,7 @@ app = Flask(__name__)
 PREDICTION_API_URL = "http://localhost:8000/v1/completions"
 
 
-@app.route('/predict_edits/v2', methods=['POST'])
+@app.route('/predict_edits', methods=['POST'])
 def predict_edits():
     data = request.get_json()
     print("## headers", request.headers)
