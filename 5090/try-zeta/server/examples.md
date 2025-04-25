@@ -22,7 +22,7 @@ These ran before I made any changes to anything so these were not triggered by m
 }
 ```
 
-## request after I made a change and typed "set"
+## request after I made a change in calc.lua
 
 ```json
 {
@@ -35,9 +35,7 @@ These ran before I made any changes to anything so these were not triggered by m
 }
 ```
 
-
-
-## vllm response example (python rich print)
+## vllm calc.lua response example
 
 ```json
 
