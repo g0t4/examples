@@ -75,20 +75,20 @@ def predict_edits():
         timeout_sec = 30
         async with httpx.AsyncClient(timeout=timeout_sec) as client:
             with Timer("inner"):
-                response = await client.post(
-                    VLLM_COMPLETIONS_V1_URL,
-                    json={
-                        # "model": "zeta", -- do not need with vllm backend
-                        "prompt": prompt,
-                        "max_tokens": 2048,  # PR 23997 used 2048 # TODO what max? # can I get it to just stop on EOT?
-                        # TODO should I set EOT to be the end of the template token(s)?
-                        #
-                        "temperature": 0.0,  # 23997 PR used 0 # TODO what value to use?
-                        # "top_p": 0.9, # TODO value?
-                        # "n": 1, # s/b default
-                        # "stop": null # TODO what value?
-                        # "rewrite_speculation": True # TODO?
-                    })
+                body = {
+                    # "model": "zeta", -- do not need with vllm backend
+                    "prompt": prompt,
+                    "max_tokens": 2048,  # PR 23997 used 2048 # TODO what max? # can I get it to just stop on EOT?
+                    # TODO should I set EOT to be the end of the template token(s)?
+                    #
+                    "temperature": 0.0,  # 23997 PR used 0 # TODO what value to use?
+                    # "top_p": 0.9, # TODO value?
+                    # "n": 1, # s/b default
+                    # "stop": null # TODO what value?
+                    # "rewrite_speculation": True # TODO?
+                }
+                print("## body", body)
+                response = await client.post(VLLM_COMPLETIONS_V1_URL, json=body)
                 result = response.json()
                 # print("\n\n## result", result)
                 response.raise_for_status()
