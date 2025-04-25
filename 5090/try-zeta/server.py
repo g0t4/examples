@@ -1,4 +1,4 @@
- import asyncio
+import asyncio
 import httpx
 from flask import Flask, request, jsonify
 import os
@@ -11,12 +11,15 @@ import time
 #   btw I don't see outline in  SFT/DPO ipynb (notebooks) in hf dataset repo!? are those old?
 #     or did they just add outline and it happens to not cause trouble? and be helpful without any SFT? 
 #     or is there a newer model :) and train dataset :)
- #
+#
 # FYI to test this
 #   export ZED_PREDICT_EDITS_URL=http://build21:PORT/predict_edits/v2 # or w/e route I use below
 #   zed  # zed will use the URL for request (already confirmed this works)
 #
+# TODO try run quantized and/or ngram spec dec too:
+#  vllm serve zed-industries/zeta --served-model-name zeta --enable-prefix-caching --enable-chunked-prefill --quantization="fp8" --speculative-model [ngram] --ngram-prompt-lookup-max 4 --ngram-prompt-lookup-min 2 --num-speculative-tokens 8
 #  TODO review below and touch up to work with the released HF zeta model
+
 
 app = Flask(__name__)
 
