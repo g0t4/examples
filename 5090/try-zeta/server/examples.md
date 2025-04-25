@@ -58,32 +58,29 @@
 ## vllm response example (python rich print)
 
 ```json
+
+// vllm prompt log:
+'### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\nUser edited "lua/ask-openai/prediction/tests/calc/calc.lua":\n```diff\n@@ -7,4 +7,5 @@\n \n \n \n+\n return M\n\n```\n\nUser edited "lua/ask-openai/prediction/tests/calc/calc.lua":\n```diff\n@@ -8,4 +8,5 @@\n \n \n \n+\n return M\n\n```\n\n### User Excerpt:\n\n```ask-openai.nvim/lua/ask-openai/prediction/tests/calc/calc.lua\n<|start_of_file|>\n<|editable_region_start|>\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n<|user_cursor_is_here|>\n\n\n\n\n\nreturn M\n\n<|editable_region_end|>\n```\n\n### Response:\n'
+
+// vllm response:
 {
-     'id': 'cmpl-ed6981ab0ae244ac9522559de635cae6',
-     'object': 'text_completion',
-     'created': 1745551757,
-     'model': 'zed-industries/zeta',
-     'choices': [
-         {
-             'index': 0,
-             'text': '<|editable_region_start|>\n# brew install agg\n#\n# config:\n# --font-size 20+/--line-height\n#
- --font-dir/--font-family\n#     mac:    --font-family \'SauceCodePro Nerd Font\'\n# --rows X / --cols Y\n# --theme
- asciinema, dracula, monokai, solarized-dark, solarized-light, custom\n# --speed 1.0\n# --idle-time-limit 5.0 /
- --last-frame-delay 3.0\n#   my terminal dark    --theme
- 17181d,c7b168,555a6c,dc3d6f,9ed279,fae67f,469cd0,8b47e5,61d2b8,c229cf\n#\n#\n## asciicast2gif retired\n#
- https://github.com/asciinema/asciicast2gif\n#   alias asciicast2gif=\'docker run --rm -v $PWD:/data
- asciinema/asciicast2gif\'\n#   successors:\n#   - listed by asciicast2gif repo: https://github.com/asciinema/agg\n#
- nix! flake!\n#   - copilot suggests: try ttygif?\n\nabbr vllms "vllm serve"\n# PRN some common args for vllm serve?\n#
- abbr vllmsd "vllm serve --download-dir "\nabbr vllmb "vllm bench"\nabbr vllmc "vllm chat"\nabbr vllmg "vllm
- complete"\n\n# *** tail\nabbr tailf \'tail -F\'\nabbr tailn \'tail -n 10\'\nabbr tailr \'tail -r\' # reverse order\n\n#
- tail10<space> => tail -n 10\nabbr taild --regex \'tail\\d+\' --function _taild\nfunction _taild\n    string replace tail
- \'tail -n \' $argv[1]\nend\n\n<|editable_region_end|>\n```\n',
-             'logprobs': None,
-             'finish_reason': 'stop',
-             'stop_reason': None,
-             'prompt_logprobs': None
-         }
-     ],
-     'usage': {'prompt_tokens': 1125, 'total_tokens': 1577, 'completion_tokens': 452, 'prompt_tokens_details': None}
+    'id': 'cmpl-1e2dd241cbba4f2e8b8ccfa26af7636b',
+    'object': 'text_completion',
+    'created': 1745566545,
+    'model': 'zed-industries/zeta',
+    'choices': [
+        {
+            'index': 0,
+            'text': '<|editable_region_start|>\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\nfunction
+M.subtract(a, b)\n    return a - b\nend\n\nfunction M.multiply(a, b)\n    return a * b\nend\n\nfunction M.divide(a,
+b)\n    if b == 0 then\n        error("Division by zero")\n    end\n    return a / b\nend\n\nreturn
+M\n\n<|editable_region_end|>\n```\n',
+            'logprobs': None,
+            'finish_reason': 'stop',
+            'stop_reason': None,
+            'prompt_logprobs': None
+        }
+    ],
+    'usage': {'prompt_tokens': 209, 'total_tokens': 311, 'completion_tokens': 102, 'prompt_tokens_details': None}
 }
 ```
