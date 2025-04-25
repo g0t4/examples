@@ -46,15 +46,12 @@ PREDICTION_API_URL = "http://localhost:8000/v1/completions"
 
 @app.route('/predict_edits/v2', methods=['POST'])
 def predict_edits():
-    print("## request", request)
     data = request.get_json()
+    print("## headers", request.headers)
     print("## data", data)
     outline = data.get('outline', '')  # TODO validate input_outline (is name zed sends)
-    # print("## outline", outline)
     input_events = data.get('input_events', '')  # TODO validate input_events (from zed)
-    # print("## input_events", input_events)
     input_excerpt = data.get('input_excerpt', '')  # TODO validate input_excerpt (from zed)
-    # print("## input_excerpt", input_excerpt)
     # TODO more params
     # speculated_output: Some(values.speculated_output), # TODO what is this for? seems to be a subset of input_excerpt?
     # can_collect_data,
