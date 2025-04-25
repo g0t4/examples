@@ -1,5 +1,10 @@
 #!/usr/bin/env fish
 
+# FYI! change to cu128 compiled nightlies for torch
+z vllm-latest
+# TODO pull latest and build to see if that fixes quantization
+
+
 # zed model card says to use:
 #   https://huggingface.co/zed-industries/zeta
 #
