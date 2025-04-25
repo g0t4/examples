@@ -51,11 +51,20 @@ def predict_edits():
     outline = zed_request.get('outline', '')
     input_events = zed_request.get('input_events', '')
     input_excerpt = zed_request.get('input_excerpt', '')
+    #
     # FYI other params passed by zed:
-    # speculated_output: Some(values.speculated_output), # TODO what is this for? seems to be a subset of input_excerpt?
+    #
+    # speculated_output: Some(values.speculated_output), # IIAC not needed b/c:
+    # - IIAC speculated_output is for ngram (speculative decoding)
+    #   - IIAC intended to map to OpenAI's predition.content?
+    #     - https://platform.openai.com/docs/api-reference/chat/create#chat-create-prediction
+    # - BUT, AFAICT vllm builds ngrams on prompt (no parameter to use as basis instead)
+    #   - https://docs.vllm.ai/en/latest/features/spec_decode.html#speculating-by-matching-n-grams-in-the-prompt
+    #
     # diagnostic_groups # TODO capture example of this
+    #
     # can_collect_data
-
+    # 
     # TODO is this the right outline prefix/header for prompt?
     outline_prefix = f"### Outline for current file:\n{outline}\n" if outline else ""
     if outline:
