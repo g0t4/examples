@@ -60,6 +60,10 @@ def predict_edits():
     #     - https://platform.openai.com/docs/api-reference/chat/create#chat-create-prediction
     # - BUT, AFAICT vllm builds ngrams on prompt (no parameter to use as basis instead)
     #   - https://docs.vllm.ai/en/latest/features/spec_decode.html#speculating-by-matching-n-grams-in-the-prompt
+    # - FYI it is very much possible that they are NOT using vllm on the backend
+    #   - they show vllm on huggingface, so I assume they are... 
+    #     - they even show how to use speculative decoding
+    #   - or they have a custom ngram implementation with vllm 
     #
     # diagnostic_groups # TODO capture example of this
     #
