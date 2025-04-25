@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 from flask import Flask, request, jsonify
-from rich import print as rich_print
+from rich import print as rich_print, print_json
 from timing import Timer
 
 print = rich_print
@@ -87,7 +87,8 @@ def predict_edits():
                     # "stop": null # TODO what value?
                     # "rewrite_speculation": True # TODO?
                 }
-                print("## body", body)
+                print("## body")
+                print_json(data=body)
                 response = await client.post(VLLM_COMPLETIONS_V1_URL, json=body)
                 result = response.json()
                 # print("\n\n## result", result)
