@@ -18,6 +18,10 @@ import time
 #
 # TODO try run quantized and/or ngram spec dec too:
 #  vllm serve zed-industries/zeta --served-model-name zeta --enable-prefix-caching --enable-chunked-prefill --quantization="fp8" --speculative-model [ngram] --ngram-prompt-lookup-max 4 --ngram-prompt-lookup-min 2 --num-speculative-tokens 8
+#  FYI this is mentioned in model card... IIAC this is how they're serving the actual zeta model (or at the time)
+#    https://huggingface.co/zed-industries/zeta
+#    do some speed tests w/ and w/o spec dec
+#
 #  TODO review below and touch up to work with the released HF zeta model
 
 
