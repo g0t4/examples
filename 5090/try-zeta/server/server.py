@@ -1,8 +1,8 @@
 import asyncio
 import httpx
 from flask import Flask, request, jsonify
-from rich import print as rich_print, print_json
 from timing import Timer
+from rich import print as rich_print, print_json
 
 print = rich_print
 
@@ -45,12 +45,12 @@ VLLM_COMPLETIONS_V1_URL = "http://localhost:8000/v1/completions"
 
 @app.route('/predict_edits', methods=['POST'])
 def predict_edits():
-    data = request.get_json()
-    # print("## headers", request.headers)
-    # print("## data", data)
-    outline = data.get('outline', '')
-    input_events = data.get('input_events', '')
-    input_excerpt = data.get('input_excerpt', '')
+    zed_request = request.get_json()
+    print("\n\n[bold red]## Zed request body:")
+    print_json(data=zed_request)
+    outline = zed_request.get('outline', '')
+    input_events = zed_request.get('input_events', '')
+    input_excerpt = zed_request.get('input_excerpt', '')
     # FYI other params passed by zed:
     # speculated_output: Some(values.speculated_output), # TODO what is this for? seems to be a subset of input_excerpt?
     # diagnostic_groups # TODO capture example of this
@@ -59,23 +59,24 @@ def predict_edits():
     # TODO is this the right outline prefix/header for prompt?
     outline_prefix = f"### Outline for current file:\n{outline}\n" if outline else ""
     if outline:
-        print("[WARN]: outline not yet supported")
+        print("\n\n[yellow][WARN]: outline not yet supported")
 
     # TODO is there a header before Instruction?
     prompt_template = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n"""
     prompt = prompt_template.format(input_events, input_excerpt)
 
-    # print("## prompt:", prompt)
+    print("\n\n[bold red]## Prompt:")
+    print(prompt)
 
     # TODO pass outline
     # TODO any thing else passed in current version?
     # zeta client request body builder:
     #   https://github.com/zed-industries/zed/blob/17ecf94f6f/crates/zeta/src/zeta.rs#L449-L466
-    async def fetch_prediction():
+    async def generate_prediction():
         timeout_sec = 30
         async with httpx.AsyncClient(timeout=timeout_sec) as client:
             with Timer("inner"):
-                body = {
+                vllm_request_body = {
                     # "model": "zeta", -- do not need with vllm backend
                     "prompt": prompt,
                     "max_tokens": 2048,  # PR 23997 used 2048 # TODO what max? # can I get it to just stop on EOT?
@@ -87,14 +88,16 @@ def predict_edits():
                     # "stop": null # TODO what value?
                     # "rewrite_speculation": True # TODO?
                 }
-                print("## body")
-                print_json(data=body)
-                response = await client.post(VLLM_COMPLETIONS_V1_URL, json=body)
-                result = response.json()
-                # print("\n\n## result", result)
+                print("\n\n[bold red]## request body => vllm:")
+                print_json(data=vllm_request_body) # FYI print_json doesn't hard wrap lines, uses " instead of ', obvi compat w/ jq
+
+                response = await client.post(VLLM_COMPLETIONS_V1_URL, json=vllm_request_body)
+                vllm_response_body = response.json()
+                print("\n\n[bold red]## vllm => response body:")
+                print_json(data=vllm_response_body)
                 response.raise_for_status()
-                choice_text = result.get("choices", [{}])[0].get("text", "")
-                response_id = result["id"].replace("cmpl-", "")  # drop cmpl- prefix, must be valid UUID for zed to parse (not sure what it needs it for, maybe logging?)
+                choice_text = vllm_response_body.get("choices", [{}])[0].get("text", "")
+                response_id = vllm_response_body["id"].replace("cmpl-", "")  # drop cmpl- prefix, must be valid UUID for zed to parse (not sure what it needs it for, maybe logging?)
 
                 return {
                     "output_excerpt": choice_text,
@@ -108,9 +111,9 @@ def predict_edits():
 
     try:
         with Timer("async-outer"):
-            output = asyncio.run(fetch_prediction())
-            # print("\n\n## output", output)
-            return jsonify(output)
+            zed_prediction_response_body = asyncio.run(generate_prediction())
+            print("\n\n[bold green]## Zed response body:", zed_prediction_response_body)
+            return jsonify(zed_prediction_response_body)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
