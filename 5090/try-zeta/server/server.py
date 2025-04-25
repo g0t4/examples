@@ -2,6 +2,7 @@ import asyncio
 import httpx
 from flask import Flask, request, jsonify
 from rich import print as rich_print
+from timing import Timer
 
 print = rich_print
 
@@ -45,8 +46,8 @@ VLLM_COMPLETIONS_V1_URL = "http://localhost:8000/v1/completions"
 @app.route('/predict_edits', methods=['POST'])
 def predict_edits():
     data = request.get_json()
-    print("## headers", request.headers)
-    print("## data", data)
+    # print("## headers", request.headers)
+    # print("## data", data)
     outline = data.get('outline', '')
     input_events = data.get('input_events', '')
     input_excerpt = data.get('input_excerpt', '')
@@ -63,7 +64,8 @@ def predict_edits():
     # TODO is there a header before Instruction?
     prompt_template = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n"""
     prompt = prompt_template.format(input_events, input_excerpt)
-    print("## prompt:", prompt)
+
+    # print("## prompt:", prompt)
 
     # TODO pass outline
     # TODO any thing else passed in current version?
@@ -72,40 +74,42 @@ def predict_edits():
     async def fetch_prediction():
         timeout_sec = 30
         async with httpx.AsyncClient(timeout=timeout_sec) as client:
-            response = await client.post(
-                VLLM_COMPLETIONS_V1_URL,
-                json={
-                    # "model": "zeta", -- do not need with vllm backend
-                    "prompt": prompt,
-                    "max_tokens": 2048,  # PR 23997 used 2048 # TODO what max? # can I get it to just stop on EOT?
-                    # TODO should I set EOT to be the end of the template token(s)?
-                    #
-                    "temperature": 0.0,  # 23997 PR used 0 # TODO what value to use?
-                    # "top_p": 0.9, # TODO value?
-                    # "n": 1, # s/b default
-                    # "stop": null # TODO what value?
-                    # "rewrite_speculation": True # TODO?
-                })
-            result = response.json()
-            print("\n\n## result", result)
-            response.raise_for_status()
-            choice_text = result.get("choices", [{}])[0].get("text", "")
-            response_id = result["id"].replace("cmpl-", "") # drop cmpl- prefix, must be valid UUID for zed to parse (not sure what it needs it for, maybe logging?)
+            with Timer("inner"):
+                response = await client.post(
+                    VLLM_COMPLETIONS_V1_URL,
+                    json={
+                        # "model": "zeta", -- do not need with vllm backend
+                        "prompt": prompt,
+                        "max_tokens": 2048,  # PR 23997 used 2048 # TODO what max? # can I get it to just stop on EOT?
+                        # TODO should I set EOT to be the end of the template token(s)?
+                        #
+                        "temperature": 0.0,  # 23997 PR used 0 # TODO what value to use?
+                        # "top_p": 0.9, # TODO value?
+                        # "n": 1, # s/b default
+                        # "stop": null # TODO what value?
+                        # "rewrite_speculation": True # TODO?
+                    })
+                result = response.json()
+                # print("\n\n## result", result)
+                response.raise_for_status()
+                choice_text = result.get("choices", [{}])[0].get("text", "")
+                response_id = result["id"].replace("cmpl-", "")  # drop cmpl- prefix, must be valid UUID for zed to parse (not sure what it needs it for, maybe logging?)
 
-            return {
-                "output_excerpt": choice_text,
+                return {
+                    "output_excerpt": choice_text,
 
-                # FYI PR/23997 does not set request_id so lets skip for now, was only in zeta codebase
-                "request_id": response_id,  # required, UUID
-                # here is where crates/zeta uses reuest_id:
-                #   https://github.com/zed-industries/zed/blob/17ecf94f6f/crates/zeta/src/zeta.rs#L845
-                #   not sure this is then used anywhere
-            }
+                    # FYI PR/23997 does not set request_id so lets skip for now, was only in zeta codebase
+                    "request_id": response_id,  # required, UUID
+                    # here is where crates/zeta uses reuest_id:
+                    #   https://github.com/zed-industries/zed/blob/17ecf94f6f/crates/zeta/src/zeta.rs#L845
+                    #   not sure this is then used anywhere
+                }
 
     try:
-        output = asyncio.run(fetch_prediction())
-        print("\n\n## output", output)
-        return jsonify(output)
+        with Timer("async-outer"):
+            output = asyncio.run(fetch_prediction())
+            # print("\n\n## output", output)
+            return jsonify(output)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
