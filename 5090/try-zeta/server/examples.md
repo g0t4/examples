@@ -1,4 +1,7 @@
-## first captures on start zed:
+## first captures on start zed
+
+These appear to be a mistake? ... nonetheless they serve as a good example of some edge cases to watch for, i.e. untitled where s/b filename.
+These ran before I made any changes to anything so these were not triggered by me, literally show on zed start.
 
 ```json
 {
