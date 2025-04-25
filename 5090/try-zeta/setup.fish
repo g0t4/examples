@@ -3,7 +3,8 @@
 # rm -rf .venv
 uv venv
 source .venv/bin/activate.fish
-uv pip install ipykernel rich
+uv pip install ipykernel rich yapf
+uv pip install httpx flask # for server.py
 uv pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 uv pip install xformers --no-deps
 # TODO install xformers from source so its built for cu128 torch 
