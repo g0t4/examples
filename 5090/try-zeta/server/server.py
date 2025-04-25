@@ -64,7 +64,7 @@ def predict_edits():
     # diagnostic_groups # TODO capture example of this
     #
     # can_collect_data
-    # 
+    #
     # TODO is this the right outline prefix/header for prompt?
     outline_prefix = f"### Outline for current file:\n{outline}\n" if outline else ""
     if outline:
@@ -98,7 +98,7 @@ def predict_edits():
                     # "rewrite_speculation": True # TODO?
                 }
                 print("\n\n[bold red]## request body => vllm:")
-                print_json(data=vllm_request_body) # FYI print_json doesn't hard wrap lines, uses " instead of ', obvi compat w/ jq
+                print_json(data=vllm_request_body)  # FYI print_json doesn't hard wrap lines, uses " instead of ', obvi compat w/ jq
 
                 response = await client.post(VLLM_COMPLETIONS_V1_URL, json=vllm_request_body)
                 vllm_response_body = response.json()
@@ -121,7 +121,8 @@ def predict_edits():
     try:
         with Timer("async-outer"):
             zed_prediction_response_body = asyncio.run(generate_prediction())
-            print("\n\n[bold green]## Zed response body:", zed_prediction_response_body)
+            print("\n\n[bold green]## Zed response body:")
+            print_json(data=zed_prediction_response_body)
             return jsonify(zed_prediction_response_body)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
