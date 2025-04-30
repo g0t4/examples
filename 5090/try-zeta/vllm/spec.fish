@@ -8,7 +8,7 @@ z vllm-latest
 # zed model card says to use:
 #   https://huggingface.co/zed-industries/zeta
 #
-vllm serve zed-industries/zeta --served-model-name zeta \
+vllm serve zed-industries/zeta \
     --enable-prefix-caching \
     --enable-chunked-prefill \
     --quantization="fp8" \
@@ -32,7 +32,7 @@ vllm serve --help
 # shows:
 # --speculative-config SPECULATIVE_CONFIG
 #   The configurations for speculative decoding. Should be a JSON string. (default: None)
-vllm serve zed-industries/zeta --served-model-name zeta \
+vllm serve zed-industries/zeta \
     --enable-prefix-caching \
     --enable-chunked-prefill \
     --speculative-config '{"method": "ngram", "num_speculative_tokens": 5, "prompt_lookup_max": 4, "prompt_lookup_min": 2 }' 
@@ -47,7 +47,21 @@ vllm serve zed-industries/zeta --served-model-name zeta \
 
 
 # * btw these work w/o spec dec (but --quantization="fp8" fails... is it not possible on 50 series?)
-vllm serve zed-industries/zeta --served-model-name zeta \
+vllm serve zed-industries/zeta \
     --enable-prefix-caching \
     --enable-chunked-prefill \
+
+# * spec dec that I have working too:
+
+vllm serve zed-industries/zeta \
+    --speculative-config '{"method": "ngram", "num_speculative_tokens": 5, "prompt_lookup_max": 4, "prompt_lookup_min": 2 }' 
+
+vllm serve zed-industries/zeta \
+    --enable-prefix-caching \
+    --enable-chunked-prefill \
+    --speculative-config '{"method": "ngram", "num_speculative_tokens": 5, "prompt_lookup_max": 4, "prompt_lookup_min": 2 }' 
+
+# w/o spec dec:
+
+vllm serve zed-industries/zeta
 
