@@ -21,7 +21,7 @@ This doc gives you a quick-and-dirty breakdown of slang people actually use. Som
 > I’d risk it all for her, **no cap**.
 
 ### **Sus**
-**Meaning:** Suspicious or shady.  
+**Meaning:**  or shady.  
 **Example:**  
 > He left his phone face down all night. That's **sus**.
 
@@ -39,10 +39,10 @@ This doc gives you a quick-and-dirty breakdown of slang people actually use. Som
 
 ## 💀 Slightly Unfiltered
 
-### **Shitshow**
+### **S
 **Meaning:** A complete mess.  
 **Example:**  
-> That meeting was a goddamn **shitshow**.
+> That meeting was a goddamn 
 
 ### **Hell yeah / Hell no**
 **Meaning:** Strong yes/no.  
@@ -50,7 +50,7 @@ This doc gives you a quick-and-dirty breakdown of slang people actually use. Som
 > You wanna watch the director’s cut?  
 > **Hell yeah.**
 
-### **Fuck around and find out**
+### **Fuck around and find out** (abbrviated: )
 **Meaning:** Mess with me and suffer the consequences.  
 **Example:**  
 > He thought I wouldn’t swing. Told him to **fuck around and find out**.
@@ -74,17 +74,13 @@ This doc gives you a quick-and-dirty breakdown of slang people actually use. Som
 **Example:**  
 > She walked into the party like she owned the joint. Straight up **main character energy**.
 
-### **Ghosted**
+### **
 **Meaning:** Disappearing without explanation.  
 **Example:**  
-> We vibed for two weeks, then he just **ghosted** me. Dick move.
+> We vibed for two weeks, then he just **** me. Dick move.
 
-### **Receipts**
+### **
 **Meaning:** Proof, usually screenshots or texts.  
 **Example:**  
-> She said I was crazy — I showed the group chat the **receipts**.
-
----
-
-Let me know if you want this in a more SFW (safe-for-work) format — or dirtier, your call.
+> She said I was crazy — I showed the group chat the 
 
