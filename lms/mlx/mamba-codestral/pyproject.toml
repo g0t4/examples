@@ -3,5 +3,6 @@ name = "mamba-codestral"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "ipykernel>=6.29.5",
     "mlx-lm>=0.25.0",
 ]
