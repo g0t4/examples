@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-tokenizer = AutoTokenizer.from_pretrained("mlx-community/Mamba-Codestral-7B-v0.1")
+tokenizer = AutoTokenizer.from_pretrained("mlx-community/Mamba-Codestral-7B-v0.1-8bit")
 model = AutoModelForCausalLM.from_pretrained(
     "mlx-community/Mamba-Codestral-7B-v0.1",
     torch_dtype="auto",
