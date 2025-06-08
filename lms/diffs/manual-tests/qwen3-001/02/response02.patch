@@ -1,0 +1,27 @@
+
+```diff
+--- calculator.py
++++ calculator.py
+@@ -1,7 +1,7 @@
+ def add(a, b):
+-    return a + b
++    return x + b
+ 
+ def subtract(a, b):
+-    return a - b
++    return x - b
+ 
+ def multiply(a, b):
+-    return a * b
++    return x * b
+ 
+ def divide(a, b):
+-    if b != 0:
+-        return a / b
+-    else:
+-        return "Cannot divide by zero"
++    if b != 0:
++        return x / b
++    else:
++        return "Cannot divide by zero"
+```
