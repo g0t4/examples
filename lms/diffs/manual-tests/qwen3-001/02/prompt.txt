@@ -1,7 +1,6 @@
 I have a Python module for a simple calculator. Here is the code:
 
-# calculator.py
-
+```calculator.py
 def add(a, b):
     return a + b
 
@@ -16,5 +15,8 @@ def divide(a, b):
         return a / b
     else:
         return "Cannot divide by zero"
+```
 
 I want to rename the variable `a` to `x` in all functions. Please provide a diff for the changes.
+
+Please only output the patch file
