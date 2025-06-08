@@ -1,0 +1,5 @@
+{
+  "model": "qwen3:8b",
+  "prompt": "I have a Python module for a simple calculator. Here is the code:\n\n# calculator.py\n\ndef add(a, b):\n    return a + b\n\ndef subtract(a, b):\n    return a - b\n\ndef multiply(a, b):\n    return a * b\n\ndef divide(a, b):\n    if b != 0:\n        return a / b\n    else:\n        return \"Cannot divide by zero\"\n\nI want to rename the variable `a` to `x` in all functions. Please provide a diff for the changes.",
+  "stream": false
+}
