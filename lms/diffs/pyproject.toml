@@ -4,5 +4,6 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28.1",
+    "ipykernel>=6.29.5",
     "yapf>=0.43.0",
 ]
