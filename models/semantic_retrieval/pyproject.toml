@@ -3,6 +3,12 @@ name = "semantic-retrieval"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
+    "httpx>=0.28.1",
+    "ipykernel>=6.29.5",
+    "ipython>=9.3.0",
+    "rich>=14.0.0",
+    "rope>=1.13.0",
     "scikit-learn>=1.7.0",
     "sentence-transformers>=4.1.0",
+    "yapf>=0.43.0",
 ]
