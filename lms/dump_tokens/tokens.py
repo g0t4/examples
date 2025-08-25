@@ -35,3 +35,11 @@ look_for_tokens = ["<[fim-prefix]>", "<[fim-middle]>", "<[fim-suffix]>"] # ByteD
 look_for_ids = tokenizer.convert_tokens_to_ids(look_for_tokens)
 print(look_for_ids)  
 print(tokenizer.convert_ids_to_tokens(look_for_ids))
+
+
+
+print()
+print("----")
+for i in range(0, 500):
+    print(f"{i}: " + tokenizer.convert_ids_to_tokens(i))
+
