@@ -2,7 +2,8 @@ import re
 from transformers import AutoTokenizer
 
 # Load tokenizer (adjust model path if needed)
-tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
+# tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
+tokenizer = AutoTokenizer.from_pretrained("ByteDance-Seed/Seed-Coder-8B-Base") # https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json 
 # tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-7B")
 
 print(f"{tokenizer.vocab_size=}")
@@ -29,7 +30,8 @@ search_for(r'middle')
 for i in range(tokenizer.vocab_size, real_vocab_size): 
     print(f"{i}: " + tokenizer.convert_ids_to_tokens(i))
 
-look_for_tokens = ["<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>"]
+# look_for_tokens = ["<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>"] # gptoss
+look_for_tokens = ["<[fim-prefix]>", "<[fim-middle]>", "<[fim-suffix]>"] # ByteDance Seed-Coder 
 look_for_ids = tokenizer.convert_tokens_to_ids(look_for_tokens)
 print(look_for_ids)  
 print(tokenizer.convert_ids_to_tokens(look_for_ids))
