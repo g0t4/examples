@@ -11,15 +11,19 @@ set outfile $upstream_name-$outtype.gguf
 set outfile_4 $upstream_name-Q4_K_M.gguf
 set outfile_8 $upstream_name-Q8_0.gguf
 set my_repo_name $upstream_name-GGUF
+set llama_cpp $HOME/repos/github/ggml-org/llama.cpp
 
 # * venv
-source $HOME/repos/github/ggml-org/llama.cpp/.venv/bin/activate.fish
+source "$llama_cpp/.venv/bin/activate.fish"
 
 # * convert to GGUF
 $HOME/repos/github/ggml-org/llama.cpp/.venv/bin/python3 \
-    convert_hf_to_gguf.py \
+    $llama_cpp/convert_hf_to_gguf.py \
     --remote $upstream \
     --outtype $outtype --outfile $outfile
+
+# !!! ERROR:hf-to-gguf:Model ApertusForCausalLM is not supported
+
 #
 # # * quantize
 # llama-quantize $outfile \
