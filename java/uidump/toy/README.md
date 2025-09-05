@@ -51,6 +51,7 @@ set PID 18560
 
 ```fish
 z github/openjdk/jdk/src/jdk.attach
+# *** source code for attach functionality is right here! BUST IT OUT!
 rg "attach.*10"
 # share/classes/sun/tools/attach/HotSpotVirtualMachine.java:199:30:    private static final int ATTACH_ERROR_BADJAR        = 100;
 # share/classes/sun/tools/attach/HotSpotVirtualMachine.java:200:30:    private static final int ATTACH_ERROR_NOTONCP       = 101;
