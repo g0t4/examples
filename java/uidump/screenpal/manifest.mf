@@ -1,0 +1,5 @@
+# META-INF/MANIFEST.MF
+Agent-Class: your.pkg.DemoAgent
+Premain-Class: your.pkg.DemoAgent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
