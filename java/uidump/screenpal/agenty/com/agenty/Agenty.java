@@ -10,7 +10,7 @@ public final class Agenty {
 
     public static Object start(Instrumentation inst, String opts) throws Exception {
         PrintStream out = System.out; // goes wherever the app wired it
-        out.println("[agenty] start; opts=" + opts);
+        out.println("[agenty] start-03; opts=" + opts);
 
         transformer = new ClassFileTransformer() {
             @Override
