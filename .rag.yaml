@@ -1,0 +1,18 @@
+include:
+  - applescript
+  - bash
+  - fish
+  - java
+  - json
+  - lua
+  - ps1
+  - py
+  - rs
+  - snippets
+  - vim
+  - zsh
+  - yaml 
+# ignores:
+#   - "notes/"
+# all_languages:
+#   - JUST USE ALL included above (default IIRC)
