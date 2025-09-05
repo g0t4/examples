@@ -46,3 +46,15 @@ set PID 18560
 ./jattach $PID jcmd VM.classes | grep -i editorframe
 
 ```
+
+## 100/102 attach errors
+
+```fish
+z github/openjdk/jdk/src/jdk.attach
+rg "attach.*10"
+# share/classes/sun/tools/attach/HotSpotVirtualMachine.java:199:30:    private static final int ATTACH_ERROR_BADJAR        = 100;
+# share/classes/sun/tools/attach/HotSpotVirtualMachine.java:200:30:    private static final int ATTACH_ERROR_NOTONCP       = 101;
+# share/classes/sun/tools/attach/HotSpotVirtualMachine.java:201:30:    private static final int ATTACH_ERROR_STARTFAIL     = 102;
+# share/classes/sun/tools/attach/HotSpotVirtualMachine.java:204:30:    private static final int ATTACH_ERROR_BADVERSION = 101;
+# share/classes/sun/tools/attach/HotSpotVirtualMachine.java:608:32:    private static long defaultAttachTimeout = 10000;
+```
