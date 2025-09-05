@@ -11,14 +11,14 @@ public class UiDumpAgent2 {
   }
   private static void run() throws Exception {
     String pid = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-    Path out = Path.of("/tmp/ui-dump-" + pid + ".txt"); logPath = Path.of("/tmp/ui-dump-" + pid + ".log");
+    Path out = Path.of("ui-dump-" + pid + ".txt"); logPath = Path.of("ui-dump-" + pid + ".log");
     try (BufferedWriter w = Files.newBufferedWriter(out)) {
       dumpSwingReflect(w);
       dumpJavaFXReflect(w);
     }
   }
   private static Path logPath;
-  private static void log(String s){ try{ Files.writeString(logPath!=null?logPath:Path.of("/tmp/ui-dump.log"), s+"\n"); }catch(Exception ignored){} }
+  private static void log(String s){ try{ Files.writeString(logPath!=null?logPath:Path.of("ui-dump.log"), s+"\n"); }catch(Exception ignored){} }
 
   // ---- Swing via reflection (avoids linking java.desktop at load) ----
   @SuppressWarnings("unchecked")

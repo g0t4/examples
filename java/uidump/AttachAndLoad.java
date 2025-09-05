@@ -13,6 +13,6 @@ public class AttachAndLoad {
     VirtualMachine vm = VirtualMachine.attach(pid);
     vm.loadAgent(jar, a);
     vm.detach();
-    System.out.println("Loaded agent into " + pid + ". Check /tmp/ui-dump-" + pid + ".txt");
+    System.out.println("Loaded agent into " + pid + ". Check ui-dump-" + pid + ".txt");
   }
 }

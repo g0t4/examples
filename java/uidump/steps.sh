@@ -10,4 +10,4 @@ jps -l    # or: ps aux | grep java
 
 # 4) Attach (tools attach needs a JDK; run this with `java` from a JDK)
 java --add-modules jdk.attach AttachAndLoad <PID> $(pwd)/ui-dump-agent.jar
-# Output goes to: /tmp/ui-dump-<PID>.txt
+# Output goes to: ui-dump-<PID>.txt

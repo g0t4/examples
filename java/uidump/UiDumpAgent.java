@@ -16,7 +16,7 @@ public class UiDumpAgent {
     new Thread(() -> {
       try {
         String pid = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-        Path out = Paths.get("/tmp/ui-dump-" + pid + ".txt");
+        Path out = Paths.get("ui-dump-" + pid + ".txt");
         try (BufferedWriter w = Files.newBufferedWriter(out)) {
           w.write("=== Swing (AWT) ===\n");
           dumpSwing(w);
