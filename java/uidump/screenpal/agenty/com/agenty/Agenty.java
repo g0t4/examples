@@ -10,7 +10,7 @@ public final class Agenty {
 
   public static Object start(Instrumentation inst, String opts) throws Exception {
     PrintStream out = System.out; // goes wherever the app wired it
-    out.println("[impl] start; opts=" + opts);
+    out.println("[agenty] start; opts=" + opts);
 
     transformer = new ClassFileTransformer() {
       @Override public byte[] transform(Module m, ClassLoader l, String name,
@@ -23,7 +23,7 @@ public final class Agenty {
 
     // Return an AutoCloseable so bootstrap can call close() on unload.
     return (AutoCloseable) () -> {
-      out.println("[impl] stop");
+      out.println("[agenty] stop");
       if (transformer != null) {
         inst.removeTransformer(transformer);
         transformer = null;
