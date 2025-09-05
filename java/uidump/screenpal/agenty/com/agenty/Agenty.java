@@ -8,6 +8,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.accessibility.*;
+import java.util.*;
+import java.util.function.*;
+import javax.swing.text.*;
 
 public final class Agenty {
     // private static volatile ClassFileTransformer transformer;
@@ -21,6 +24,7 @@ public final class Agenty {
             Window active = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
             System.out.println("[agenty] active=" + (active == null ? "null" : active.getClass().getName()));
         };
+
         if (SwingUtilities.isEventDispatchThread())
             r.run();
         else
@@ -29,8 +33,53 @@ public final class Agenty {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+        onEdt(() -> find(c -> true).forEach(c -> System.out.printf("[stalker] %s name=%s acc=%s text=%s%n",
+                c.getClass().getName(), c.getName(), accName(c),
+                (c instanceof AbstractButton b ? b.getText() : c instanceof JTextComponent t ? t.getText() : null))));
+
         return (AutoCloseable) () -> {
         };
+
+    }
+
+    // TODO use this onEdt to make changes and use the helpers below too to find
+    // controls
+    static void onEdt(Runnable r) {
+        if (SwingUtilities.isEventDispatchThread())
+            r.run();
+        else
+            EventQueue.invokeLater(r);
+    }
+
+    static ArrayList<Component> find(Predicate<Component> test) {
+        ArrayList<Component> out = new ArrayList<>();
+        for (Window w : Window.getWindows())
+            walk(w, test, out);
+        return out;
+    }
+
+    static void walk(Component c, Predicate<Component> test, ArrayList<Component> out) {
+        if (test.test(c))
+            out.add(c);
+        if (c instanceof Container k)
+            for (Component ch : k.getComponents()) {
+                AccessibleContext context = ch.getAccessibleContext();
+                if (context != null) {
+                    AccessibleValue ax_value = ch.getAccessibleContext().getAccessibleValue();
+                    if (ax_value != null) {
+                        System.out.printf("ax_value %s", ax_value);
+                        System.out.printf("ax_value.toString() %s", ax_value.toString());
+                    }
+                }
+                walk(ch, test, out);
+            }
+    }
+
+    static String accName(Component c) {
+        return (c instanceof Accessible a && a.getAccessibleContext() != null)
+                ? a.getAccessibleContext().getAccessibleName()
+                : null;
     }
 
     private static void dump(Component c, int depth) {
