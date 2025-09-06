@@ -107,6 +107,7 @@ public final class Agent {
 
                     String src = """
                             import java.awt.*; import javax.swing.*;
+                            import java.io.*;
                             public class UserCode implements %s.Action {
                               public void run(%s.Context ctx, BufferedWriter out) throws Exception {
                                 try {
