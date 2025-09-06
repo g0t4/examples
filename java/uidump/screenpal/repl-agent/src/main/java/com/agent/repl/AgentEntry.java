@@ -44,57 +44,54 @@ public final class AgentEntry {
 
         Context ctx = new Context();
         thread = new Thread(() -> {
-            try {
-                final ServerSocket srv = server; // effectively final capture
-                final String tok = token;
-                while (!Thread.currentThread().isInterrupted()) {
-                    try (Socket s = server.accept();
-                            BufferedReader in = new BufferedReader(
-                                    new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
-                            BufferedWriter out = new BufferedWriter(
-                                    new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8))) {
+            final ServerSocket srv = server; // effectively final capture
+            final String tok = token;
+            while (!Thread.currentThread().isInterrupted()) {
+                try (Socket s = server.accept();
+                        BufferedReader in = new BufferedReader(
+                                new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
+                        BufferedWriter out = new BufferedWriter(
+                                new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8))) {
 
-                        if (!token.equals(in.readLine())) {
-                            out.write("ERR bad token\n");
-                            out.flush();
-                            continue;
-                        }
-                        StringBuilder body = new StringBuilder();
-                        for (String line; (line = in.readLine()) != null && !line.equals(".");)
-                            body.append(line).append('\n');
+                    if (!token.equals(in.readLine())) {
+                        out.write("ERR bad token\n");
+                        out.flush();
+                        continue;
+                    }
+                    StringBuilder body = new StringBuilder();
+                    for (String line; (line = in.readLine()) != null && !line.equals(".");)
+                        body.append(line).append('\n');
 
-                        String src = """
-                                import java.awt.*; import javax.swing.*;
-                                public class UserCode implements %s.Action {
-                                  public void run(%s.Context ctx) throws Exception {
-                                    %s
-                                  }
-                                }
-                                """.formatted(AgentEntry.class.getName(), AgentEntry.class.getName(), body);
+                    String src = """
+                            import java.awt.*; import javax.swing.*;
+                            public class UserCode implements %s.Action {
+                              public void run(%s.Context ctx) throws Exception {
+                                %s
+                              }
+                            }
+                            """.formatted(AgentEntry.class.getName(), AgentEntry.class.getName(), body);
 
-                        try {
-                            SimpleCompiler c = new SimpleCompiler();
-                            c.setParentClassLoader(AgentEntry.class.getClassLoader());
-                            c.cook(src);
-                            Class<?> k = c.getClassLoader().loadClass("UserCode");
-                            Action a = (Action) k.getDeclaredConstructor().newInstance();
-                            ctx.onEdt(() -> {
-                                try {
-                                    a.run(ctx);
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-                            out.write("OK\n");
-                            out.flush();
-                        } catch (Throwable t) {
-                            out.write(("ERR " + t + "\n"));
-                            out.flush();
-                        }
-                    } catch (IOException ignore) {
-                        /* next */ }
-                }
-            } catch (IOException ignore) {
+                    try {
+                        SimpleCompiler c = new SimpleCompiler();
+                        c.setParentClassLoader(AgentEntry.class.getClassLoader());
+                        c.cook(src);
+                        Class<?> k = c.getClassLoader().loadClass("UserCode");
+                        Action a = (Action) k.getDeclaredConstructor().newInstance();
+                        ctx.onEdt(() -> {
+                            try {
+                                a.run(ctx);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                        out.write("OK\n");
+                        out.flush();
+                    } catch (Throwable t) {
+                        out.write(("ERR " + t + "\n"));
+                        out.flush();
+                    }
+                } catch (IOException ignore) {
+                    /* next */ }
             }
         }, "repl-server");
         thread.setDaemon(true);
