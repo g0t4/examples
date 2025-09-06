@@ -37,6 +37,10 @@ public final class Agent {
     private static volatile ServerSocket server;
     private static volatile Thread thread;
 
+    public static void hardcoded_tests(Context ctx) {
+        ctx.log("hardcoded test");
+    }
+
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
         server = new ServerSocket(8200, 0, InetAddress.getLoopbackAddress());
         // String token = java.util.UUID.randomUUID().toString();
@@ -45,6 +49,8 @@ public final class Agent {
 
         Context ctx = new Context();
         thread = new Thread(() -> {
+            hardcoded_tests(ctx);
+
             final ServerSocket srv = server; // effectively final capture
             // final String tok = token;
             while (!Thread.currentThread().isInterrupted()) {
