@@ -38,18 +38,24 @@ public final class Agent {
     private static volatile Thread thread;
 
     public static void hardcoded_tests(Context ctx) {
-        ctx.log("hardcoded test");
+        // TODO setup nvim action to send selection to socket! so I can type it in IDE and send at push of button
+        //  OR I can compile again and run it that way! either way put all the code here:
+
+        ctx.log("hardcoded 1");
+
     }
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
+        Context ctx = new Context();
+        hardcoded_tests(ctx);
+
+        // * start server to accept code over a socket
         server = new ServerSocket(8200, 0, InetAddress.getLoopbackAddress());
         // String token = java.util.UUID.randomUUID().toString();
         // System.out.println("[repl] listening on 127.0.0.1:" + server.getLocalPort() + " token=" + token);
         System.out.println("[repl] listening on 127.0.0.1:" + server.getLocalPort());
 
-        Context ctx = new Context();
         thread = new Thread(() -> {
-            hardcoded_tests(ctx);
 
             final ServerSocket srv = server; // effectively final capture
             // final String tok = token;
