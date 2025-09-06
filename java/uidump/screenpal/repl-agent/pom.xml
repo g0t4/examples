@@ -27,6 +27,8 @@
 
     <build>
         <plugins>
+
+            <!-- SHADING PLUGIN TO CREATE AN ALL-IN-ONE JAR WITH DEPENDENCIES -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -38,13 +40,25 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <!-- NOTE target/...-all.jar! -->
-                            <finalName>${project.artifactId}-${project.version}-all</finalName>
+                            <finalName>${project.artifactId}-${version}-all</finalName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.EC</exclude>
+                                        <exclude>META-INF/*SIG*</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 
