@@ -38,14 +38,15 @@ public final class Agent {
     private static volatile Thread thread;
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
-        server = new ServerSocket(0, 0, InetAddress.getLoopbackAddress());
-        String token = java.util.UUID.randomUUID().toString();
-        System.out.println("[repl] listening on 127.0.0.1:" + server.getLocalPort() + " token=" + token);
+        server = new ServerSocket(8200, 0, InetAddress.getLoopbackAddress());
+        // String token = java.util.UUID.randomUUID().toString();
+        // System.out.println("[repl] listening on 127.0.0.1:" + server.getLocalPort() + " token=" + token);
+        System.out.println("[repl] listening on 127.0.0.1:" + server.getLocalPort());
 
         Context ctx = new Context();
         thread = new Thread(() -> {
             final ServerSocket srv = server; // effectively final capture
-            final String tok = token;
+            // final String tok = token;
             while (!Thread.currentThread().isInterrupted()) {
                 try (Socket s = srv.accept();
                         BufferedReader in = new BufferedReader(
@@ -53,11 +54,11 @@ public final class Agent {
                         BufferedWriter out = new BufferedWriter(
                                 new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8))) {
 
-                    if (!tok.equals(in.readLine())) {
-                        out.write("ERR bad token\n");
-                        out.flush();
-                        continue;
-                    }
+                    // if (!tok.equals(in.readLine())) {
+                    // out.write("ERR bad token\n");
+                    // out.flush();
+                    // continue;
+                    // }
                     StringBuilder body = new StringBuilder();
                     for (String line; (line = in.readLine()) != null && !line.equals(".");)
                         body.append(line).append('\n');
