@@ -2,6 +2,11 @@
 
 export PATH="$(/usr/libexec/java_home -v 19)/bin:$PATH"
 
+# rebuild jar (as needed)
+mvn -q -DskipTests -o package
+
+
+# run agent w/ new code!
 set PID (jps | grep ScreenPal | cut -f1 -d' ')
 set reloader_jar "$HOME/repos/github/g0t4/examples/java/uidump/screenpal/dist/reloader.jar"
 set repl_jar "$HOME/repos/github/g0t4/examples/java/uidump/screenpal/repl-agent/target/repl-agent-1.0-SNAPSHOT-all.jar"
