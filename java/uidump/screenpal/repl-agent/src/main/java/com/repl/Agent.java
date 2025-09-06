@@ -47,9 +47,18 @@ public final class Agent {
 
         // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
 
+        // java 17+ pattern matching (won't work with Janino)
         for (Window w : ctx.windows()) {
             ctx.log("window " + w);
-            if (w instanceof JFrame f){
+            if (w instanceof JFrame f) {
+                ctx.log("  frame " + f.getTitle());
+            }
+        }
+        // janino works w/ this:
+        for (Window w : ctx.windows()) {
+            ctx.log("window " + w);
+            if (w instanceof javax.swing.JFrame) {
+                javax.swing.JFrame f = (javax.swing.JFrame) w;
                 ctx.log("  frame " + f.getTitle());
             }
         }
