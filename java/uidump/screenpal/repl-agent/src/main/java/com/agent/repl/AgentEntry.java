@@ -47,13 +47,13 @@ public final class AgentEntry {
             final ServerSocket srv = server; // effectively final capture
             final String tok = token;
             while (!Thread.currentThread().isInterrupted()) {
-                try (Socket s = server.accept();
+                try (Socket s = srv.accept();
                         BufferedReader in = new BufferedReader(
                                 new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
                         BufferedWriter out = new BufferedWriter(
                                 new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8))) {
 
-                    if (!token.equals(in.readLine())) {
+                    if (!tok.equals(in.readLine())) {
                         out.write("ERR bad token\n");
                         out.flush();
                         continue;
