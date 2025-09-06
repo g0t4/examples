@@ -41,7 +41,10 @@ public final class Agent {
         // TODO setup nvim action to send selection to socket! so I can type it in IDE and send at push of button
         //  OR I can compile again and run it that way! either way put all the code here:
 
-        ctx.log("hardcoded 1");
+        // working ideas, that might be useful:
+        // ctx.log("hardcoded 1");
+        // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
+
 
     }
 
