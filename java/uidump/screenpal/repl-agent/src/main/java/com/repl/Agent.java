@@ -66,6 +66,9 @@ public final class Agent {
             }
         }
 
+        // out.write("here is the data\n");
+        // out.flush();
+
     }
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
