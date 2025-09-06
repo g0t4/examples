@@ -44,7 +44,9 @@ public final class AgentEntry {
 
         Context ctx = new Context();
         thread = new Thread(() -> {
-            try (server) {
+            try {
+                final ServerSocket srv = server; // effectively final capture
+                final String tok = token;
                 while (!Thread.currentThread().isInterrupted()) {
                     try (Socket s = server.accept();
                             BufferedReader in = new BufferedReader(
