@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public final class Agent {
     public interface Action {
-        void run(Context ctx) throws Exception;
+        void run(Context ctx, BufferedWriter out) throws Exception;
     }
 
     public static final class Context {
@@ -37,9 +37,12 @@ public final class Agent {
     private static volatile ServerSocket server;
     private static volatile Thread thread;
 
-    public static void hardcoded_tests(Context ctx) {
-        // TODO setup nvim action to send selection to socket! so I can type it in IDE and send at push of button
-        //  OR I can compile again and run it that way! either way put all the code here:
+    public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
+        // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
+
+        // two purporses for this function:
+        // - runs on REPL startup so I can run tests this way
+        // - OR, it can be to type in code and then select to send it from nvim over a socket
 
         // working ideas, that might be useful:
 
@@ -68,7 +71,7 @@ public final class Agent {
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
         Context ctx = new Context();
         try {
-            hardcoded_tests(ctx);
+            hardcoded_tests(ctx, null);
         } catch (Throwable t) {
             ctx.log("hardcoded test failed: " + t);
         }
@@ -102,14 +105,14 @@ public final class Agent {
                     String src = """
                             import java.awt.*; import javax.swing.*;
                             public class UserCode implements %s.Action {
-                              public void run(%s.Context ctx) throws Exception {
-                                try { 
-                                  %s 
-                                } 
-                                catch (Throwable t) { 
+                              public void run(%s.Context ctx, BufferedWriter out) throws Exception {
+                                try {
+                                  %s
+                                }
+                                catch (Throwable t) {
                                   ctx.log("[repl][ERR] check next message"); // separate just in case toString() fails
                                   ctx.log("[repl][ERR]\\n" + t.toString());
-                                } 
+                                }
                               }
                             }
                             """.formatted(Agent.class.getName(), Agent.class.getName(), body);
@@ -121,7 +124,7 @@ public final class Agent {
                         Action a = (Action) k.getDeclaredConstructor().newInstance();
                         ctx.onEdt(() -> {
                             try {
-                                a.run(ctx);
+                                a.run(ctx, out);
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
