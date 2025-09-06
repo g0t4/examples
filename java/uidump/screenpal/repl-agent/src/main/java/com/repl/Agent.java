@@ -45,12 +45,21 @@ public final class Agent {
         // ctx.log("hardcoded 1");
         // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
 
+        for (Window w : ctx.windows()) {
+            ctx.log("window " + w);
+            if (w instanceof JFrame f)
+                ctx.log("  frame " + f.getTitle());
+        }
 
     }
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
         Context ctx = new Context();
-        hardcoded_tests(ctx);
+        try {
+            hardcoded_tests(ctx);
+        } catch (Throwable t) {
+            ctx.log("hardcoded test failed: " + t);
+        }
 
         // * start server to accept code over a socket
         server = new ServerSocket(8200, 0, InetAddress.getLoopbackAddress());
