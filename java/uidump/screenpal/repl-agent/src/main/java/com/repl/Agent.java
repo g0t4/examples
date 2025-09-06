@@ -1,4 +1,4 @@
-package com.agent.repl;
+package com.repl;
 
 import java.lang.instrument.Instrumentation;
 import org.codehaus.janino.SimpleCompiler;
@@ -8,7 +8,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 
-public final class AgentEntry {
+public final class Agent {
     interface Action {
         void run(Context ctx) throws Exception;
     }
@@ -69,11 +69,11 @@ public final class AgentEntry {
                                 %s
                               }
                             }
-                            """.formatted(AgentEntry.class.getName(), AgentEntry.class.getName(), body);
+                            """.formatted(Agent.class.getName(), Agent.class.getName(), body);
 
                     try {
                         SimpleCompiler c = new SimpleCompiler();
-                        c.setParentClassLoader(AgentEntry.class.getClassLoader());
+                        c.setParentClassLoader(Agent.class.getClassLoader());
                         c.cook(src);
                         Class<?> k = c.getClassLoader().loadClass("UserCode");
                         Action a = (Action) k.getDeclaredConstructor().newInstance();
