@@ -9,7 +9,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 public final class Agent {
-    interface Action {
+    public interface Action {
         void run(Context ctx) throws Exception;
     }
 
