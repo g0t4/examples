@@ -43,14 +43,14 @@ public final class Agent {
 
         // working ideas, that might be useful:
 
-        ctx.log("hardcoded 1");
+        ctx.log("hardcoded 1";
 
         // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
 
         for (Window w : ctx.windows()) {
             ctx.log("window " + w);
-            if (w instanceof JFrame f)
-                ctx.log("  frame " + f.getTitle());
+            // if (w instanceof JFrame f)
+            //     ctx.log("  frame " + f.getTitle());
         }
 
     }
@@ -97,6 +97,7 @@ public final class Agent {
                                   %s 
                                 } 
                                 catch (Throwable t) { 
+                                  ctx.log("[repl][ERR] check next message"); // separate just in case toString() fails
                                   ctx.log("[repl][ERR]\\n" + t.toString());
                                 } 
                               }
