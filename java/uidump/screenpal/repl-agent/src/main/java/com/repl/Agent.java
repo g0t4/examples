@@ -42,7 +42,9 @@ public final class Agent {
         //  OR I can compile again and run it that way! either way put all the code here:
 
         // working ideas, that might be useful:
-        // ctx.log("hardcoded 1");
+
+        ctx.log("hardcoded 1");
+
         // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
 
         for (Window w : ctx.windows()) {
@@ -91,11 +93,15 @@ public final class Agent {
                             import java.awt.*; import javax.swing.*;
                             public class UserCode implements %s.Action {
                               public void run(%s.Context ctx) throws Exception {
-                                %s
+                                try { 
+                                  %s 
+                                } 
+                                catch (Throwable t) { 
+                                  ctx.log("[repl][ERR]\\n" + t.toString());
+                                } 
                               }
                             }
                             """.formatted(Agent.class.getName(), Agent.class.getName(), body);
-
                     try {
                         SimpleCompiler c = new SimpleCompiler();
                         c.setParentClassLoader(Agent.class.getClassLoader());
