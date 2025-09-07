@@ -460,7 +460,19 @@ public final class Agent {
 
         System.out.println("-------------- PRIVATES ------------ ");
         Object item = ReflectDemo.getPrivateField(timeline, "item");
-        System.out.println("item: %s".formatted(item));
+        System.out.println("***** item: %s".formatted(item));
+        ObjectInspector.printDeclaredFields(item);
+        //
+        // item => J = PositionSlider
+        Object item_J = ReflectDemo.getPrivateField(item, "J");
+        System.out.println("***** item: %s".formatted(item_J));
+        ObjectInspector.printDeclaredFields(item_J);
+        //
+        Object service = ReflectDemo.getPrivateField(timeline, "service");
+        // System.out.println("***** service: %s".formatted(service));
+        // ObjectInspector.printDeclaredFields(service);
+
+
 
         // timline interesting outputs:
         // debugGraphicsOptions integer (0 currently)

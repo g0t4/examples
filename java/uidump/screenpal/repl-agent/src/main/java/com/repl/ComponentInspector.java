@@ -9,7 +9,6 @@ import java.util.*;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 
-
 // TODO HAVE NOT YET TRIED THIS, chatgpt made this one
 //  this looks way more promising vs what Claude came up with 
 // *** NOTABLY looking at Accessibility info on controls might be useful
@@ -27,7 +26,7 @@ public final class ComponentInspector {
         printChildren(component);
     }
 
-    private static void printClassHierarchy(Component component) {
+    public static void printClassHierarchy(Component component) {
         System.out.println("\n-- Class Hierarchy --");
         Class<?> type = component.getClass();
         while (type != null) {
@@ -36,14 +35,14 @@ public final class ComponentInspector {
         }
     }
 
-    private static void printInterfaces(Component component) {
+    public static void printInterfaces(Component component) {
         System.out.println("\n-- Implemented Interfaces --");
         for (Class<?> iface : component.getClass().getInterfaces()) {
             System.out.println(iface.getName());
         }
     }
 
-    private static void printBeanProperties(Component component) {
+    public static void printBeanProperties(Component component) {
         System.out.println("\n-- JavaBeans Properties (via Introspector) --");
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(component.getClass(), Object.class);
@@ -70,14 +69,14 @@ public final class ComponentInspector {
         }
     }
 
-    private static void printPublicMethods(Component component) {
+    public static void printPublicMethods(Component component) {
         System.out.println("\n-- Public Methods (Class.getMethods) --");
         for (Method m : component.getClass().getMethods()) {
             System.out.println(signature(m));
         }
     }
 
-    private static void printDeclaredFields(Component component) {
+    public static void printDeclaredFields(Object component) {
         System.out.println("\n-- Declared Fields (including private) --");
         Class<?> type = component.getClass();
         Set<String> seen = new LinkedHashSet<>();
@@ -88,8 +87,8 @@ public final class ComponentInspector {
                         f.setAccessible(true); // requires --add-opens in JPMS world
                         Object value = f.get(component);
                         // careful how you modify the following, if you use "".formatted you lose value display?!
-                        //   but it did fix the new line everywhere nonsense...
-                        //   anyways, this is how I found tempRectangles
+                        // but it did fix the new line everywhere nonsense...
+                        // anyways, this is how I found tempRectangles
                         System.out.printf("%s %s.%s = %s%n",
                                 Modifier.toString(f.getModifiers()),
                                 type.getName(),
@@ -111,7 +110,8 @@ public final class ComponentInspector {
         Map<String, Object[]> listeners = new LinkedHashMap<>();
         listeners.put("ComponentListener", component.getComponentListeners());
         listeners.put("ContainerListener", component instanceof Container
-                ? ((Container) component).getContainerListeners() : new ContainerListener[0]);
+                ? ((Container) component).getContainerListeners()
+                : new ContainerListener[0]);
         listeners.put("FocusListener", component.getFocusListeners());
         listeners.put("HierarchyListener", component.getHierarchyListeners());
         listeners.put("HierarchyBoundsListener", component.getHierarchyBoundsListeners());
@@ -123,7 +123,8 @@ public final class ComponentInspector {
 
         for (Map.Entry<String, Object[]> e : listeners.entrySet()) {
             System.out.println(e.getKey() + ":");
-            for (Object l : e.getValue()) System.out.println("  " + l);
+            for (Object l : e.getValue())
+                System.out.println("  " + l);
         }
 
         // Try generic getListeners(Class) via reflection to discover custom listener types
@@ -135,11 +136,13 @@ public final class ComponentInspector {
                     Object[] arr = (Object[]) getListeners.invoke(component, i);
                     if (arr.length > 0) {
                         System.out.println(i.getName() + ":");
-                        for (Object o : arr) System.out.println("  " + o);
+                        for (Object o : arr)
+                            System.out.println("  " + o);
                     }
                 }
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     private static void printChildren(Component component) {
@@ -171,25 +174,29 @@ public final class ComponentInspector {
         }
     }
 
-    private static String signature(Method m) {
+    public static String signature(Method m) {
         StringBuilder b = new StringBuilder();
         b.append(Modifier.toString(m.getModifiers())).append(" ")
-         .append(m.getReturnType().getTypeName()).append(" ")
-         .append(m.getDeclaringClass().getName()).append(".")
-         .append(m.getName()).append("(");
+                .append(m.getReturnType().getTypeName()).append(" ")
+                .append(m.getDeclaringClass().getName()).append(".")
+                .append(m.getName()).append("(");
         Class<?>[] params = m.getParameterTypes();
         for (int i = 0; i < params.length; i++) {
-            if (i > 0) b.append(", ");
+            if (i > 0)
+                b.append(", ");
             b.append(params[i].getTypeName());
         }
         b.append(")");
         return b.toString();
     }
 
-    private static String safeToString(Object value) {
-        if (value == null) return "null";
-        try { return String.valueOf(value); }
-        catch (Throwable t) { return "<toString threw " + t.getClass().getSimpleName() + ">"; }
+    public static String safeToString(Object value) {
+        if (value == null)
+            return "null";
+        try {
+            return String.valueOf(value);
+        } catch (Throwable t) {
+            return "<toString threw " + t.getClass().getSimpleName() + ">";
+        }
     }
 }
-
