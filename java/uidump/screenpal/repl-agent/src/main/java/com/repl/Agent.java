@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 public final class Agent {
     public interface Action {
@@ -81,6 +82,40 @@ public final class Agent {
         }
     }
 
+    public static void logComonentAt(Point point, Component base) {
+
+        ctx.log("- getComponentAt: %s".formatted(point));
+        // I got these coords myself using my coords mouse tool, s/b play button on left side of timeline
+        Component at = base.getComponentAt(point);
+        if (at == null) {
+            ctx.log("  no component located");
+            return;
+        }
+        ctx.log("found: %s %s".formatted(at.getName(), at.getClass()));
+        ctx.log("- logComponents():");
+        logComponents(at, 1);
+    }
+
+    public static void logComponents(Component c, int level) {
+        if (level > 1) {
+            return;
+        }
+
+        var indent = " ".repeat((level + 1) * 2);
+        Consumer<String> logIndented = message -> ctx.log(indent + message);
+
+        String text = "%s '%s'".formatted(c.getName(), c.getClass());
+        if (c instanceof JPanel) {
+            JPanel p = (JPanel) c;
+            logIndented.accept("  p #%s ".formatted(p.getComponentCount(), text));
+            for (Component child : p.getComponents()) {
+                logComponents(child, level + 1);
+            }
+        } else {
+            logIndented.accept("c %s".formatted(text));
+        }
+    }
+
     // Function to get the timeline component reference
     public static Component getTimelineComponent() {
         try {
@@ -106,13 +141,11 @@ public final class Agent {
                         Container editControls = (Container) panel104.getComponent(0);
                         Container playerControlsPanel = (Container) editControls.getComponent(0);
                         Component timelineComponent = playerControlsPanel.getComponent(3);
-                        ctx.log(String.format("  component # w: '%s'", w.getComponentCount()));
-                        ctx.log(String.format("  component # root: '%s'", root.getComponentCount()));
-                        ctx.log(String.format("  component # panel0: '%s'", panel0.getComponentCount()));
 
-                        for (Component c : panel0.getComponents()) {
-                            ctx.log(String.format("   comp: '%s'", c.getName()));
-                        }
+                        ctx.log("- logComponents()");
+                        logComponents(root, 0);
+                        logComonentAt(new Point(60, 790), w);
+
                         // Verify this is the correct component
                         if (timelineComponent instanceof JComponent) {
                             JComponent jcomp = (JComponent) timelineComponent;
@@ -253,15 +286,17 @@ public final class Agent {
          * // Jump to specific time positions clickTimelinePosition(0.1); // 10% clickTimelinePosition(0.5); // 50% clickTimelinePosition(0.9); // 90%
          */
 
-        ctx.log("ScreenPal Timeline Automation loaded!");
-        ctx.log("Available functions:");
-        ctx.log("- clickTimelinePosition(percentage)");
-        // clickTimelinePosition(0.25); // 25%
-        ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
-        ctx.log("- clickPlayPause()");
-        // clickPlayPause();
-        ctx.log("- demonstrateTimelineControl()");
-        demonstrateTimelineControl();
+        // ctx.log("ScreenPal Timeline Automation loaded!");
+        // ctx.log("Available functions:");
+        // ctx.log("- clickTimelinePosition(percentage)");
+        // // clickTimelinePosition(0.25); // 25%
+        // ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
+        // ctx.log("- clickPlayPause()");
+        // // clickPlayPause();
+        // ctx.log("- demonstrateTimelineControl()");
+        // demonstrateTimelineControl();
+        ctx.log("- wes");
+        getTimelineComponent();
 
         //
         //
