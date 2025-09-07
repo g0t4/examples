@@ -121,6 +121,7 @@ public final class Agent {
     public static Component getTimelineComponent() {
         try {
             Window[] windows = ctx.windows();
+            ctx.log(clearScrollback()); // not essential but helpful!
             for (Window w : windows) {
                 if (!w.isVisible())
                     continue;
@@ -489,6 +490,10 @@ public final class Agent {
 
     public static String bgBlack(String msg) {
         return "\u001B[40m" + msg + "\u001B[0m";
+    }
+
+    public static String clearScrollback() {
+        return "\u001B]1337;ClearScrollback\u0007\u001B[0m";
     }
 
 }
