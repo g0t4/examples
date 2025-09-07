@@ -214,7 +214,7 @@ public final class Agent {
         }
     }
 
-    // === ADVANCED TIMELINE CONTROL METHODS ===
+    // === ROUND2 Claude 
 
     // Function to scrub through timeline with drag motion (smooth seeking)
     public void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
