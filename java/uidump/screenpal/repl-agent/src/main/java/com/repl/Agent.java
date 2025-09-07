@@ -121,7 +121,7 @@ public final class Agent {
     public static Component getTimelineComponent() {
         try {
             Window[] windows = ctx.windows();
-            ctx.log(clearScrollback()); // not essential but helpful!
+            ctx.log(clearScrollback() + red("==============================")); // not essential but helpful!
             for (Window w : windows) {
                 if (!w.isVisible())
                     continue;
