@@ -449,8 +449,11 @@ public final class Agent {
         // - runs on REPL startup so I can run tests this way
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
+        clickPlayPause();
+
+
         // getTimelineComponent();
-        analyzeTimeline();
+        // analyzeTimeline();
 
         // // working ideas, that might be useful:
         //
