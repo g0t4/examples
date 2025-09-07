@@ -115,7 +115,7 @@ public final class Agent {
             }
         } else if (comp instanceof JTextPane) {
             // *** super useful txt => has html+css styles!
-            //  => com.screencastomatic.common.html.SomHTMLEditorKit@7fd30adf,typeHandlers={text/plain=javax.swing.text.StyledEditorKit@7b1e6d39
+            // => com.screencastomatic.common.html.SomHTMLEditorKit@7fd30adf,typeHandlers={text/plain=javax.swing.text.StyledEditorKit@7b1e6d39
             JTextPane txtPane = (JTextPane) comp;
             var text = txtPane.getText();
             logIndented.accept("txtPane name='%s' txt='%s' %s".formatted(underline(txtPane.getName()), text, output_line));
@@ -449,8 +449,10 @@ public final class Agent {
         // - runs on REPL startup so I can run tests this way
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
-        clickPlayPause();
-
+        // FYI NONE of Claude's actions like click/play work in my testing
+        //  these don't for sure:
+        // clickPlayPause();
+        // sendArrowKey("right");
 
         // getTimelineComponent();
         // analyzeTimeline();
