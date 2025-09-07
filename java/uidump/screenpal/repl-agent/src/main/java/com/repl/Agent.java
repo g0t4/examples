@@ -83,6 +83,7 @@ public final class Agent {
     }
 
     public static void logComonentAt(Point point, Component base) {
+        // !!!! SUPER USEFUL!
 
         ctx.log("- getComponentAt: %s".formatted(point));
         // I got these coords myself using my coords mouse tool, s/b play button on left side of timeline
@@ -96,7 +97,7 @@ public final class Agent {
         logComponents(at, 1);
     }
 
-    public static void logComponents(Component c, int level) {
+    public static void logComponents(Component comp, int level) {
         // if (level > 4) {
         // return;
         // }
@@ -105,15 +106,21 @@ public final class Agent {
         Consumer<String> logIndented = message -> ctx.log(indent + message);
 
         // String text = "%s '%s'".formatted(c, c.getClass());
-        String text = "%s".formatted(c.toString());
-        if (c instanceof JPanel) {
-            JPanel p = (JPanel) c;
-            logIndented.accept("p #%s '%s' %s".formatted(underline(p.getName()), p.getComponentCount(), text));
-            for (Component child : p.getComponents()) {
+        String output_line = "%s".formatted(comp.toString());
+        if (comp instanceof JPanel) {
+            JPanel panel = (JPanel) comp;
+            logIndented.accept("p #%s '%s' %s".formatted(panel.getComponentCount(), underline(panel.getName()), output_line));
+            for (Component child : panel.getComponents()) {
                 logComponents(child, level + 1);
             }
+        } else if (comp instanceof JTextPane) {
+            // *** super useful txt => has html+css styles!
+            //  => com.screencastomatic.common.html.SomHTMLEditorKit@7fd30adf,typeHandlers={text/plain=javax.swing.text.StyledEditorKit@7b1e6d39
+            JTextPane txtPane = (JTextPane) comp;
+            var text = txtPane.getText();
+            logIndented.accept("txtPane name='%s' txt='%s' %s".formatted(underline(txtPane.getName()), text, output_line));
         } else {
-            logIndented.accept("c %s".formatted(text));
+            logIndented.accept("c %s".formatted(output_line));
         }
     }
 
