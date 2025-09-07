@@ -214,66 +214,6 @@ public final class Agent {
         }
     }
 
-    // === CONVENIENCE FUNCTIONS ===
-
-    // Jump to specific timeline positions
-    public static void jumpToBeginning() {
-        clickTimelinePosition(0.0);
-    }
-
-    public static void jumpToEnd() {
-        clickTimelinePosition(1.0);
-    }
-
-    public static void jumpToMiddle() {
-        clickTimelinePosition(0.5);
-    }
-
-    public static void jumpToQuarter() {
-        clickTimelinePosition(0.25);
-    }
-
-    public static void jumpToThreeQuarters() {
-        clickTimelinePosition(0.75);
-    }
-
-    // Example automation sequences
-    public static void demonstrateTimelineControl() {
-        ctx.log("Starting timeline demonstration...");
-
-        jumpToBeginning();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
-
-        jumpToQuarter();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
-
-        jumpToMiddle();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
-
-        jumpToThreeQuarters();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
-
-        jumpToEnd();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
-
-        jumpToBeginning();
-        ctx.log("Timeline demonstration complete!");
-    }
     // === ADVANCED TIMELINE CONTROL METHODS ===
 
     // Function to scrub through timeline with drag motion (smooth seeking)
