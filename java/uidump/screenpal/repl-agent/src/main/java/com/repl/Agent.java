@@ -91,17 +91,28 @@ public final class Agent {
 
                 if (w instanceof JFrame) {
                     JFrame frame = (JFrame) w;
+                    ctx.log("window %s %s".formatted(frame.getTitle(), frame.getName()));
                     if (frame.getTitle().contains("ScreenPal")) {
                         // Navigate to timeline: ROOT.0.1.0.4.0.0[3]
                         Container root = frame.getContentPane();
+                        ctx.log(String.format("  root: '%s'", root.getName()));
                         JPanel panel0 = (JPanel) root.getComponent(0);
+                        ctx.log(String.format("  panel0: '%s'", panel0.getName()));
                         JPanel panel1 = (JPanel) panel0.getComponent(1);
+                        ctx.log(String.format("  panel1: '%s'", panel1.getName()));
                         Container panel10 = (Container) panel1.getComponent(0);
+                        ctx.log(String.format("  panel10: '%s'", panel10.getName()));
                         JPanel panel104 = (JPanel) panel10.getComponent(4);
                         Container editControls = (Container) panel104.getComponent(0);
                         Container playerControlsPanel = (Container) editControls.getComponent(0);
                         Component timelineComponent = playerControlsPanel.getComponent(3);
+                        ctx.log(String.format("  component # w: '%s'", w.getComponentCount()));
+                        ctx.log(String.format("  component # root: '%s'", root.getComponentCount()));
+                        ctx.log(String.format("  component # panel0: '%s'", panel0.getComponentCount()));
 
+                        for (Component c : panel0.getComponents()) {
+                            ctx.log(String.format("   comp: '%s'", c.getName()));
+                        }
                         // Verify this is the correct component
                         if (timelineComponent instanceof JComponent) {
                             JComponent jcomp = (JComponent) timelineComponent;
@@ -245,12 +256,12 @@ public final class Agent {
         ctx.log("ScreenPal Timeline Automation loaded!");
         ctx.log("Available functions:");
         ctx.log("- clickTimelinePosition(percentage)");
-        clickTimelinePosition(0.25); // 25%
+        // clickTimelinePosition(0.25); // 25%
         ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
         ctx.log("- clickPlayPause()");
-        clickPlayPause();
+        // clickPlayPause();
         ctx.log("- demonstrateTimelineControl()");
-
+        demonstrateTimelineControl();
 
         //
         //
@@ -264,18 +275,18 @@ public final class Agent {
         //
         // // java 17+ pattern matching (won't work with Janino)
         // for (Window w : ctx.windows()) {
-        //     ctx.log("window " + w);
-        //     if (w instanceof JFrame f) {
-        //         ctx.log("  frame " + f.getTitle());
-        //     }
+        // ctx.log("window " + w);
+        // if (w instanceof JFrame f) {
+        // ctx.log(" frame " + f.getTitle());
+        // }
         // }
         // // janino works w/ this:
         // for (Window w : ctx.windows()) {
-        //     ctx.log("window " + w);
-        //     if (w instanceof javax.swing.JFrame) {
-        //         javax.swing.JFrame f = (javax.swing.JFrame) w;
-        //         ctx.log("  frame " + f.getTitle());
-        //     }
+        // ctx.log("window " + w);
+        // if (w instanceof javax.swing.JFrame) {
+        // javax.swing.JFrame f = (javax.swing.JFrame) w;
+        // ctx.log(" frame " + f.getTitle());
+        // }
         // }
         //
         // // out.write("here is the data\n");
