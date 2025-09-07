@@ -38,211 +38,215 @@ public final class Agent {
     private static volatile Thread thread;
     private static volatile Context ctx;
 
-// ScreenPal Timeline Position Control Automation
-// Use this code in your Java Agent REPL to control timeline position
+    // ScreenPal Timeline Position Control Automation
+    // Use this code in your Java Agent REPL to control timeline position
 
-// === TIMELINE POSITION CONTROL FUNCTIONS ===
+    // === TIMELINE POSITION CONTROL FUNCTIONS ===
 
-// Function to click at a specific percentage (0.0 to 1.0) of the timeline
-// Example: clickTimelinePosition(0.25) clicks at 25% through the timeline
-// Example: clickTimelinePosition(0.0) goes to beginning
-// Example: clickTimelinePosition(1.0) goes to end
-public void clickTimelinePosition(double percentage) {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
+    // Function to click at a specific percentage (0.0 to 1.0) of the timeline
+    // Example: clickTimelinePosition(0.25) clicks at 25% through the timeline
+    // Example: clickTimelinePosition(0.0) goes to beginning
+    // Example: clickTimelinePosition(1.0) goes to end
+    public void clickTimelinePosition(double percentage) {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            // Clamp percentage between 0.0 and 1.0
+            percentage = Math.max(0.0, Math.min(1.0, percentage));
+
+            int x = (int) (timeline.getWidth() * percentage);
+            int y = timeline.getHeight() / 2;
+
+            java.awt.event.MouseEvent click = new java.awt.event.MouseEvent(
+                    timeline,
+                    java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    0, // no modifiers
+                    x,
+                    y,
+                    1, // single click
+                    false // not popup trigger
+            );
+
+            timeline.dispatchEvent(click);
+            ctx.log("Timeline clicked at " + (percentage * 100) + "% position (" + x + "," + y + ")");
+
+        } catch (Exception e) {
+            ctx.log("Error clicking timeline: " + e.toString());
         }
-        
-        // Clamp percentage between 0.0 and 1.0
-        percentage = Math.max(0.0, Math.min(1.0, percentage));
-        
-        int x = (int)(timeline.getWidth() * percentage);
-        int y = timeline.getHeight() / 2;
-        
-        java.awt.event.MouseEvent click = new java.awt.event.MouseEvent(
-            timeline,
-            java.awt.event.MouseEvent.MOUSE_CLICKED,
-            System.currentTimeMillis(),
-            0, // no modifiers
-            x,
-            y,
-            1, // single click
-            false // not popup trigger
-        );
-        
-        timeline.dispatchEvent(click);
-        ctx.log("Timeline clicked at " + (percentage * 100) + "% position (" + x + "," + y + ")");
-        
-    } catch (Exception e) {
-        ctx.log("Error clicking timeline: " + e.toString());
     }
-}
 
-// Function to get the timeline component reference
-public Component getTimelineComponent() {
-    try {
-        Window[] windows = ctx.windows();
-        for (Window w : windows) {
-            if (!w.isVisible()) continue;
-            
-            if (w instanceof JFrame) {
-                JFrame frame = (JFrame) w;
-                if (frame.getTitle().contains("ScreenPal")) {
-                    // Navigate to timeline: ROOT.0.1.0.4.0.0[3]
-                    Container root = frame.getContentPane();
-                    JPanel panel0 = (JPanel) root.getComponent(0);
-                    JPanel panel1 = (JPanel) panel0.getComponent(1);
-                    Container panel10 = (Container) panel1.getComponent(0);
-                    JPanel panel104 = (JPanel) panel10.getComponent(4);
-                    Container editControls = (Container) panel104.getComponent(0);
-                    Container playerControlsPanel = (Container) editControls.getComponent(0);
-                    Component timelineComponent = playerControlsPanel.getComponent(3);
-                    
-                    // Verify this is the correct component
-                    if (timelineComponent instanceof JComponent) {
-                        JComponent jcomp = (JComponent) timelineComponent;
-                        if ("item.editseek".equals(jcomp.getName())) {
-                            return timelineComponent;
+    // Function to get the timeline component reference
+    public Component getTimelineComponent() {
+        try {
+            Window[] windows = ctx.windows();
+            for (Window w : windows) {
+                if (!w.isVisible())
+                    continue;
+
+                if (w instanceof JFrame) {
+                    JFrame frame = (JFrame) w;
+                    if (frame.getTitle().contains("ScreenPal")) {
+                        // Navigate to timeline: ROOT.0.1.0.4.0.0[3]
+                        Container root = frame.getContentPane();
+                        JPanel panel0 = (JPanel) root.getComponent(0);
+                        JPanel panel1 = (JPanel) panel0.getComponent(1);
+                        Container panel10 = (Container) panel1.getComponent(0);
+                        JPanel panel104 = (JPanel) panel10.getComponent(4);
+                        Container editControls = (Container) panel104.getComponent(0);
+                        Container playerControlsPanel = (Container) editControls.getComponent(0);
+                        Component timelineComponent = playerControlsPanel.getComponent(3);
+
+                        // Verify this is the correct component
+                        if (timelineComponent instanceof JComponent) {
+                            JComponent jcomp = (JComponent) timelineComponent;
+                            if ("item.editseek".equals(jcomp.getName())) {
+                                return timelineComponent;
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            ctx.log("Error finding timeline component: " + e.toString());
         }
-    } catch (Exception e) {
-        ctx.log("Error finding timeline component: " + e.toString());
+        return null;
     }
-    return null;
-}
 
-// Function to get play/pause button (the 48x48 component)
-public Component getPlayPauseButton() {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline != null) {
-            Container parent = timeline.getParent();
-            // The play button is component [2] - the 48x48 button
-            return parent.getComponent(2);
+    // Function to get play/pause button (the 48x48 component)
+    public Component getPlayPauseButton() {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline != null) {
+                Container parent = timeline.getParent();
+                // The play button is component [2] - the 48x48 button
+                return parent.getComponent(2);
+            }
+        } catch (Exception e) {
+            ctx.log("Error finding play/pause button: " + e.toString());
         }
-    } catch (Exception e) {
-        ctx.log("Error finding play/pause button: " + e.toString());
+        return null;
     }
-    return null;
-}
 
-// Function to click the play/pause button
-public void clickPlayPause() {
-    try {
-        Component playButton = getPlayPauseButton();
-        if (playButton == null) {
-            ctx.log("Play/pause button not found!");
-            return;
+    // Function to click the play/pause button
+    public void clickPlayPause() {
+        try {
+            Component playButton = getPlayPauseButton();
+            if (playButton == null) {
+                ctx.log("Play/pause button not found!");
+                return;
+            }
+
+            java.awt.event.MouseEvent click = new java.awt.event.MouseEvent(
+                    playButton,
+                    java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    0,
+                    playButton.getWidth() / 2,
+                    playButton.getHeight() / 2,
+                    1,
+                    false);
+
+            playButton.dispatchEvent(click);
+            ctx.log("Play/pause button clicked");
+
+        } catch (Exception e) {
+            ctx.log("Error clicking play/pause: " + e.toString());
         }
-        
-        java.awt.event.MouseEvent click = new java.awt.event.MouseEvent(
-            playButton,
-            java.awt.event.MouseEvent.MOUSE_CLICKED,
-            System.currentTimeMillis(),
-            0,
-            playButton.getWidth() / 2,
-            playButton.getHeight() / 2,
-            1,
-            false
-        );
-        
-        playButton.dispatchEvent(click);
-        ctx.log("Play/pause button clicked");
-        
-    } catch (Exception e) {
-        ctx.log("Error clicking play/pause: " + e.toString());
     }
-}
 
-// === CONVENIENCE FUNCTIONS ===
+    // === CONVENIENCE FUNCTIONS ===
 
-// Jump to specific timeline positions
-public void jumpToBeginning() { clickTimelinePosition(0.0); }
-public void jumpToEnd() { clickTimelinePosition(1.0); }
-public void jumpToMiddle() { clickTimelinePosition(0.5); }
-public void jumpToQuarter() { clickTimelinePosition(0.25); }
-public void jumpToThreeQuarters() { clickTimelinePosition(0.75); }
+    // Jump to specific timeline positions
+    public void jumpToBeginning() {
+        clickTimelinePosition(0.0);
+    }
 
-// Example automation sequences
-public void demonstrateTimelineControl() {
-    ctx.log("Starting timeline demonstration...");
-    
-    jumpToBeginning();
-    try { Thread.sleep(1000); } catch (InterruptedException e) {}
-    
-    jumpToQuarter();
-    try { Thread.sleep(1000); } catch (InterruptedException e) {}
-    
-    jumpToMiddle();
-    try { Thread.sleep(1000); } catch (InterruptedException e) {}
-    
-    jumpToThreeQuarters();
-    try { Thread.sleep(1000); } catch (InterruptedException e) {}
-    
-    jumpToEnd();
-    try { Thread.sleep(1000); } catch (InterruptedException e) {}
-    
-    jumpToBeginning();
-    ctx.log("Timeline demonstration complete!");
-}
+    public void jumpToEnd() {
+        clickTimelinePosition(1.0);
+    }
+
+    public void jumpToMiddle() {
+        clickTimelinePosition(0.5);
+    }
+
+    public void jumpToQuarter() {
+        clickTimelinePosition(0.25);
+    }
+
+    public void jumpToThreeQuarters() {
+        clickTimelinePosition(0.75);
+    }
+
+    // Example automation sequences
+    public void demonstrateTimelineControl() {
+        ctx.log("Starting timeline demonstration...");
+
+        jumpToBeginning();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        jumpToQuarter();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        jumpToMiddle();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        jumpToThreeQuarters();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        jumpToEnd();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        jumpToBeginning();
+        ctx.log("Timeline demonstration complete!");
+    }
+
     public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
         // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
 
         // two purporses for this function:
         // - runs on REPL startup so I can run tests this way
 
+        // === USAGE EXAMPLES ===
+        /*
+         * To use these functions in your REPL, send commands like:
+         * 
+         * // Jump to 30% through the timeline clickTimelinePosition(0.3);
+         * 
+         * // Jump to beginning jumpToBeginning();
+         * 
+         * // Run the demonstration demonstrateTimelineControl();
+         * 
+         * // Toggle play/pause clickPlayPause();
+         * 
+         * // Jump to specific time positions clickTimelinePosition(0.1); // 10% clickTimelinePosition(0.5); // 50% clickTimelinePosition(0.9); // 90%
+         */
 
-// === USAGE EXAMPLES ===
-/*
-To use these functions in your REPL, send commands like:
-
-// Jump to 30% through the timeline
-clickTimelinePosition(0.3);
-
-// Jump to beginning
-jumpToBeginning();
-
-// Run the demonstration
-demonstrateTimelineControl();
-
-// Toggle play/pause
-clickPlayPause();
-
-// Jump to specific time positions
-clickTimelinePosition(0.1);  // 10%
-clickTimelinePosition(0.5);  // 50% 
-clickTimelinePosition(0.9);  // 90%
-*/
-
-ctx.log("ScreenPal Timeline Automation loaded!");
-ctx.log("Available functions:");
-ctx.log("- clickTimelinePosition(percentage)");
-ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
-ctx.log("- clickPlayPause()");
-ctx.log("- demonstrateTimelineControl()");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        ctx.log("ScreenPal Timeline Automation loaded!");
+        ctx.log("Available functions:");
+        ctx.log("- clickTimelinePosition(percentage)");
+        ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
+        ctx.log("- clickPlayPause()");
+        ctx.log("- demonstrateTimelineControl()");
 
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
@@ -275,7 +279,7 @@ ctx.log("- demonstrateTimelineControl()");
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
         ctx = new Context();
-        
+
         try {
             hardcoded_tests(ctx, null);
         } catch (Throwable t) {
