@@ -214,7 +214,7 @@ public final class Agent {
         }
     }
 
-    // === ROUND2 Claude 
+    // === ROUND2 Claude
 
     // Function to scrub through timeline with drag motion (smooth seeking)
     public void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
@@ -435,54 +435,15 @@ public final class Agent {
         }
     }
 
-    // === USAGE EXAMPLES ===
-    /*
-     * BASIC USAGE: clickTimelinePosition(0.3); // Jump to 30% scrubTimeline(0.1, 0.9, 3000); // Smooth 3-second scrub from 10% to 90%
-     * 
-     * ADVANCED INTERACTION: rightClickTimeline(0.5); // Right-click at center (context menu?) doubleClickTimeline(0.25); // Double-click at 25% (special action?) stepForward(); // Fine navigation with arrow key
-     * 
-     * DEMONSTRATIONS: scrubForward(); // Smooth scrub to end scrubBackward(); // Smooth scrub to start demonstrateTimelineControl(); // Full demo sequence
-     * 
-     * ANALYSIS: analyzeTimeline(); // Get detailed timeline info
-     */
-
     public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
         // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
 
         // two purporses for this function:
         // - runs on REPL startup so I can run tests this way
+        // - OR, it can be to type in code and then select to send it from nvim over a socket
 
-        // === USAGE EXAMPLES ===
-        /*
-         * To use these functions in your REPL, send commands like:
-         * 
-         * // Jump to 30% through the timeline clickTimelinePosition(0.3);
-         * 
-         * // Jump to beginning jumpToBeginning();
-         * 
-         * // Run the demonstration demonstrateTimelineControl();
-         * 
-         * // Toggle play/pause clickPlayPause();
-         * 
-         * // Jump to specific time positions clickTimelinePosition(0.1); // 10% clickTimelinePosition(0.5); // 50% clickTimelinePosition(0.9); // 90%
-         */
-
-        // ctx.log("ScreenPal Timeline Automation loaded!");
-        // ctx.log("Available functions:");
-        // ctx.log("- clickTimelinePosition(percentage)");
-        // // clickTimelinePosition(0.25); // 25%
-        // ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
-        // ctx.log("- clickPlayPause()");
-        // // clickPlayPause();
-        // ctx.log("- demonstrateTimelineControl()");
-        // demonstrateTimelineControl();
-        ctx.log("- wes");
         getTimelineComponent();
 
-        //
-        //
-        // // - OR, it can be to type in code and then select to send it from nvim over a socket
-        //
         // // working ideas, that might be useful:
         //
         // ctx.log("hardcoded 1");
