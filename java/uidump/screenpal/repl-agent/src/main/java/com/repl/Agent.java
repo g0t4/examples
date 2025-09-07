@@ -414,4 +414,81 @@ public final class Agent {
             }
         };
     }
+
+    public static String bold(String msg) {
+        return "\u001B[1m" + msg + "\u001B[0m";
+    }
+
+    public static String green(String msg) {
+        return "\u001B[32m" + msg + "\u001B[0m";
+    }
+
+    public static String red(String msg) {
+        return "\u001B[31m" + msg + "\u001B[0m";
+    }
+
+    public static String yellow(String msg) {
+        return "\u001B[33m" + msg + "\u001B[0m";
+    }
+
+    public static String blue(String msg) {
+        return "\u001B[34m" + msg + "\u001B[0m";
+    }
+
+    public static String cyan(String msg) {
+        return "\u001B[36m" + msg + "\u001B[0m";
+    }
+
+    public static String magenta(String msg) {
+        return "\u001B[35m" + msg + "\u001B[0m";
+    }
+
+    public static String white(String msg) {
+        return "\u001B[37m" + msg + "\u001B[0m";
+    }
+
+    public static String black(String msg) {
+        return "\u001B[30m" + msg + "\u001B[0m";
+    }
+
+    public static String underline(String msg) {
+        return "\u001B[4m" + msg + "\u001B[0m";
+    }
+
+    public static String italic(String msg) {
+        return "\u001B[3m" + msg + "\u001B[0m";
+    }
+
+    public static String bgRed(String msg) {
+        return "\u001B[41m" + msg + "\u001B[0m";
+    }
+
+    public static String bgGreen(String msg) {
+        return "\u001B[42m" + msg + "\u001B[0m";
+    }
+
+    public static String bgYellow(String msg) {
+        return "\u001B[43m" + msg + "\u001B[0m";
+    }
+
+    public static String bgBlue(String msg) {
+        return "\u001B[44m" + msg + "\u001B[0m";
+    }
+
+    public static String bgMagenta(String msg) {
+        return "\u001B[45m" + msg + "\u001B[0m";
+    }
+
+    public static String bgCyan(String msg) {
+        return "\u001B[46m" + msg + "\u001B[0m";
+    }
+
+    public static String bgWhite(String msg) {
+        return "\u001B[47m" + msg + "\u001B[0m";
+    }
+
+    public static String bgBlack(String msg) {
+        return "\u001B[40m" + msg + "\u001B[0m";
+    }
+
 }
