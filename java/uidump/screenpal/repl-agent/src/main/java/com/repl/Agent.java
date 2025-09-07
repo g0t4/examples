@@ -97,17 +97,18 @@ public final class Agent {
     }
 
     public static void logComponents(Component c, int level) {
-        if (level > 1) {
+        if (level > 3) {
             return;
         }
 
         var indent = " ".repeat((level + 1) * 2);
         Consumer<String> logIndented = message -> ctx.log(indent + message);
 
-        String text = "%s '%s'".formatted(c.getName(), c.getClass());
+        // String text = "%s '%s'".formatted(c, c.getClass());
+        String text = "%s".formatted(c.toString());
         if (c instanceof JPanel) {
             JPanel p = (JPanel) c;
-            logIndented.accept("  p #%s ".formatted(p.getComponentCount(), text));
+            logIndented.accept("p #%s %s".formatted(p.getComponentCount(), text));
             for (Component child : p.getComponents()) {
                 logComponents(child, level + 1);
             }
