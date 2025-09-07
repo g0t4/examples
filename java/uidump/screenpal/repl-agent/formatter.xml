@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles version="21">
+    <profile kind="CodeFormatterProfile" name="NoWrap" version="21">
+        <!-- DO NOT WRAP MY LINES -->
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="300" />
+        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="300" />
+
+        <!-- NO JOINING -->
+        <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="false" />
+
+    </profile>
+</profiles>
+
