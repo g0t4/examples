@@ -9,9 +9,7 @@ import java.util.*;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 
-// TODO HAVE NOT YET TRIED THIS, chatgpt made this one
-//  this looks way more promising vs what Claude came up with 
-// *** NOTABLY looking at Accessibility info on controls might be useful
+// FYI most of this would work for any object... swap that out like I did with printDeclaredFields
 
 public final class ComponentInspector {
 
