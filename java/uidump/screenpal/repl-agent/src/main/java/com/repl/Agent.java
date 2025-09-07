@@ -97,9 +97,9 @@ public final class Agent {
     }
 
     public static void logComponents(Component c, int level) {
-        if (level > 3) {
-            return;
-        }
+        // if (level > 4) {
+        //     return;
+        // }
 
         var indent = " ".repeat((level + 1) * 2);
         Consumer<String> logIndented = message -> ctx.log(indent + message);
