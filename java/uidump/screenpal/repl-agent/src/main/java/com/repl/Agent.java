@@ -47,7 +47,7 @@ public final class Agent {
     // Example: clickTimelinePosition(0.25) clicks at 25% through the timeline
     // Example: clickTimelinePosition(0.0) goes to beginning
     // Example: clickTimelinePosition(1.0) goes to end
-    public void clickTimelinePosition(double percentage) {
+    public static void clickTimelinePosition(double percentage) {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -60,6 +60,7 @@ public final class Agent {
 
             int x = (int) (timeline.getWidth() * percentage);
             int y = timeline.getHeight() / 2;
+            ctx.log("Clicking timeline at " + x + "," + y);
 
             java.awt.event.MouseEvent click = new java.awt.event.MouseEvent(
                     timeline,
@@ -81,7 +82,7 @@ public final class Agent {
     }
 
     // Function to get the timeline component reference
-    public Component getTimelineComponent() {
+    public static Component getTimelineComponent() {
         try {
             Window[] windows = ctx.windows();
             for (Window w : windows) {
@@ -118,7 +119,7 @@ public final class Agent {
     }
 
     // Function to get play/pause button (the 48x48 component)
-    public Component getPlayPauseButton() {
+    public static Component getPlayPauseButton() {
         try {
             Component timeline = getTimelineComponent();
             if (timeline != null) {
@@ -133,7 +134,7 @@ public final class Agent {
     }
 
     // Function to click the play/pause button
-    public void clickPlayPause() {
+    public static void clickPlayPause() {
         try {
             Component playButton = getPlayPauseButton();
             if (playButton == null) {
@@ -162,28 +163,28 @@ public final class Agent {
     // === CONVENIENCE FUNCTIONS ===
 
     // Jump to specific timeline positions
-    public void jumpToBeginning() {
+    public static void jumpToBeginning() {
         clickTimelinePosition(0.0);
     }
 
-    public void jumpToEnd() {
+    public static void jumpToEnd() {
         clickTimelinePosition(1.0);
     }
 
-    public void jumpToMiddle() {
+    public static void jumpToMiddle() {
         clickTimelinePosition(0.5);
     }
 
-    public void jumpToQuarter() {
+    public static void jumpToQuarter() {
         clickTimelinePosition(0.25);
     }
 
-    public void jumpToThreeQuarters() {
+    public static void jumpToThreeQuarters() {
         clickTimelinePosition(0.75);
     }
 
     // Example automation sequences
-    public void demonstrateTimelineControl() {
+    public static void demonstrateTimelineControl() {
         ctx.log("Starting timeline demonstration...");
 
         jumpToBeginning();
@@ -244,37 +245,42 @@ public final class Agent {
         ctx.log("ScreenPal Timeline Automation loaded!");
         ctx.log("Available functions:");
         ctx.log("- clickTimelinePosition(percentage)");
+        clickTimelinePosition(0.25); // 25%
         ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
         ctx.log("- clickPlayPause()");
+        clickPlayPause();
         ctx.log("- demonstrateTimelineControl()");
 
-        // - OR, it can be to type in code and then select to send it from nvim over a socket
 
-        // working ideas, that might be useful:
-
-        ctx.log("hardcoded 1");
-
-        // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
-
-        // java 17+ pattern matching (won't work with Janino)
-        for (Window w : ctx.windows()) {
-            ctx.log("window " + w);
-            if (w instanceof JFrame f) {
-                ctx.log("  frame " + f.getTitle());
-            }
-        }
-        // janino works w/ this:
-        for (Window w : ctx.windows()) {
-            ctx.log("window " + w);
-            if (w instanceof javax.swing.JFrame) {
-                javax.swing.JFrame f = (javax.swing.JFrame) w;
-                ctx.log("  frame " + f.getTitle());
-            }
-        }
-
-        // out.write("here is the data\n");
-        // out.flush();
-
+        //
+        //
+        // // - OR, it can be to type in code and then select to send it from nvim over a socket
+        //
+        // // working ideas, that might be useful:
+        //
+        // ctx.log("hardcoded 1");
+        //
+        // // JOptionPane.showMessageDialog(null, "Hello World!", "test", JOptionPane.INFORMATION_MESSAGE);
+        //
+        // // java 17+ pattern matching (won't work with Janino)
+        // for (Window w : ctx.windows()) {
+        //     ctx.log("window " + w);
+        //     if (w instanceof JFrame f) {
+        //         ctx.log("  frame " + f.getTitle());
+        //     }
+        // }
+        // // janino works w/ this:
+        // for (Window w : ctx.windows()) {
+        //     ctx.log("window " + w);
+        //     if (w instanceof javax.swing.JFrame) {
+        //         javax.swing.JFrame f = (javax.swing.JFrame) w;
+        //         ctx.log("  frame " + f.getTitle());
+        //     }
+        // }
+        //
+        // // out.write("here is the data\n");
+        // // out.flush();
+        //
     }
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
