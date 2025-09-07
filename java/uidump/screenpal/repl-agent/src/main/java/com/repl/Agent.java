@@ -450,11 +450,12 @@ public final class Agent {
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
         // FYI NONE of Claude's actions like click/play work in my testing
-        //  these don't for sure:
+        // these don't for sure:
         // clickPlayPause();
         // sendArrowKey("right");
 
-        // getTimelineComponent();
+        Component timeline = getTimelineComponent();
+        ComponentInspector.inspect(timeline);
         // analyzeTimeline();
 
         // // working ideas, that might be useful:
