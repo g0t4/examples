@@ -129,21 +129,27 @@ public final class Agent {
 
                 if (w instanceof JFrame) {
                     JFrame frame = (JFrame) w;
-                    ctx.log("window %s %s".formatted(frame.getTitle(), frame.getName()));
+                    ctx.log("window '%s' name='%s'".formatted(frame.getTitle(), frame.getName()));
                     if (frame.getTitle().contains("ScreenPal")) {
+
+                        ctx.log("  - Claude identified hierarchy()");
                         // Navigate to timeline: ROOT.0.1.0.4.0.0[3]
                         Container root = frame.getContentPane();
                         ctx.log(String.format("  root: '%s'", root.getName()));
                         JPanel panel0 = (JPanel) root.getComponent(0);
-                        ctx.log(String.format("  panel0: '%s'", panel0.getName()));
+                        ctx.log(String.format("    panel0: '%s'", panel0.getName()));
                         JPanel panel1 = (JPanel) panel0.getComponent(1);
-                        ctx.log(String.format("  panel1: '%s'", panel1.getName()));
+                        ctx.log(String.format("      panel1: '%s'", panel1.getName()));
                         Container panel10 = (Container) panel1.getComponent(0);
-                        ctx.log(String.format("  panel10: '%s'", panel10.getName()));
+                        ctx.log(String.format("        panel10: '%s'", panel10.getName()));
                         JPanel panel104 = (JPanel) panel10.getComponent(4);
+                        ctx.log(String.format("          panel104: '%s'", panel104.getName()));
                         Container editControls = (Container) panel104.getComponent(0);
+                        ctx.log(String.format("            editControls: '%s'", editControls.getName()));
                         Container playerControlsPanel = (Container) editControls.getComponent(0);
+                        ctx.log(String.format("              playerControlsPanel: '%s'", playerControlsPanel.getName()));
                         Component timelineComponent = playerControlsPanel.getComponent(3);
+                        ctx.log(String.format("                timelineComponent: '%s'", timelineComponent.getName())); // should be "item.editseek"
 
                         ctx.log("- logComponents()");
                         logComponents(root, 0);
