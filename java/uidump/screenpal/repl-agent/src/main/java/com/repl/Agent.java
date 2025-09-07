@@ -150,6 +150,7 @@ public final class Agent {
                         ctx.log(String.format("              playerControlsPanel: '%s'", playerControlsPanel.getName()));
                         Component timelineComponent = playerControlsPanel.getComponent(3);
                         ctx.log(String.format("                timelineComponent: '%s'", timelineComponent.getName())); // should be "item.editseek"
+                        // BINGO claude found what appears to be the control! I confirmed placement on the screen and its right after play and before zoom toggle so yeah that's it!!!
 
                         ctx.log("- logComponents()");
                         logComponents(root, 0);
