@@ -92,7 +92,7 @@ public final class Agent {
             return;
         }
         ctx.log("found: %s %s".formatted(at.getName(), at.getClass()));
-        ctx.log("- logComponents():");
+        ctx.log(green("- logComponents():"));
         logComponents(at, 1);
     }
 
