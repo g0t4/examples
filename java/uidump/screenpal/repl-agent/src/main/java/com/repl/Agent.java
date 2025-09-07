@@ -98,7 +98,7 @@ public final class Agent {
 
     public static void logComponents(Component c, int level) {
         // if (level > 4) {
-        //     return;
+        // return;
         // }
 
         var indent = " ".repeat((level + 1) * 2);
@@ -274,227 +274,237 @@ public final class Agent {
         jumpToBeginning();
         ctx.log("Timeline demonstration complete!");
     }
-// === ADVANCED TIMELINE CONTROL METHODS ===
+    // === ADVANCED TIMELINE CONTROL METHODS ===
 
-// Function to scrub through timeline with drag motion (smooth seeking)
-public void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
+    // Function to scrub through timeline with drag motion (smooth seeking)
+    public void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            // Clamp percentages
+            startPercentage = Math.max(0.0, Math.min(1.0, startPercentage));
+            endPercentage = Math.max(0.0, Math.min(1.0, endPercentage));
+
+            int startX = (int) (timeline.getWidth() * startPercentage);
+            int endX = (int) (timeline.getWidth() * endPercentage);
+            int centerY = timeline.getHeight() / 2;
+
+            // Mouse press at start position
+            java.awt.event.MouseEvent press = new java.awt.event.MouseEvent(
+                    timeline, java.awt.event.MouseEvent.MOUSE_PRESSED,
+                    System.currentTimeMillis(), 0, startX, centerY, 1, false);
+            timeline.dispatchEvent(press);
+
+            // Smooth drag motion
+            int steps = Math.max(10, durationMs / 50); // At least 10 steps
+            long stepDelay = durationMs / steps;
+
+            for (int i = 1; i <= steps; i++) {
+                int currentX = startX + ((endX - startX) * i / steps);
+
+                java.awt.event.MouseEvent drag = new java.awt.event.MouseEvent(
+                        timeline, java.awt.event.MouseEvent.MOUSE_DRAGGED,
+                        System.currentTimeMillis(), 0, currentX, centerY, 1, false);
+                timeline.dispatchEvent(drag);
+
+                try {
+                    Thread.sleep(stepDelay);
+                } catch (InterruptedException e) {
+                }
+            }
+
+            // Mouse release at end position
+            java.awt.event.MouseEvent release = new java.awt.event.MouseEvent(
+                    timeline, java.awt.event.MouseEvent.MOUSE_RELEASED,
+                    System.currentTimeMillis(), 0, endX, centerY, 1, false);
+            timeline.dispatchEvent(release);
+
+            ctx.log("Scrubbed timeline from " + (startPercentage * 100) + "% to " + (endPercentage * 100) + "% over " + durationMs + "ms");
+
+        } catch (Exception e) {
+            ctx.log("Error scrubbing timeline: " + e.toString());
         }
-        
-        // Clamp percentages
-        startPercentage = Math.max(0.0, Math.min(1.0, startPercentage));
-        endPercentage = Math.max(0.0, Math.min(1.0, endPercentage));
-        
-        int startX = (int)(timeline.getWidth() * startPercentage);
-        int endX = (int)(timeline.getWidth() * endPercentage);
-        int centerY = timeline.getHeight() / 2;
-        
-        // Mouse press at start position
-        java.awt.event.MouseEvent press = new java.awt.event.MouseEvent(
-            timeline, java.awt.event.MouseEvent.MOUSE_PRESSED,
-            System.currentTimeMillis(), 0, startX, centerY, 1, false
-        );
-        timeline.dispatchEvent(press);
-        
-        // Smooth drag motion
-        int steps = Math.max(10, durationMs / 50); // At least 10 steps
-        long stepDelay = durationMs / steps;
-        
-        for (int i = 1; i <= steps; i++) {
-            int currentX = startX + ((endX - startX) * i / steps);
-            
-            java.awt.event.MouseEvent drag = new java.awt.event.MouseEvent(
-                timeline, java.awt.event.MouseEvent.MOUSE_DRAGGED,
-                System.currentTimeMillis(), 0, currentX, centerY, 1, false
+    }
+
+    // Function to perform right-click on timeline (might show context menu)
+    public void rightClickTimeline(double percentage) {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            percentage = Math.max(0.0, Math.min(1.0, percentage));
+            int x = (int) (timeline.getWidth() * percentage);
+            int y = timeline.getHeight() / 2;
+
+            java.awt.event.MouseEvent rightClick = new java.awt.event.MouseEvent(
+                    timeline, java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    java.awt.event.InputEvent.BUTTON3_DOWN_MASK,
+                    x, y, 1, true // popup trigger
             );
-            timeline.dispatchEvent(drag);
-            
-            try { Thread.sleep(stepDelay); } catch (InterruptedException e) {}
-        }
-        
-        // Mouse release at end position
-        java.awt.event.MouseEvent release = new java.awt.event.MouseEvent(
-            timeline, java.awt.event.MouseEvent.MOUSE_RELEASED,
-            System.currentTimeMillis(), 0, endX, centerY, 1, false
-        );
-        timeline.dispatchEvent(release);
-        
-        ctx.log("Scrubbed timeline from " + (startPercentage * 100) + "% to " + (endPercentage * 100) + "% over " + durationMs + "ms");
-        
-    } catch (Exception e) {
-        ctx.log("Error scrubbing timeline: " + e.toString());
-    }
-}
+            timeline.dispatchEvent(rightClick);
 
-// Function to perform right-click on timeline (might show context menu)
-public void rightClickTimeline(double percentage) {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
-        }
-        
-        percentage = Math.max(0.0, Math.min(1.0, percentage));
-        int x = (int)(timeline.getWidth() * percentage);
-        int y = timeline.getHeight() / 2;
-        
-        java.awt.event.MouseEvent rightClick = new java.awt.event.MouseEvent(
-            timeline, java.awt.event.MouseEvent.MOUSE_CLICKED,
-            System.currentTimeMillis(), 
-            java.awt.event.InputEvent.BUTTON3_DOWN_MASK,
-            x, y, 1, true // popup trigger
-        );
-        timeline.dispatchEvent(rightClick);
-        
-        ctx.log("Right-clicked timeline at " + (percentage * 100) + "% position");
-        
-    } catch (Exception e) {
-        ctx.log("Error right-clicking timeline: " + e.toString());
-    }
-}
+            ctx.log("Right-clicked timeline at " + (percentage * 100) + "% position");
 
-// Function to double-click timeline (might have special behavior)
-public void doubleClickTimeline(double percentage) {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
+        } catch (Exception e) {
+            ctx.log("Error right-clicking timeline: " + e.toString());
         }
-        
-        percentage = Math.max(0.0, Math.min(1.0, percentage));
-        int x = (int)(timeline.getWidth() * percentage);
-        int y = timeline.getHeight() / 2;
-        
-        java.awt.event.MouseEvent doubleClick = new java.awt.event.MouseEvent(
-            timeline, java.awt.event.MouseEvent.MOUSE_CLICKED,
-            System.currentTimeMillis(), 0, x, y, 2, false // click count = 2
-        );
-        timeline.dispatchEvent(doubleClick);
-        
-        ctx.log("Double-clicked timeline at " + (percentage * 100) + "% position");
-        
-    } catch (Exception e) {
-        ctx.log("Error double-clicking timeline: " + e.toString());
     }
-}
 
-// Function to send arrow key navigation (if timeline has focus)
-public void sendArrowKey(String direction) {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
+    // Function to double-click timeline (might have special behavior)
+    public void doubleClickTimeline(double percentage) {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            percentage = Math.max(0.0, Math.min(1.0, percentage));
+            int x = (int) (timeline.getWidth() * percentage);
+            int y = timeline.getHeight() / 2;
+
+            java.awt.event.MouseEvent doubleClick = new java.awt.event.MouseEvent(
+                    timeline, java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(), 0, x, y, 2, false // click count = 2
+            );
+            timeline.dispatchEvent(doubleClick);
+
+            ctx.log("Double-clicked timeline at " + (percentage * 100) + "% position");
+
+        } catch (Exception e) {
+            ctx.log("Error double-clicking timeline: " + e.toString());
         }
-        
-        JComponent jcomp = (JComponent) timeline;
-        
-        // Try to focus the timeline first
-        boolean focused = jcomp.requestFocusInWindow();
-        if (!focused) {
-            ctx.log("Could not focus timeline component");
-            return;
-        }
-        
-        int keyCode;
-        switch (direction.toLowerCase()) {
-            case "left": keyCode = java.awt.event.KeyEvent.VK_LEFT; break;
-            case "right": keyCode = java.awt.event.KeyEvent.VK_RIGHT; break;
-            case "up": keyCode = java.awt.event.KeyEvent.VK_UP; break;
-            case "down": keyCode = java.awt.event.KeyEvent.VK_DOWN; break;
+    }
+
+    // Function to send arrow key navigation (if timeline has focus)
+    public void sendArrowKey(String direction) {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            JComponent jcomp = (JComponent) timeline;
+
+            // Try to focus the timeline first
+            boolean focused = jcomp.requestFocusInWindow();
+            if (!focused) {
+                ctx.log("Could not focus timeline component");
+                return;
+            }
+
+            int keyCode;
+            switch (direction.toLowerCase()) {
+            case "left":
+                keyCode = java.awt.event.KeyEvent.VK_LEFT;
+                break;
+            case "right":
+                keyCode = java.awt.event.KeyEvent.VK_RIGHT;
+                break;
+            case "up":
+                keyCode = java.awt.event.KeyEvent.VK_UP;
+                break;
+            case "down":
+                keyCode = java.awt.event.KeyEvent.VK_DOWN;
+                break;
             default:
                 ctx.log("Invalid direction: " + direction + ". Use: left, right, up, down");
                 return;
+            }
+
+            java.awt.event.KeyEvent keyEvent = new java.awt.event.KeyEvent(
+                    jcomp, java.awt.event.KeyEvent.KEY_PRESSED,
+                    System.currentTimeMillis(), 0, keyCode, java.awt.event.KeyEvent.CHAR_UNDEFINED);
+            jcomp.dispatchEvent(keyEvent);
+
+            ctx.log("Sent " + direction + " arrow key to timeline");
+
+        } catch (Exception e) {
+            ctx.log("Error sending arrow key: " + e.toString());
         }
-        
-        java.awt.event.KeyEvent keyEvent = new java.awt.event.KeyEvent(
-            jcomp, java.awt.event.KeyEvent.KEY_PRESSED,
-            System.currentTimeMillis(), 0, keyCode, java.awt.event.KeyEvent.CHAR_UNDEFINED
-        );
-        jcomp.dispatchEvent(keyEvent);
-        
-        ctx.log("Sent " + direction + " arrow key to timeline");
-        
-    } catch (Exception e) {
-        ctx.log("Error sending arrow key: " + e.toString());
     }
-}
 
-// === ENHANCED CONVENIENCE FUNCTIONS ===
+    // === ENHANCED CONVENIENCE FUNCTIONS ===
 
-// Smooth scrubbing demonstrations
-public void scrubForward() { scrubTimeline(0.0, 1.0, 2000); }  // 2 second scrub to end
-public void scrubBackward() { scrubTimeline(1.0, 0.0, 2000); } // 2 second scrub to start
-public void scrubSection() { scrubTimeline(0.2, 0.8, 1500); }  // Scrub middle section
+    // Smooth scrubbing demonstrations
+    public void scrubForward() {
+        scrubTimeline(0.0, 1.0, 2000);
+    } // 2 second scrub to end
 
-// Fine navigation with arrow keys
-public void stepForward() { sendArrowKey("right"); }
-public void stepBackward() { sendArrowKey("left"); }
+    public void scrubBackward() {
+        scrubTimeline(1.0, 0.0, 2000);
+    } // 2 second scrub to start
 
-// Context menu exploration
-public void exploreContextMenu() {
-    rightClickTimeline(0.5);
-    ctx.log("Check for context menu at timeline center");
-}
+    public void scrubSection() {
+        scrubTimeline(0.2, 0.8, 1500);
+    } // Scrub middle section
 
-// === TIMELINE ANALYSIS FUNCTIONS ===
+    // Fine navigation with arrow keys
+    public void stepForward() {
+        sendArrowKey("right");
+    }
 
-// Get timeline dimensions and position info
-public void analyzeTimeline() {
-    try {
-        Component timeline = getTimelineComponent();
-        if (timeline == null) {
-            ctx.log("Timeline component not found!");
-            return;
+    public void stepBackward() {
+        sendArrowKey("left");
+    }
+
+    // Context menu exploration
+    public void exploreContextMenu() {
+        rightClickTimeline(0.5);
+        ctx.log("Check for context menu at timeline center");
+    }
+
+    // === TIMELINE ANALYSIS FUNCTIONS ===
+
+    // Get timeline dimensions and position info
+    public void analyzeTimeline() {
+        try {
+            Component timeline = getTimelineComponent();
+            if (timeline == null) {
+                ctx.log("Timeline component not found!");
+                return;
+            }
+
+            ctx.log("=== TIMELINE ANALYSIS ===");
+            ctx.log("Class: " + timeline.getClass().getName());
+            ctx.log("Name: " + ((JComponent) timeline).getName());
+            ctx.log("Size: " + timeline.getWidth() + "x" + timeline.getHeight() + " pixels");
+            ctx.log("Location on screen: " + timeline.getLocationOnScreen());
+            ctx.log("Pixel width: " + timeline.getWidth() + " pixels = 100% timeline");
+            ctx.log("1% = " + (timeline.getWidth() / 100.0) + " pixels");
+            ctx.log("Focusable: " + timeline.isFocusable());
+            ctx.log("Has focus: " + ((JComponent) timeline).hasFocus());
+
+            // Count event listeners
+            JComponent jcomp = (JComponent) timeline;
+            ctx.log("Mouse listeners: " + jcomp.getMouseListeners().length);
+            ctx.log("Mouse motion listeners: " + jcomp.getMouseMotionListeners().length);
+            ctx.log("Key listeners: " + jcomp.getKeyListeners().length);
+
+        } catch (Exception e) {
+            ctx.log("Error analyzing timeline: " + e.toString());
         }
-        
-        ctx.log("=== TIMELINE ANALYSIS ===");
-        ctx.log("Class: " + timeline.getClass().getName());
-        ctx.log("Name: " + ((JComponent)timeline).getName());
-        ctx.log("Size: " + timeline.getWidth() + "x" + timeline.getHeight() + " pixels");
-        ctx.log("Location on screen: " + timeline.getLocationOnScreen());
-        ctx.log("Pixel width: " + timeline.getWidth() + " pixels = 100% timeline");
-        ctx.log("1% = " + (timeline.getWidth() / 100.0) + " pixels");
-        ctx.log("Focusable: " + timeline.isFocusable());
-        ctx.log("Has focus: " + ((JComponent)timeline).hasFocus());
-        
-        // Count event listeners
-        JComponent jcomp = (JComponent) timeline;
-        ctx.log("Mouse listeners: " + jcomp.getMouseListeners().length);
-        ctx.log("Mouse motion listeners: " + jcomp.getMouseMotionListeners().length);
-        ctx.log("Key listeners: " + jcomp.getKeyListeners().length);
-        
-    } catch (Exception e) {
-        ctx.log("Error analyzing timeline: " + e.toString());
     }
-}
 
-// === USAGE EXAMPLES ===
-/*
-BASIC USAGE:
-clickTimelinePosition(0.3);     // Jump to 30%
-scrubTimeline(0.1, 0.9, 3000);  // Smooth 3-second scrub from 10% to 90%
-
-ADVANCED INTERACTION:
-rightClickTimeline(0.5);        // Right-click at center (context menu?)
-doubleClickTimeline(0.25);      // Double-click at 25% (special action?)
-stepForward();                  // Fine navigation with arrow key
-
-DEMONSTRATIONS:
-scrubForward();                 // Smooth scrub to end
-scrubBackward();                // Smooth scrub to start
-demonstrateTimelineControl();   // Full demo sequence
-
-ANALYSIS:
-analyzeTimeline();              // Get detailed timeline info
-*/
-
+    // === USAGE EXAMPLES ===
+    /*
+     * BASIC USAGE: clickTimelinePosition(0.3); // Jump to 30% scrubTimeline(0.1, 0.9, 3000); // Smooth 3-second scrub from 10% to 90%
+     * 
+     * ADVANCED INTERACTION: rightClickTimeline(0.5); // Right-click at center (context menu?) doubleClickTimeline(0.25); // Double-click at 25% (special action?) stepForward(); // Fine navigation with arrow key
+     * 
+     * DEMONSTRATIONS: scrubForward(); // Smooth scrub to end scrubBackward(); // Smooth scrub to start demonstrateTimelineControl(); // Full demo sequence
+     * 
+     * ANALYSIS: analyzeTimeline(); // Get detailed timeline info
+     */
 
     public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
         // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
