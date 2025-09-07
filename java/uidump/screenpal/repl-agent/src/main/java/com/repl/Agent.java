@@ -454,9 +454,14 @@ public final class Agent {
         // clickPlayPause();
         // sendArrowKey("right");
 
-        Component timeline = getTimelineComponent();
+        // analyzeTimeline(); 
+        Component timeline = getTimelineComponent(); //lotsa my logs
         ComponentInspector.inspect(timeline);
-        // analyzeTimeline();
+        // timline interesting outputs:
+        //  debugGraphicsOptions integer (0 currently)
+        //  * fields:
+        //    item, service => seem to be the instance we may want!
+
 
         // // working ideas, that might be useful:
         //

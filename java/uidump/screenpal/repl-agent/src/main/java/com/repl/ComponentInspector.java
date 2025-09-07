@@ -87,9 +87,13 @@ public final class ComponentInspector {
                     try {
                         f.setAccessible(true); // requires --add-opens in JPMS world
                         Object value = f.get(component);
+                        // careful how you modify the following, if you use "".formatted you lose value display?!
+                        //   but it did fix the new line everywhere nonsense...
+                        //   anyways, this is how I found tempRectangles
                         System.out.printf("%s %s.%s = %s%n",
                                 Modifier.toString(f.getModifiers()),
                                 type.getName(),
+                                // field name:
                                 f.getName(),
                                 safeToString(value));
                     } catch (Throwable t) {
