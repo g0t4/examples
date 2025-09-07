@@ -457,20 +457,23 @@ public final class Agent {
         // analyzeTimeline();
         Component timeline = getTimelineComponent(); // lotsa my logs
         ComponentInspector.inspect(timeline);
+        // STOP FOR NOW! gotta get editing done tomorrow! this isn't ready yet! later
+        // everything past this point is obfuscated (mostly)
+        // I have enough now to know I could write integrations to modify similar controls as hamemrspoon+AX fwk... that is plenty to know foor now
 
-        System.out.println("-------------- PRIVATES ------------ ");
-        Object item = ReflectDemo.getPrivateField(timeline, "item");
-        System.out.println("***** item: %s".formatted(item));
-        ObjectInspector.printDeclaredFields(item);
-        //
-        // item => J = PositionSlider
-        Object item_J = ReflectDemo.getPrivateField(item, "J");
-        System.out.println("***** item: %s".formatted(item_J));
-        ObjectInspector.printDeclaredFields(item_J);
-        //
-        Object service = ReflectDemo.getPrivateField(timeline, "service");
-        // System.out.println("***** service: %s".formatted(service));
-        // ObjectInspector.printDeclaredFields(service);
+        // System.out.println("-------------- PRIVATES ------------ ");
+        // Object item = ReflectDemo.getPrivateField(timeline, "item");
+        // System.out.println("***** item: %s".formatted(item));
+        // ComponentInspector.printDeclaredFields(item);
+        // //
+        // // item => J = PositionSlider (throws on many values)
+        // // Object item_J = ReflectDemo.getPrivateField(item, "J");
+        // // System.out.println("***** item J (PositionSlider): %s".formatted(item_J));
+        // // ComponentInspector.printDeclaredFields(item_J);
+        // //
+        // // Object service = ReflectDemo.getPrivateField(timeline, "service");
+        // // System.out.println("***** service: %s".formatted(service));
+        // // ComponentInspector.printDeclaredFields(service);
 
 
 

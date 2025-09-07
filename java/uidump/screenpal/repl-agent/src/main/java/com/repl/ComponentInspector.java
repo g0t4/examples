@@ -76,16 +76,16 @@ public final class ComponentInspector {
         }
     }
 
-    public static void printDeclaredFields(Object component) {
+    public static void printDeclaredFields(Object what) {
         System.out.println("\n-- Declared Fields (including private) --");
-        Class<?> type = component.getClass();
+        Class<?> type = what.getClass();
         Set<String> seen = new LinkedHashSet<>();
         while (type != null) {
             for (Field f : type.getDeclaredFields()) {
                 if (seen.add(type.getName() + "#" + f.getName())) {
                     try {
                         f.setAccessible(true); // requires --add-opens in JPMS world
-                        Object value = f.get(component);
+                        Object value = f.get(what);
                         // careful how you modify the following, if you use "".formatted you lose value display?!
                         // but it did fix the new line everywhere nonsense...
                         // anyways, this is how I found tempRectangles
