@@ -217,7 +217,7 @@ public final class Agent {
     // === ROUND2 Claude
 
     // Function to scrub through timeline with drag motion (smooth seeking)
-    public void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
+    public static void scrubTimeline(double startPercentage, double endPercentage, int durationMs) {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -271,7 +271,7 @@ public final class Agent {
     }
 
     // Function to perform right-click on timeline (might show context menu)
-    public void rightClickTimeline(double percentage) {
+    public static void rightClickTimeline(double percentage) {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -299,7 +299,7 @@ public final class Agent {
     }
 
     // Function to double-click timeline (might have special behavior)
-    public void doubleClickTimeline(double percentage) {
+    public static void doubleClickTimeline(double percentage) {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -325,7 +325,7 @@ public final class Agent {
     }
 
     // Function to send arrow key navigation (if timeline has focus)
-    public void sendArrowKey(String direction) {
+    public static void sendArrowKey(String direction) {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -376,29 +376,29 @@ public final class Agent {
     // === ENHANCED CONVENIENCE FUNCTIONS ===
 
     // Smooth scrubbing demonstrations
-    public void scrubForward() {
+    public static void scrubForward() {
         scrubTimeline(0.0, 1.0, 2000);
     } // 2 second scrub to end
 
-    public void scrubBackward() {
+    public static void scrubBackward() {
         scrubTimeline(1.0, 0.0, 2000);
     } // 2 second scrub to start
 
-    public void scrubSection() {
+    public static void scrubSection() {
         scrubTimeline(0.2, 0.8, 1500);
     } // Scrub middle section
 
     // Fine navigation with arrow keys
-    public void stepForward() {
+    public static void stepForward() {
         sendArrowKey("right");
     }
 
-    public void stepBackward() {
+    public static void stepBackward() {
         sendArrowKey("left");
     }
 
     // Context menu exploration
-    public void exploreContextMenu() {
+    public static void exploreContextMenu() {
         rightClickTimeline(0.5);
         ctx.log("Check for context menu at timeline center");
     }
@@ -406,7 +406,7 @@ public final class Agent {
     // === TIMELINE ANALYSIS FUNCTIONS ===
 
     // Get timeline dimensions and position info
-    public void analyzeTimeline() {
+    public static void analyzeTimeline() {
         try {
             Component timeline = getTimelineComponent();
             if (timeline == null) {
@@ -442,7 +442,8 @@ public final class Agent {
         // - runs on REPL startup so I can run tests this way
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
-        getTimelineComponent();
+        // getTimelineComponent();
+        analyzeTimeline();
 
         // // working ideas, that might be useful:
         //
