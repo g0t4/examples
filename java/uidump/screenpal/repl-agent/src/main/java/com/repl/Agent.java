@@ -190,6 +190,12 @@ public void demonstrateTimelineControl() {
     jumpToBeginning();
     ctx.log("Timeline demonstration complete!");
 }
+    public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
+        // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
+
+        // two purporses for this function:
+        // - runs on REPL startup so I can run tests this way
+
 
 // === USAGE EXAMPLES ===
 /*
@@ -220,11 +226,24 @@ ctx.log("- jumpToBeginning(), jumpToEnd(), jumpToMiddle()");
 ctx.log("- clickPlayPause()");
 ctx.log("- demonstrateTimelineControl()");
 
-    public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
-        // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
 
-        // two purporses for this function:
-        // - runs on REPL startup so I can run tests this way
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // - OR, it can be to type in code and then select to send it from nvim over a socket
 
         // working ideas, that might be useful:
