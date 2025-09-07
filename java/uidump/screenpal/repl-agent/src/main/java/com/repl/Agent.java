@@ -442,7 +442,7 @@ public final class Agent {
         }
     }
 
-    public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
+    public static void hardcoded_tests(Context ctx, BufferedWriter out) throws Exception {
         // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
 
         // two purporses for this function:
@@ -454,14 +454,18 @@ public final class Agent {
         // clickPlayPause();
         // sendArrowKey("right");
 
-        // analyzeTimeline(); 
-        Component timeline = getTimelineComponent(); //lotsa my logs
+        // analyzeTimeline();
+        Component timeline = getTimelineComponent(); // lotsa my logs
         ComponentInspector.inspect(timeline);
-        // timline interesting outputs:
-        //  debugGraphicsOptions integer (0 currently)
-        //  * fields:
-        //    item, service => seem to be the instance we may want!
 
+        System.out.println("-------------- PRIVATES ------------ ");
+        Object item = ReflectDemo.getPrivateField(timeline, "item");
+        System.out.println("item: %s".formatted(item));
+
+        // timline interesting outputs:
+        // debugGraphicsOptions integer (0 currently)
+        // * fields:
+        // item, service => seem to be the instance we may want!
 
         // // working ideas, that might be useful:
         //
