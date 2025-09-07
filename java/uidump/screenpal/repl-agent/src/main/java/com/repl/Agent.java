@@ -36,6 +36,8 @@ public final class Agent {
 
     private static volatile ServerSocket server;
     private static volatile Thread thread;
+    private static volatile Context ctx;
+
 
     public static void hardcoded_tests(Context ctx, BufferedWriter out) throws IOException {
         // OUT is not passed to hardcoded, it will only be passed for dynamic code b/c it hooks up to the socket's output stream
@@ -72,7 +74,8 @@ public final class Agent {
     }
 
     public static Object start(java.lang.instrument.Instrumentation inst, String opts) throws Exception {
-        Context ctx = new Context();
+        ctx = new Context();
+        
         try {
             hardcoded_tests(ctx, null);
         } catch (Throwable t) {
