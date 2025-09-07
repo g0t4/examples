@@ -108,7 +108,7 @@ public final class Agent {
         String text = "%s".formatted(c.toString());
         if (c instanceof JPanel) {
             JPanel p = (JPanel) c;
-            logIndented.accept("p #%s %s".formatted(p.getComponentCount(), text));
+            logIndented.accept("p #%s '%s' %s".formatted(underline(p.getName()), p.getComponentCount(), text));
             for (Component child : p.getComponents()) {
                 logComponents(child, level + 1);
             }
