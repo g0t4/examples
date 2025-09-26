@@ -5,6 +5,8 @@
 #   https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-bnb-4bit
 
 uv pip install vllm --pre --extra-index-url https://wheels.vllm.ai/nightly
+uv pip install bitsandbytes
+uv pip install flashinfer-python
 
 
 # TODO TRY
