@@ -1,0 +1,10 @@
+[project]
+name = "llama-cpp-templates"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "llama-cpp-scripts",
+]
+
+[tool.uv.sources]
+llama-cpp-scripts = { path = "../../../../ggml-org/llama.cpp" }
