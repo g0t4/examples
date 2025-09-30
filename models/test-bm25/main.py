@@ -19,9 +19,9 @@ retriever.index(corpus_tokens)
 queries = ["man cannot fly", "man's best friend"]
 for q in queries:
     print(f'{q=}')
-    query_tokens = retriever.get_tokens_ids(q.split(" "))
+    query_tokens = bm25s.tokenize(q)
     print(f'  {query_tokens=}')
-    scores = retriever.get_scores(query_tokens_single=query_tokens)
+    scores = retriever.retrieve(query_tokens, k=3)
     print(f'  {scores=}')
 
 
