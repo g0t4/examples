@@ -10,7 +10,15 @@ corpus_tokens = bm25s.tokenize(corpus)
 corpus_tokens
 
 for p in corpus_tokens.vocab:
-    print(f'{p=}: {corpus_tokens.vocab[p]}')
+    token_id = corpus_tokens.vocab[p]
+    print(f'{p=}: {token_id}')
+
+
+avg_doc_length = sum([len(id) for id in corpus_tokens.ids]) / len(corpus_tokens.ids)
+avg_doc_length
+# %% 
+
+
 
 
 retriever = bm25s.BM25(corpus=corpus)
@@ -24,4 +32,5 @@ for q in queries:
     scores = retriever.retrieve(query_tokens, k=3)
     print(f'  {scores=}')
 
+retriever.method
 
