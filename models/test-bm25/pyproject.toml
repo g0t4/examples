@@ -1,0 +1,7 @@
+[project]
+name = "test-bm25"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "bm25s[full]>=0.2.14",
+]
