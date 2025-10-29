@@ -22,5 +22,6 @@ images = pipe(
 # %% 
 
 for index, img_set in enumerate(images):
-    gif_path = export_to_gif(img_set, f"shark_sampled_3d_{index}.gif")
+    gif_path = export_to_gif(img_set, f"out/{index}.gif")
+
 
