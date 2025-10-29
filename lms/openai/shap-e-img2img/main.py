@@ -4,11 +4,12 @@ from diffusers.utils import export_to_gif, load_image
 
 
 ckpt_id = "openai/shap-e-img2img"
-pipe = ShapEImg2ImgPipeline.from_pretrained(repo).to("cuda")
+pipe = ShapEImg2ImgPipeline.from_pretrained(ckpt_id).to("cuda")
 
 img_url = "https://hf.co/datasets/diffusers/docs-images/resolve/main/shap-e/corgi.png"
 image = load_image(img_url)
 
+# %%
 
 generator = torch.Generator(device="cuda").manual_seed(0)
 batch_size = 4
@@ -20,8 +21,12 @@ images = pipe(
     generator=generator, 
     guidance_scale=guidance_scale,
     num_inference_steps=64, 
-    size=256, 
+    frame_size=256,
     output_type="pil"
 ).images
 
-gif_path = export_to_gif(images, "corgi_sampled_3d.gif")
+# %% 
+
+for index, img_set in enumerate(images):
+    gif_path = export_to_gif(img_set, f"corgi_sampled_3d_{index}.gif")
+
