@@ -12,7 +12,7 @@ image = load_image(img_url)
 # %%
 
 generator = torch.Generator(device="cuda").manual_seed(0)
-batch_size = 4
+batch_size = 1
 guidance_scale = 3.0
 
 images = pipe(
