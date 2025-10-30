@@ -1,0 +1,30 @@
+services:
+  qwen3-omni:
+    image: qwenllm/qwen3-omni:3-cu124
+    container_name: qwen3-omni
+    ports:
+      - "8901:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "${WES_REPOS}/github/QwenLM/Qwen3-Omni:/data/shared/Qwen3-Omni"
+    shm_size: 4gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - python
+      - web_demo.py
+      - -c
+      - Qwen/Qwen3-Omni-30B-A3B-Instruct
+      - --server-port
+      - "80"
+      - --server-name
+      - "0.0.0.0"
+      - --use-transformers
+      - --flash-attn2
+
+
