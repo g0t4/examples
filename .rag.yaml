@@ -14,5 +14,5 @@ include:
   - yaml 
 # ignores:
 #   - "notes/"
-# all_languages:
+# global_languages:
 #   - JUST USE ALL included above (default IIRC)
