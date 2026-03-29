@@ -23,9 +23,12 @@ MODEL_ID = "Qwen/Qwen3.5-0.8B-Base"  # base model releases too! (i.e. for FIM)
 model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
-rich.print(tokenizer.chat_template)  # rich makes the template legible!
 print(tokenizer)
 print(model)
+
+# %% 
+
+rich.print(tokenizer.chat_template)  # rich makes the template legible!
 
 # %%
 
