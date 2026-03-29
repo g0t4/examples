@@ -1379,7 +1379,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = ">=1.13.0" },
-    { name = "flash-attn", specifier = "==2.8.3" },
+    { name = "flash-attn", specifier = ">=2.8.3" },
     { name = "ipykernel", specifier = ">=7.2.0" },
     { name = "qwen-omni-utils", specifier = ">=0.0.9" },
     { name = "torch", specifier = "==2.6.0" },
