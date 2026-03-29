@@ -3,6 +3,8 @@ name = "qwen3omni"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "accelerate>=1.13.0",
+    "qwen-omni-utils>=0.0.9",
     "transformers",
 ]
 
