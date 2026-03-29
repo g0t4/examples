@@ -14,7 +14,11 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     attn_implementation="flash_attention_2",
 )
 
+# %% 
+
 processor = Qwen3OmniMoeProcessor.from_pretrained(MODEL_PATH)
+
+# %% 
 
 conversation = [
     {
