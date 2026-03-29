@@ -10,7 +10,7 @@ MODEL_PATH = "Qwen/Qwen3-Omni-30B-A3B-Captioner"
 model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     MODEL_PATH,
     dtype="auto",
-    device_map="auto",
+    device_map="cuda:0",
     attn_implementation="flash_attention_2",
 )
 
