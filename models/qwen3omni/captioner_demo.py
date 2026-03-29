@@ -57,9 +57,14 @@ inputs = processor(text=text,
                    use_audio_in_video=False)
 inputs = inputs.to(model.device).to(model.dtype)
 
-# Inference: Generation of the output text and audio
-text_ids, audio = model.generate(**inputs, 
-                                 thinker_return_dict_in_generate=True)
+# %% 
+
+# hack to get to work on cm 12.0... make it look like _grouped_mm is not supported
+import torch
+del torch._grouped_mm
+
+# Inference: Generation of the output text (apparently can do audio too but not in above example)
+text_ids = model.generate(**inputs, thinker_return_dict_in_generate=True)
 
 text = processor.batch_decode(text_ids.sequences[:, inputs["input_ids"].shape[1] :],
                               skip_special_tokens=True,
