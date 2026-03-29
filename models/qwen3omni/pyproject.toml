@@ -8,8 +8,8 @@ dependencies = [
     "flash-attn==2.8.3",
     "ipykernel>=7.2.0",
     "qwen-omni-utils>=0.0.9",
-    "torch==2.7.0",
-    "torchvision==0.22",
+    "torch==2.8.0",
+    "torchvision==0.23",
     "transformers",
 ]
 
