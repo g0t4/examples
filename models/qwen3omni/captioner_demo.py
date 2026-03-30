@@ -80,8 +80,8 @@ def react_to_conversation(conversation):
     rich.print(text)
 
 # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
-# react_to("clip40.wav", None) # no instructions, just allow model to respond and describe the audio vividly
-react_to("clip40.wav", "ONLY respond with transcription, nothing else")
+# react_to("clips/clip40.wav", None) # no instructions, just allow model to respond and describe the audio vividly
+react_to("clips/clip40.wav", "ONLY respond with transcription, nothing else")
 
 # %% 
 
@@ -99,8 +99,8 @@ Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
 #   Please classify this clip as: speaking, keystroke(s), breathing, no sounds
 #
 #   
-react_to("clip10.wav", classify)
-react_to("clip11.wav", classify)
-react_to("clip20.wav", classify)
-react_to("clip30.wav", classify)
-react_to("clip40.wav", classify)
+react_to("clips/clip10.wav", classify)
+react_to("clips/clip11.wav", classify)
+react_to("clips/clip20.wav", classify)
+react_to("clips/clip30.wav", classify)
+react_to("clips/clip40.wav", classify)
