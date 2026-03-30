@@ -88,10 +88,15 @@ classify = """This is a clip from a screencast.
 You are helping me produce splits for video editing between demo segments, retakes, etc.
 I use algorithms to split up segments and then I need your help to double check the audio between segments.
 Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
+#
 # FYI with better instructions, Qwen does better identifying breathing in clip10 (clip11 it always gets right as breathing)
 # clip30.wav => no sounds at all...
 #   if I provide "silence" as a category, qwen3omni is not classifying it as "silence"
 #   but when I provide "no sounds" then it does classify it correctly!
+#
+# FYI these categories worked well in initial testing:
+#   Please classify this clip as: speaking, keystroke(s), breathing, no sounds
+#
 #   
 react_to("clip10.wav", classify)
 react_to("clip11.wav", classify)
