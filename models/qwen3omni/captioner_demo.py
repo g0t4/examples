@@ -24,11 +24,11 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     MODEL_PATH,
     dtype="auto",
     config=config,
-    device_map="cuda",
+    # device_map="cuda",
     trust_remote_code=True,
     # torch_dtype="bfloat16",  # or float16
     # attn_implementation="sdpa",
-    attn_implementation="flash_attention_2",
+    # attn_implementation="flash_attention_2",
     quantization_config=bnb_config,
 )
 
