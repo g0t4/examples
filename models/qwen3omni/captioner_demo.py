@@ -43,34 +43,37 @@ if hasattr(torch, "_grouped_mm"):
 
 # %% 
 
-conversation = [
-    {
-        "role": "user",
-        "content": [
-            # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
-            # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
-            {"type": "audio", "audio": "clip40.wav"},
-            # { "type": "text", "text": "ONLY respond with transcription, nothing else" },
-        ],
-    },
-]
 
-# Preparation for inference
-text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-audios, _, _ = process_mm_info(conversation, use_audio_in_video=False)
+def react_to(audio_file, instructions):
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
+                # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
+                {"type": "audio", "audio": audio_file},
+                # { "type": "text", "text": "ONLY respond with transcription, nothing else" },
+            ],
+        },
+    ]
 
-inputs = processor(text=text, 
-                   audio=audios,
-                   return_tensors="pt", 
-                   padding=True, 
-                   use_audio_in_video=False)
-inputs = inputs.to(model.device).to(model.dtype)
+    # Preparation for inference
+    text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+    audios, _, _ = process_mm_info(conversation, use_audio_in_video=False)
 
-# Inference: Generation of the output text (apparently can do audio too but not in above example)
-text_ids = model.generate(**inputs, thinker_return_dict_in_generate=True)
+    inputs = processor(text=text, 
+                       audio=audios,
+                       return_tensors="pt", 
+                       padding=True, 
+                       use_audio_in_video=False)
+    inputs = inputs.to(model.device).to(model.dtype)
 
-text = processor.batch_decode(text_ids.sequences[:, inputs["input_ids"].shape[1] :],
-                              skip_special_tokens=True,
-                              clean_up_tokenization_spaces=False)
-print(text)
+    # Inference: Generation of the output text (apparently can do audio too but not in above example)
+    text_ids = model.generate(**inputs, thinker_return_dict_in_generate=True)
 
+    text = processor.batch_decode(text_ids.sequences[:, inputs["input_ids"].shape[1] :],
+                                  skip_special_tokens=True,
+                                  clean_up_tokenization_spaces=False)
+    print(text)
+
+react_to("clip40.wav", None)
