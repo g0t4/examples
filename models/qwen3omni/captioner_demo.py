@@ -41,7 +41,10 @@ conversation = [
     {
         "role": "user",
         "content": [
-            {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
+            # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
+            {"type": "audio", "audio": "clip40.wav"},
+            { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
+
         ],
     },
 ]
@@ -59,7 +62,7 @@ inputs = inputs.to(model.device).to(model.dtype)
 
 # %% 
 
-# hack to get to work on cm 12.0... make it look like _grouped_mm is not supported
+# hack to get to work on cm 12.0... transformers complains about need cm 9.0... gah ... make it look like _grouped_mm is not supported
 import torch
 del torch._grouped_mm
 
