@@ -43,14 +43,10 @@ if hasattr(torch, "_grouped_mm"):
 
 # %% 
 
-
 def react_to(audio_file, instructions):
-    content = [
-                # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
-                # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
-                {"type": "audio", "audio": audio_file},
-                # { "type": "text", "text": "ONLY respond with transcription, nothing else" },
-            ]
+    content = [ {"type": "audio", "audio": audio_file} ]
+    if instructions:
+        content += [{ "type": "text", "text": instructions} ]
 
     conversation = [
         {
@@ -58,6 +54,7 @@ def react_to(audio_file, instructions):
             "content": content,
         },
     ]
+    print(conversation)
 
     # Preparation for inference
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
@@ -81,5 +78,6 @@ def react_to(audio_file, instructions):
 # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
 # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
 # {"type": "audio", "audio": audio_file},
-# { "type": "text", "text": "ONLY respond with transcription, nothing else" },
-react_to("clip40.wav", None)
+# { "type": "text", "text": 
+# react_to("clip40.wav", None)
+react_to("clip40.wav", "ONLY respond with transcription, nothing else")
