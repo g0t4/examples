@@ -81,3 +81,17 @@ def react_to(audio_file, instructions):
 # { "type": "text", "text": 
 # react_to("clip40.wav", None)
 react_to("clip40.wav", "ONLY respond with transcription, nothing else")
+
+# %% 
+
+classify = """This is a clip from a screencast. 
+You are helping me produce splits for video editing between demo segments, retakes, etc.
+I use algorithms to split up segments and then I need your help to double check the audio between segments.
+Please classify this clip as: speaking, keystroke(s), breathing, silence"""
+# FYI with better instructions, Qwen does better identifying breathing in clip10 (clip11 it always gets right as breathing)
+# still failing to detect true silence in clip30.wav... it responds with typing
+react_to("clip10.wav", classify)
+react_to("clip11.wav", classify)
+react_to("clip20.wav", classify)
+react_to("clip30.wav", classify)
+react_to("clip40.wav", classify)
