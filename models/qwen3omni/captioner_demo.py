@@ -43,8 +43,8 @@ conversation = [
         "content": [
             # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
             {"type": "audio", "audio": "clip40.wav"},
-            { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
-
+            # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
+            { "type": "text", "text": "ONLY respond with transcription, nothing else" },
         ],
     },
 ]
