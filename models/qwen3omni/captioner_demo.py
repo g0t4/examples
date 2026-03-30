@@ -25,6 +25,7 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     dtype="auto",
     config=config,
     # device_map="cuda",
+    device_map="mps",
     trust_remote_code=True,
     # torch_dtype="bfloat16",  # or float16
     # attn_implementation="sdpa",
