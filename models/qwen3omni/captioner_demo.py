@@ -45,15 +45,17 @@ if hasattr(torch, "_grouped_mm"):
 
 
 def react_to(audio_file, instructions):
-    conversation = [
-        {
-            "role": "user",
-            "content": [
+    content = [
                 # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
                 # { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
                 {"type": "audio", "audio": audio_file},
                 # { "type": "text", "text": "ONLY respond with transcription, nothing else" },
-            ],
+            ]
+
+    conversation = [
+        {
+            "role": "user",
+            "content": content,
         },
     ]
 
@@ -76,4 +78,8 @@ def react_to(audio_file, instructions):
                                   clean_up_tokenization_spaces=False)
     print(text)
 
+# {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
+# { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
+# {"type": "audio", "audio": audio_file},
+# { "type": "text", "text": "ONLY respond with transcription, nothing else" },
 react_to("clip40.wav", None)
