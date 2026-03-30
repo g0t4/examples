@@ -12,6 +12,7 @@ from transformers import Qwen3OmniMoeConfig
 
 config = Qwen3OmniMoeConfig.from_pretrained(MODEL_PATH)
 
+# hack just to get it working with blackwell... chatgpt came up with this value so yeah I have no idea why this s/b set this way :).. just wanted to see if I could get the model to work (and it does)
 if not hasattr(config, "initializer_range"):
     config.initializer_range = 0.02  # standard default
 
