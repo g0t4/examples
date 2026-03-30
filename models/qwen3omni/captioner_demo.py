@@ -3,6 +3,7 @@ import soundfile as sf
 from transformers import Qwen3OmniMoeForConditionalGeneration, Qwen3OmniMoeProcessor
 from qwen_omni_utils import process_mm_info
 from transformers import BitsAndBytesConfig
+import rich
 
 # %% 
 
@@ -54,10 +55,10 @@ def react_to(audio_file, instructions):
             "content": content,
         },
     ]
+    rich.print(conversation)
     react_to_conversation(conversation)
 
 def react_to_conversation(conversation):
-    print(conversation)
 
     # Preparation for inference
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
@@ -76,13 +77,10 @@ def react_to_conversation(conversation):
     text = processor.batch_decode(text_ids.sequences[:, inputs["input_ids"].shape[1] :],
                                   skip_special_tokens=True,
                                   clean_up_tokenization_spaces=False)
-    print(text)
+    rich.print(text)
 
 # {"type": "audio", "audio": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/cookbook/caption2.mp3"},
-# { "type": "text", "text": "Briefly describe this audio, from a screencast recording. I need to know if this is breathing or not." },
-# {"type": "audio", "audio": audio_file},
-# { "type": "text", "text": 
-# react_to("clip40.wav", None)
+# react_to("clip40.wav", None) # no instructions, just allow model to respond and describe the audio vividly
 react_to("clip40.wav", "ONLY respond with transcription, nothing else")
 
 # %% 
