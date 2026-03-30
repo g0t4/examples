@@ -24,12 +24,12 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     MODEL_PATH,
     dtype="auto",
     config=config,
-    # device_map="cuda",
-    device_map="mps",
+    device_map="cuda",
+    # device_map="mps", # Invalid buffer size: 56.17 GiB... I don't have enough VRAM, interesting that w/o setting mps it works but when setting mps it doesn't... IIGC with system RAM I can use swap but cannot when using same RAM as "VRAM"... oh well, I suspected I'd hit a wall with this...
     trust_remote_code=True,
     # torch_dtype="bfloat16",  # or float16
     # attn_implementation="sdpa",
-    # attn_implementation="flash_attention_2",
+    attn_implementation="flash_attention_2",
     quantization_config=bnb_config,
 )
 
