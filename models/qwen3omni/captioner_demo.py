@@ -54,6 +54,9 @@ def react_to(audio_file, instructions):
             "content": content,
         },
     ]
+    react_to_conversation(conversation)
+
+def react_to_conversation(conversation):
     print(conversation)
 
     # Preparation for inference
