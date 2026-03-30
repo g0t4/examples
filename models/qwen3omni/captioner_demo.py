@@ -35,6 +35,12 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
 
 processor = Qwen3OmniMoeProcessor.from_pretrained(MODEL_PATH)
 
+# hack to get to work on cm 12.0... transformers complains about need cm 9.0... gah ... make it look like _grouped_mm is not supported
+# PRN find a way to make it work w/ _grouped_mm?
+import torch
+if hasattr(torch, "_grouped_mm"):
+    del torch._grouped_mm
+
 # %% 
 
 conversation = [
@@ -59,13 +65,6 @@ inputs = processor(text=text,
                    padding=True, 
                    use_audio_in_video=False)
 inputs = inputs.to(model.device).to(model.dtype)
-
-# %% 
-
-# hack to get to work on cm 12.0... transformers complains about need cm 9.0... gah ... make it look like _grouped_mm is not supported
-import torch
-if hasattr(torch, "_grouped_mm"):
-    del torch._grouped_mm
 
 # Inference: Generation of the output text (apparently can do audio too but not in above example)
 text_ids = model.generate(**inputs, thinker_return_dict_in_generate=True)
