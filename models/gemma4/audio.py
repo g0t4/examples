@@ -8,7 +8,7 @@ model = AutoModelForMultimodalLM.from_pretrained(MODEL_ID, dtype="auto", device_
 
 # %%
 
-def transcribe_audio_message(messages: list[dict]) -> dict:
+def multimodal_generate(messages: list[dict]) -> dict:
     inputs = processor.apply_chat_template(
         messages,
         tokenize=True,
@@ -22,7 +22,7 @@ def transcribe_audio_message(messages: list[dict]) -> dict:
     response = processor.decode(outputs[0][input_len:], skip_special_tokens=False)
     return processor.parse_response(response)
 
-# %% 
+# %%
 
 # Prompt - add audio before text
 messages = [{
@@ -39,9 +39,36 @@ messages = [{
     ]
 }]
 
-response = transcribe_audio_message(messages)
+response = multimodal_generate(messages)
 print(response)
 
-# %% 
+# %%
+#
+import rich
 
-# ~/repos/github/g0t4/examples/models/qwen3omni/clips
+def react_to(audio_file, instructions):
+    content = [{"type": "audio", "audio": audio_file}]
+    if instructions:
+        content += [{"type": "text", "text": instructions}]
+
+    conversation = [
+        {
+            "role": "user",
+            "content": content,
+        },
+    ]
+    rich.print(conversation)
+    return multimodal_generate(conversation)
+
+classify = """This is a clip from a screencast. 
+You are helping me produce splits for video editing between demo segments, retakes, etc.
+I use algorithms to split up segments and then I need your help to double check the audio between segments.
+Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
+
+react_to("../qwen3omni/clips/clip10.wav", classify)
+react_to("../qwen3omni/clips/clip11.wav", classify)
+react_to("../qwen3omni/clips/clip20.wav", classify)
+react_to("../qwen3omni/clips/clip30.wav", classify)
+react_to("../qwen3omni/clips/clip40.wav", classify)
+
+# welp... gemma4 says "speaking" on all four :( ... did I do something wrong? 
