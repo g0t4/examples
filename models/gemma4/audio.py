@@ -49,6 +49,7 @@ print(response)
 import rich
 
 def react_to(audio_file):
+    # TODO! how about a system message to specify how to respond?
     classify = """This is a clip from a screencast. 
     You are helping me produce splits for video editing between demo segments, retakes, etc.
     I use algorithms to split up segments and then I need your help to double check the _AUDIO BETWEEN SEGMENTS_
@@ -94,4 +95,7 @@ react_to("../qwen3omni/clips/clip40.wav")
 #  TODO is there carry over from prior audio inputs somehow? it almost seems like the first audio file + prompt effects subsequent?
 #  TODO why does it randomly say it needs the audio (doesn't have it yet)?
 #    the example on the HF repo said put audio first... I did audio first with Qwen3Omni too ...
-#    oh well... for now lets stop! 
+#    oh well... for now lets stop!
+
+# TODO! how about pass it he full video file so it can see any screen changes (if relevant?) ... maybe it would do better with sound with a bigger context of clip too? and ask what happened between talking times?
+#
