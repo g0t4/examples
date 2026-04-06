@@ -39,6 +39,8 @@ messages = [{
     ]
 }]
 
+# *** SUPER GOOD TRANSCRIPTION!
+
 response = multimodal_generate(messages)
 print(response)
 
@@ -46,29 +48,50 @@ print(response)
 #
 import rich
 
-def react_to(audio_file, instructions):
-    content = [{"type": "audio", "audio": audio_file}]
-    if instructions:
-        content += [{"type": "text", "text": instructions}]
+def react_to(audio_file):
+    classify = """This is a clip from a screencast. 
+    You are helping me produce splits for video editing between demo segments, retakes, etc.
+    I use algorithms to split up segments and then I need your help to double check the _AUDIO BETWEEN SEGMENTS_
 
-    conversation = [
-        {
-            "role": "user",
-            "content": content,
-        },
-    ]
-    rich.print(conversation)
-    return multimodal_generate(conversation)
+    Please listen carefully to the contents of the audio. It could be any of the following:
+    - A gasp or breathing like sound
+    - Speaking is possible too though less likely
+    - Keystroke(s) on a keyboard
+    - Silence (no sounds, no breathing, no typing, etc)
 
-classify = """This is a clip from a screencast. 
-You are helping me produce splits for video editing between demo segments, retakes, etc.
-I use algorithms to split up segments and then I need your help to double check the audio between segments.
-Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
+    Which is it? Respond with one of the following only (nothing else): 
+    - gasp
+    - breathing
+    - speaking
+    - keystroke
+    - silence
 
-react_to("../qwen3omni/clips/clip10.wav", classify)
-react_to("../qwen3omni/clips/clip11.wav", classify)
-react_to("../qwen3omni/clips/clip20.wav", classify)
-react_to("../qwen3omni/clips/clip30.wav", classify)
-react_to("../qwen3omni/clips/clip40.wav", classify)
+    """
 
-# welp... gemma4 says "speaking" on all four :( ... did I do something wrong? 
+    messages = [{
+        "role": "user",
+        "content": [
+            {
+                "type": "audio",
+                "audio": audio_file
+            },
+            {
+                "type": "text",
+                "text": classify,
+            },
+        ]
+    }]
+    rich.print(f'{audio_file}')
+    return multimodal_generate(messages)
+
+react_to("../qwen3omni/clips/clip10.wav")
+react_to("../qwen3omni/clips/clip11.wav")
+react_to("../qwen3omni/clips/clip20.wav")
+react_to("../qwen3omni/clips/clip30.wav")
+react_to("../qwen3omni/clips/clip40.wav")
+
+# so far not reliably/repeatedly responding to the same audio file!
+#  TODO is there carry over from prior audio inputs somehow? it almost seems like the first audio file + prompt effects subsequent?
+#  TODO why does it randomly say it needs the audio (doesn't have it yet)?
+#    the example on the HF repo said put audio first... I did audio first with Qwen3Omni too ...
+#    oh well... for now lets stop! 
