@@ -25,7 +25,7 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     MODEL_PATH,
     dtype="auto",
     config=config,
-    device_map="cuda",
+    device_map="cuda:1",
     # device_map="mps", # Invalid buffer size: 56.17 GiB... I don't have enough VRAM, interesting that w/o setting mps it works but when setting mps it doesn't... IIGC with system RAM I can use swap but cannot when using same RAM as "VRAM"... oh well, I suspected I'd hit a wall with this...
     trust_remote_code=True,
     # torch_dtype="bfloat16",  # or float16
@@ -87,6 +87,12 @@ react_to("clips/clip40.wav", "ONLY respond with transcription, nothing else")
 
 # %% 
 
+react_to("clips/editing_samples/sample1/sample1.wav", "ONLY respond with transcription, nothing else. Break apart sentences/phrases one per line of output")
+# wow it is good! splitting in all the right spots:
+#   ['Hi.\nMy name is.\nMy name is Wes.\nAnd I want to talk to you about.\nAnd today I want to talk to you about bananas.']
+
+# %% 
+
 classify = """This is a clip from a screencast. 
 You are helping me produce splits for video editing between demo segments, retakes, etc.
 I use algorithms to split up segments and then I need your help to double check the audio between segments.
@@ -99,10 +105,10 @@ Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
 #
 # FYI these categories worked well in initial testing:
 #   Please classify this clip as: speaking, keystroke(s), breathing, no sounds
-#
+# **** WOWSERS IT DOES VERY WELL WITH TRANSCRIPT AND CLASSIFY!!!!
 #   
-react_to("clips/clip10.wav", classify)
-react_to("clips/clip11.wav", classify)
-react_to("clips/clip20.wav", classify)
-react_to("clips/clip30.wav", classify)
-react_to("clips/clip40.wav", classify)
+react_to("clips/clip10.wav", classify) # breathing
+react_to("clips/clip11.wav", classify) # breathing
+react_to("clips/clip20.wav", classify) # keystroke
+react_to("clips/clip30.wav", classify) # silence (no sound)
+react_to("clips/clip40.wav", classify) # speaking ("run one more time here")
