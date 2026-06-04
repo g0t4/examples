@@ -5,7 +5,7 @@ from qwen_omni_utils import process_mm_info
 from transformers import BitsAndBytesConfig
 import rich
 
-# %% 
+# %%
 
 MODEL_PATH = "Qwen/Qwen3-Omni-30B-A3B-Captioner"
 from transformers import Qwen3OmniMoeConfig
@@ -34,7 +34,7 @@ model = Qwen3OmniMoeForConditionalGeneration.from_pretrained(
     quantization_config=bnb_config,
 )
 
-# %% 
+# %%
 
 processor = Qwen3OmniMoeProcessor.from_pretrained(MODEL_PATH)
 
@@ -44,7 +44,7 @@ import torch
 if hasattr(torch, "_grouped_mm"):
     del torch._grouped_mm
 
-# %% 
+# %%
 
 def react_to(audio_file, instructions):
     content = [ {"type": "audio", "audio": audio_file} ]
@@ -66,10 +66,10 @@ def react_to_conversation(conversation):
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
     audios, _, _ = process_mm_info(conversation, use_audio_in_video=False)
 
-    inputs = processor(text=text, 
+    inputs = processor(text=text,
                        audio=audios,
-                       return_tensors="pt", 
-                       padding=True, 
+                       return_tensors="pt",
+                       padding=True,
                        use_audio_in_video=False)
     inputs = inputs.to(model.device).to(model.dtype)
 
@@ -85,13 +85,19 @@ def react_to_conversation(conversation):
 # react_to("clips/clip40.wav", None) # no instructions, just allow model to respond and describe the audio vividly
 react_to("clips/clip40.wav", "ONLY respond with transcription, nothing else")
 
-# %% 
+# %%
 
 react_to("clips/editing_samples/sample1/sample1.wav", "ONLY respond with transcription, nothing else. Break apart sentences/phrases one per line of output")
 # wow it is good! splitting in all the right spots:
 #   ['Hi.\nMy name is.\nMy name is Wes.\nAnd I want to talk to you about.\nAnd today I want to talk to you about bananas.']
 
-# %% 
+react_to("clips/editing_samples/sample1/sample1.wav", \
+         """
+         Break apart sentences/phrases one per line of output. Include timestamps. Mark this section as "## Original Transcript" 
+         Then, propose edits to make a coherent, final video to publish. Mark this latter section as "## Edited"
+         """)
+
+# %%
 
 classify = """This is a clip from a screencast. 
 You are helping me produce splits for video editing between demo segments, retakes, etc.
@@ -106,7 +112,7 @@ Please classify this clip as: speaking, keystroke(s), breathing, no sounds"""
 # FYI these categories worked well in initial testing:
 #   Please classify this clip as: speaking, keystroke(s), breathing, no sounds
 # **** WOWSERS IT DOES VERY WELL WITH TRANSCRIPT AND CLASSIFY!!!!
-#   
+#
 react_to("clips/clip10.wav", classify) # breathing
 react_to("clips/clip11.wav", classify) # breathing
 react_to("clips/clip20.wav", classify) # keystroke
