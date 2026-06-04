@@ -1,0 +1,14 @@
+You are an expert video editor. Here is a 30-second video segment (frames + audio provided).
+
+Analyze the content, pacing, audio peaks, scene changes, action beats, and emotional flow.
+
+Return a clean edit list in this exact format:
+
+Timestamp (HH:MM:SS.mmm) | Suggested edit | Reason
+00:00:00.000 | Start of clip | ...
+00:00:02.120 | Hard cut | Sharp audio spike + visual action peak
+00:00:05.840 | Dissolve transition | Mood shift in music + softening visuals
+...
+
+Also suggest overall pacing notes and any B-roll or sound-design opportunities at specific times.
+Only use timestamps that land exactly on 40 ms boundaries.
