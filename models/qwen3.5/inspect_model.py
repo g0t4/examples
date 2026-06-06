@@ -18,10 +18,12 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # %%
 
 MODEL_ID = "Qwen/Qwen3.5-0.8B"
-MODEL_ID = "Qwen/Qwen3.5-0.8B-Base"  # base model releases too! (i.e. for FIM)
+# MODEL_ID = "Qwen/Qwen3.5-0.8B-Base"  # base model releases too! (i.e. for FIM)
 # MODEL_ID = "Qwen/Qwen3.5-9B"
 model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
 tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+
+tokenizer.special_tokens_map
 
 print(tokenizer)
 print(model)
