@@ -89,7 +89,6 @@ def main() -> None:
                 print("\n--- Response ---")
                 print(message)
                 print("--- End ---\n")
-                return
             except (KeyError, IndexError) as exc:
                 print(f"  [ERROR] Unexpected response format: {exc}", file=sys.stderr)
 
