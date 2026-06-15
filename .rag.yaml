@@ -1,4 +1,4 @@
-include:
+include_domains:
   - applescript
   - bash
   - fish
@@ -14,5 +14,5 @@ include:
   - yaml 
 # ignores:
 #   - "notes/"
-# global_languages:
+# global_domains:
 #   - JUST USE ALL included above (default IIRC)
