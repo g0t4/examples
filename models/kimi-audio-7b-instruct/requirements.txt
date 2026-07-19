@@ -1,5 +1,5 @@
-torch==2.6.0
-torchaudio==2.6.0
+torch==2.8.0
+torchaudio==2.8.0
 packaging
 jinja2
 openai-whisper
@@ -7,7 +7,7 @@ jsonlines
 pandas
 validators
 sty
-transformers
+transformers==4.51.3
 librosa
 accelerate
 aiohttp
@@ -38,5 +38,5 @@ timm
 sacrebleu==1.5.1
 soundfile
 tqdm
-flash_attn==2.7.4.post1
+flash_attn==2.8.3
 deepspeed==0.16.9

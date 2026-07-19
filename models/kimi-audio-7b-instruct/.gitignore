@@ -1,1 +1,4 @@
 *.wav
+.hf-cache/
+.matplotlib-cache/
+.uv-cache/
