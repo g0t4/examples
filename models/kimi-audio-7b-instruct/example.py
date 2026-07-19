@@ -4,7 +4,7 @@ import argparse
 import os
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__ if "__file__" in globals().keys() else "").resolve().parent
 os.environ.setdefault("HF_HOME", str(ROOT / ".hf-cache"))
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / ".matplotlib-cache"))
 
