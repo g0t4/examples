@@ -70,4 +70,13 @@ rare, but possible:
 - computer noises (i.e. alert noise)
 - phone noises (i.e. ringing, message ding, alarms, etc)
 """)
+#
+# hrmmmm... lol maybe not
+# 
+# clip10.wav: typing
+# clip11.wav: typing
+# clip20.wav: Typing
+# clip30.wav: Silence
+# clip40.wav: a person is speaking in a foreign language.
+
 
